@@ -1399,6 +1399,11 @@
       }
 
       .about__visual {
+        max-width: 400px;
+        margin: 0 auto 3rem;
+      }
+
+      .about__deco {
         display: none;
       }
 
@@ -1434,8 +1439,26 @@
 
     @media (max-width: 540px) {
       :root {
-        --sp-7: 4rem;
-        --sp-8: 4.5rem;
+        --sp-7: 3rem;
+        --sp-8: 4rem;
+      }
+
+      .container {
+        padding-inline: 1.25rem;
+      }
+
+      .hero__name {
+        font-size: clamp(2.5rem, 12vw, 3.5rem);
+        margin-bottom: var(--sp-3);
+      }
+
+      .hero__desc {
+        font-size: 1.1rem;
+        margin-bottom: var(--sp-4);
+      }
+
+      .section__title {
+        font-size: clamp(2rem, 8vw, 2.5rem);
       }
 
       .skills__grid {
@@ -1445,6 +1468,48 @@
       .hero__actions .btn {
         width: 100%;
         justify-content: center;
+      }
+
+      .contact__form .btn {
+        width: 100%;
+        justify-content: center;
+        align-self: stretch !important;
+      }
+
+      .about__stats {
+        padding: var(--sp-2);
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .about__stat {
+        flex: 1 1 30%;
+      }
+      
+      .nav__logo {
+        font-size: 1.1rem;
+      }
+      
+      .proj-card__body {
+        padding: var(--sp-3);
+      }
+      
+      .video-play {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
+    /* ── Touch Devices ──────────────────────── */
+    @media (pointer: coarse), (hover: none) {
+      body, button {
+        cursor: auto !important;
+      }
+      #c-dot, #c-ring {
+        display: none !important;
+      }
+      .side-leaf {
+        display: none !important;
       }
     }
   </style>
