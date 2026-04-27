@@ -1698,10 +1698,90 @@
         display: none !important;
       }
     }
+
+    /* ── Preloader ────────────────────────────── */
+    body.is-loading {
+      overflow: hidden;
+    }
+
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background-color: #0b120e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
+    }
+
+    .preloader.loaded {
+      opacity: 0;
+      transform: scale(1.1);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader__leaf {
+      width: 140px;
+      height: 140px;
+      overflow: visible;
+      transform-origin: center;
+      animation: flashLeaf 0.8s ease-out 2.2s forwards;
+    }
+
+    .preloader__leaf-path,
+    .preloader__leaf-line {
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+    }
+
+    .preloader__leaf-path {
+      animation: drawLeaf 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    .preloader__leaf-line {
+      animation: drawLeaf 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.2s;
+    }
+
+    @keyframes drawLeaf {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes flashLeaf {
+      0% {
+        fill: transparent;
+        stroke: var(--green-light);
+        filter: drop-shadow(0 0 0 rgba(132, 196, 154, 0));
+        transform: scale(1);
+      }
+      50% {
+        fill: rgba(132, 196, 154, 0.3);
+        stroke: var(--green-pale);
+        filter: drop-shadow(0 0 40px rgba(132, 196, 154, 1));
+        transform: scale(1.05);
+      }
+      100% {
+        fill: rgba(132, 196, 154, 0.1);
+        stroke: var(--green-light);
+        filter: drop-shadow(0 0 10px rgba(132, 196, 154, 0.4));
+        transform: scale(1);
+      }
+    }
   </style>
 </head>
 
-<body>
+<body class="is-loading">
+
+  <!-- ══ PRELOADER ═════════════════════════════ -->
+  <div id="preloader" class="preloader">
+    <svg class="preloader__leaf" viewBox="0 0 100 100" fill="transparent" xmlns="http://www.w3.org/2000/svg">
+      <path class="preloader__leaf-path" d="M50 90 C20 60, 10 30, 25 15 C35 5, 50 5, 50 5 C50 5, 65 5, 75 15 C90 30, 80 60, 50 90Z" stroke="var(--green-light)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="preloader__leaf-line" d="M50 85 L50 15" stroke="var(--green-light)" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
 
   <!-- Custom cursor -->
   <div id="c-dot" aria-hidden="true"></div>
@@ -2519,6 +2599,18 @@
       portfolioVideo.addEventListener('pause', () => videoContainer.classList.remove('is-playing'));
       portfolioVideo.addEventListener('ended', () => videoContainer.classList.remove('is-playing'));
     }
+
+    /* ── Preloader ────────────────────────────── */
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        setTimeout(() => {
+          preloader.classList.add('loaded');
+          document.body.classList.remove('is-loading');
+          setTimeout(() => window.dispatchEvent(new Event('scroll')), 100);
+        }, 3200);
+      }
+    });
   </script>
 </body>
 
