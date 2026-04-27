@@ -1708,23 +1708,6 @@
       z-index: 0;
       pointer-events: none;
     }
-
-    /* ── Golden Vine ──────────────────────────── */
-    .vine-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 60px;
-      height: 100vh;
-      z-index: 50;
-      pointer-events: none;
-    }
-
-    .vine-container svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
   </style>
 </head>
 
@@ -1773,15 +1756,7 @@
     <a href="#contact" onclick="closeNav()">Kontakt</a>
   </div>
 
-  <main id="top" style="position: relative;">
-
-    <!-- ══ GOLDEN VINE SCROLL ════════════════════ -->
-    <div class="vine-container" aria-hidden="true">
-      <svg id="scroll-vine" viewBox="0 0 60 100" preserveAspectRatio="none">
-        <path class="vine-glow" vector-effect="non-scaling-stroke" fill="none" stroke="var(--gold-light)" stroke-width="6" opacity="0.25" stroke-linecap="round" d="M 30 0 C 55 12, 55 25, 30 35 C 5 45, 5 55, 30 65 C 55 75, 55 87, 30 100" />
-        <path class="vine-path" vector-effect="non-scaling-stroke" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" d="M 30 0 C 55 12, 55 25, 30 35 C 5 45, 5 55, 30 65 C 55 75, 55 87, 30 100" />
-      </svg>
-    </div>
+  <main id="top">
 
 
     <!-- ══ HERO ══════════════════════════════════ -->
@@ -2655,30 +2630,6 @@
 
       initParticles();
       animateParticles();
-    }
-
-    /* ── Golden Vine Scroll ───────────────────── */
-    const vinePath = document.querySelector('.vine-path');
-    const vineGlow = document.querySelector('.vine-glow');
-    if (vinePath && vineGlow) {
-      setTimeout(() => {
-        const pathLength = vinePath.getTotalLength();
-        
-        vinePath.style.strokeDasharray = pathLength;
-        vinePath.style.strokeDashoffset = pathLength;
-        vineGlow.style.strokeDasharray = pathLength;
-        vineGlow.style.strokeDashoffset = pathLength;
-
-        window.addEventListener('scroll', () => {
-          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-          const scrollPct = window.scrollY / scrollHeight;
-          const drawPct = Math.min(Math.max(scrollPct, 0), 1);
-          const offset = pathLength - (pathLength * drawPct);
-          
-          vinePath.style.strokeDashoffset = offset;
-          vineGlow.style.strokeDashoffset = offset;
-        }, { passive: true });
-      }, 100);
     }
   </script>
 </body>
