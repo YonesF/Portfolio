@@ -1699,89 +1699,19 @@
       }
     }
 
-    /* ── Preloader ────────────────────────────── */
-    body.is-loading {
-      overflow: hidden;
-    }
-
-    .preloader {
-      position: fixed;
+    /* ── Fireflies Canvas ─────────────────────── */
+    .hero__canvas {
+      position: absolute;
       inset: 0;
-      z-index: 999999;
-      background-color: #0b120e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
-    }
-
-    .preloader.loaded {
-      opacity: 0;
-      transform: scale(1.1);
-      visibility: hidden;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
       pointer-events: none;
-    }
-
-    .preloader__leaf {
-      width: 140px;
-      height: 140px;
-      overflow: visible;
-      transform-origin: center;
-      animation: flashLeaf 0.8s ease-out 2.2s forwards;
-    }
-
-    .preloader__leaf-path,
-    .preloader__leaf-line {
-      stroke-dasharray: 400;
-      stroke-dashoffset: 400;
-    }
-
-    .preloader__leaf-path {
-      animation: drawLeaf 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    }
-
-    .preloader__leaf-line {
-      animation: drawLeaf 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.2s;
-    }
-
-    @keyframes drawLeaf {
-      to {
-        stroke-dashoffset: 0;
-      }
-    }
-
-    @keyframes flashLeaf {
-      0% {
-        fill: transparent;
-        stroke: var(--green-light);
-        filter: drop-shadow(0 0 0 rgba(132, 196, 154, 0));
-        transform: scale(1);
-      }
-      50% {
-        fill: rgba(132, 196, 154, 0.3);
-        stroke: var(--green-pale);
-        filter: drop-shadow(0 0 40px rgba(132, 196, 154, 1));
-        transform: scale(1.05);
-      }
-      100% {
-        fill: rgba(132, 196, 154, 0.1);
-        stroke: var(--green-light);
-        filter: drop-shadow(0 0 10px rgba(132, 196, 154, 0.4));
-        transform: scale(1);
-      }
     }
   </style>
 </head>
 
-<body class="is-loading">
-
-  <!-- ══ PRELOADER ═════════════════════════════ -->
-  <div id="preloader" class="preloader">
-    <svg class="preloader__leaf" viewBox="0 0 100 100" fill="transparent" xmlns="http://www.w3.org/2000/svg">
-      <path class="preloader__leaf-path" d="M50 90 C20 60, 10 30, 25 15 C35 5, 50 5, 50 5 C50 5, 65 5, 75 15 C90 30, 80 60, 50 90Z" stroke="var(--green-light)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path class="preloader__leaf-line" d="M50 85 L50 15" stroke="var(--green-light)" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-  </div>
+<body>
 
   <!-- Custom cursor -->
   <div id="c-dot" aria-hidden="true"></div>
@@ -1833,6 +1763,7 @@
       <div class="hero__glow" aria-hidden="true"></div>
       <div class="hero__glow-2" aria-hidden="true"></div>
       <div class="hero__grid" aria-hidden="true"></div>
+      <canvas id="fireflies" class="hero__canvas" aria-hidden="true"></canvas>
 
       <!-- Botanical illustration right side -->
       <svg class="hero__deco" viewBox="0 0 380 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -2146,7 +2077,7 @@
                 <span class="proj-cat">JavaScript</span>
               </div>
               <h3 class="proj-card__title">Atlas</h3>
-              <p class="proj-card__desc">Et responsivt webkart (SPA) som hjelper innbyggere i Agder/Kristiansand med å
+              <p class="proj-card__desc">Et responsivt webkart (SPA) som hjelper innbyggere i Norge med å
                 finne nærmeste beredskapsressurs når tid er kritisk.</p>
               <a href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer"
                 class="proj-card__link">Se prosjekt →</a>
@@ -2600,17 +2531,105 @@
       portfolioVideo.addEventListener('ended', () => videoContainer.classList.remove('is-playing'));
     }
 
-    /* ── Preloader ────────────────────────────── */
-    window.addEventListener('load', () => {
-      const preloader = document.getElementById('preloader');
-      if (preloader) {
-        setTimeout(() => {
-          preloader.classList.add('loaded');
-          document.body.classList.remove('is-loading');
-          setTimeout(() => window.dispatchEvent(new Event('scroll')), 100);
-        }, 3200);
+    /* ── Fireflies Canvas ─────────────────────── */
+    const canvas = document.getElementById('fireflies');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      let mouse = { x: -1000, y: -1000 };
+
+      function resize() {
+        width = canvas.width = canvas.offsetWidth;
+        height = canvas.height = canvas.offsetHeight;
       }
-    });
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      document.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+
+      document.addEventListener('mouseleave', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.size = Math.random() * 2 + 0.5;
+          this.vx = (Math.random() - 0.5) * 0.5;
+          this.vy = (Math.random() - 0.5) * 0.5;
+          const colors = [
+            'rgba(184, 154, 88, 0.8)', // Gold
+            'rgba(132, 196, 154, 0.8)', // Green
+            'rgba(200, 230, 208, 0.8)'  // Pale
+          ];
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.angle = Math.random() * Math.PI * 2;
+          this.speed = Math.random() * 0.02 + 0.01;
+        }
+
+        update() {
+          this.angle += this.speed;
+          this.x += Math.cos(this.angle) * 0.5 + this.vx;
+          this.y += Math.sin(this.angle) * 0.5 + this.vy;
+
+          if (this.x < 0) this.x = width;
+          if (this.x > width) this.x = 0;
+          if (this.y < 0) this.y = height;
+          if (this.y > height) this.y = 0;
+
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = 120;
+
+          if (distance < maxDist) {
+            const force = (maxDist - distance) / maxDist;
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            this.x -= dirX * force * 3;
+            this.y -= dirY * force * 3;
+          }
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = this.color;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      function initParticles() {
+        particles = [];
+        const numParticles = Math.min(window.innerWidth / 15, 80);
+        for (let i = 0; i < numParticles; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+
+      initParticles();
+      animateParticles();
+    }
   </script>
 </body>
 
