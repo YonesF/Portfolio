@@ -597,8 +597,22 @@
 
     .hero__name span {
       display: block;
+      width: fit-content;
       font-style: italic;
       color: var(--green-mid);
+      animation: textHover 6s ease-in-out infinite;
+    }
+
+    @keyframes textHover {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      33% {
+        transform: translate(1px, -4px) rotate(0.8deg);
+      }
+      66% {
+        transform: translate(-1px, 2px) rotate(-0.4deg);
+      }
     }
 
     .hero__desc {
@@ -1499,6 +1513,46 @@
         height: 60px;
       }
     }
+    /* ── Video Leaves Animation ──────────────── */
+    .video-container {
+      position: relative;
+    }
+    .video-leaves {
+      position: absolute;
+      inset: -60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .video-frame {
+      z-index: 1; /* Make sure video is above leaves */
+    }
+    .video-leaf {
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.5) rotate(0deg) translate(0, 0);
+      transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+      will-change: transform, opacity;
+    }
+    .video-container.is-playing .video-leaf {
+      opacity: 1;
+    }
+    .video-leaf-1 { top: 10%; left: 10%; }
+    .video-container.is-playing .video-leaf-1 { transform: scale(1) rotate(-25deg) translate(-100px, -60px); }
+    
+    .video-leaf-2 { top: 5%; right: 15%; }
+    .video-container.is-playing .video-leaf-2 { transform: scale(0.9) rotate(35deg) translate(80px, -50px); }
+    
+    .video-leaf-3 { bottom: 20%; left: 5%; }
+    .video-container.is-playing .video-leaf-3 { transform: scale(1.1) rotate(-40deg) translate(-90px, 40px); }
+    
+    .video-leaf-4 { bottom: 10%; right: 10%; }
+    .video-container.is-playing .video-leaf-4 { transform: scale(1) rotate(20deg) translate(100px, 60px); }
+    
+    .video-leaf-5 { top: 50%; right: 5%; }
+    .video-container.is-playing .video-leaf-5 { transform: scale(0.8) rotate(60deg) translate(110px, 0px); }
+    
+    .video-leaf-6 { top: 60%; left: 10%; }
+    .video-container.is-playing .video-leaf-6 { transform: scale(0.9) rotate(-60deg) translate(-110px, 20px); }
 
     /* ── Touch Devices ──────────────────────── */
     @media (pointer: coarse), (hover: none) {
@@ -1917,18 +1971,19 @@
           <p class="video__desc reveal d2">
             En 2-minutters introduksjon der jeg forteller hvem jeg er, hva jeg brenner for og hva jeg kan bidra med.
           </p>
-          <div class="video-frame reveal d3">
-            <!--
-            YouTube: <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Intro" allowfullscreen></iframe>
-            Lokal:   <video controls><source src="intro.mp4" type="video/mp4"></video>
-          -->
-            <div class="video-ph" aria-label="Legg til video her">
-              <button class="video-play" aria-label="Spill av video (plassholder)">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
-              <p>Legg til din video · ca. 2 minutter</p>
+          <div class="video-container" id="videoContainer">
+            <div class="video-leaves" aria-hidden="true">
+               <svg class="video-leaf video-leaf-1" width="60" height="90" viewBox="0 0 40 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 60 C8 48, 4 32, 10 18 C13 10, 20 4, 20 4 C20 4, 27 10, 30 18 C36 32, 32 48, 20 60Z" fill="rgba(132, 196, 154, 0.4)" /><line x1="20" y1="4" x2="20" y2="60" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8"/></svg>
+               <svg class="video-leaf video-leaf-2" width="50" height="120" viewBox="0 0 22 72" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 68 C5 52, 3 36, 7 20 C8 14, 11 4, 11 4 C11 4, 14 14, 15 20 C19 36, 17 52, 11 68Z" fill="rgba(90, 158, 111, 0.4)" /><line x1="11" y1="4" x2="11" y2="68" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.6"/></svg>
+               <svg class="video-leaf video-leaf-3" width="70" height="90" viewBox="0 0 48 62" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 58 C12 46, 6 36, 8 26 C9 20, 6 14, 10 10 C14 6, 18 10, 22 8 C22 8, 24 4, 24 4 C24 4, 26 8, 26 8 C30 10, 34 6, 38 10 C42 14, 39 20, 40 26 C42 36, 36 46, 24 58Z" fill="rgba(61, 122, 82, 0.2)" /><line x1="24" y1="4" x2="24" y2="58" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8"/></svg>
+               <svg class="video-leaf video-leaf-4" width="60" height="95" viewBox="0 0 40 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 60 C8 48, 4 32, 10 18 C13 10, 20 4, 20 4 C20 4, 27 10, 30 18 C36 32, 32 48, 20 60Z" fill="rgba(90, 158, 111, 0.3)" /><line x1="20" y1="4" x2="20" y2="60" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8"/></svg>
+               <svg class="video-leaf video-leaf-5" width="45" height="100" viewBox="0 0 22 72" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 68 C5 52, 3 36, 7 20 C8 14, 11 4, 11 4 C11 4, 14 14, 15 20 C19 36, 17 52, 11 68Z" fill="rgba(132, 196, 154, 0.5)" /><line x1="11" y1="4" x2="11" y2="68" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.6"/></svg>
+               <svg class="video-leaf video-leaf-6" width="75" height="95" viewBox="0 0 48 62" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 58 C12 46, 6 36, 8 26 C9 20, 6 14, 10 10 C14 6, 18 10, 22 8 C22 8, 24 4, 24 4 C24 4, 26 8, 26 8 C30 10, 34 6, 38 10 C42 14, 39 20, 40 26 C42 36, 36 46, 24 58Z" fill="rgba(138, 114, 64, 0.15)" /><line x1="24" y1="4" x2="24" y2="58" stroke="rgba(92, 74, 40, 0.2)" stroke-width="0.8"/></svg>
+            </div>
+            <div class="video-frame reveal d3">
+              <video controls id="portfolioVideo">
+                <source src="6BAA38F0-8241-404C-A5A4-87B85A4D5C37.mp4" type="video/mp4">
+              </video>
             </div>
           </div>
         </div>
@@ -2281,6 +2336,15 @@
         });
       }, { passive: true });
     })();
+
+    /* ─── Video Animation ──────────────────── */
+    const portfolioVideo = document.getElementById('portfolioVideo');
+    const videoContainer = document.getElementById('videoContainer');
+    if (portfolioVideo && videoContainer) {
+      portfolioVideo.addEventListener('play', () => videoContainer.classList.add('is-playing'));
+      portfolioVideo.addEventListener('pause', () => videoContainer.classList.remove('is-playing'));
+      portfolioVideo.addEventListener('ended', () => videoContainer.classList.remove('is-playing'));
+    }
   </script>
 </body>
 
