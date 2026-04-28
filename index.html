@@ -1291,6 +1291,54 @@
       border-bottom: 1px solid var(--border);
       position: relative;
       overflow: hidden;
+      transition: background-color 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color     1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .erfaring:has(.erf-card:hover) {
+      background-color: #0c1f10;
+      border-color: rgba(30, 65, 35, 0.22);
+    }
+
+    .erfaring__forest-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at 50% 52%,
+        rgba(6, 22, 9, 0.78)   0%,
+        rgba(8, 26, 11, 0.52)  38%,
+        rgba(5, 16, 7, 0.28)   65%,
+        transparent             88%
+      );
+      opacity: 0;
+      z-index: 0;
+      pointer-events: none;
+      transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .erfaring:has(.erf-card:hover) .erfaring__forest-overlay {
+      opacity: 1;
+    }
+
+    /* Section label + title colour shifts */
+    .erfaring .section__label,
+    .erfaring .section__title,
+    .erfaring .section__title em {
+      transition: color 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  text-shadow 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .erfaring:has(.erf-card:hover) .section__label {
+      color: rgba(132, 196, 154, 0.58);
+    }
+
+    .erfaring:has(.erf-card:hover) .section__title {
+      color: rgba(200, 230, 208, 0.86);
+    }
+
+    .erfaring:has(.erf-card:hover) .section__title em {
+      color: rgba(132, 196, 154, 0.92);
+      text-shadow: 0 0 28px rgba(132, 196, 154, 0.18);
     }
 
     .erfaring::before {
@@ -1317,8 +1365,73 @@
       pointer-events: none;
     }
 
+    .erfaring__canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 3s ease;
+    }
+
+    .erfaring.erf-alive .erfaring__canvas {
+      opacity: 1;
+    }
+
+    .erfaring__leaves {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .erfaring__leaf {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 4s ease;
+      will-change: transform;
+    }
+
+    .erfaring.erf-alive .erfaring__leaf {
+      opacity: 1;
+    }
+
+    .erfaring__leaf svg {
+      animation: var(--erf-anim, erfaringDrift1) var(--erf-dur, 24s) ease-in-out var(--erf-delay, 0s) infinite;
+    }
+
+    @keyframes erfaringDrift1 {
+      0%,  100% { transform: translate(0, 0)      rotate(0deg);  }
+      30%        { transform: translate(14px,-16px) rotate(8deg);  }
+      65%        { transform: translate(-6px,12px)  rotate(-5deg); }
+    }
+
+    @keyframes erfaringDrift2 {
+      0%,  100% { transform: translate(0, 0)        rotate(0deg);   }
+      35%        { transform: translate(-12px,-14px) rotate(-10deg); }
+      70%        { transform: translate(9px, 8px)    rotate(6deg);   }
+    }
+
+    @keyframes erfaringDrift3 {
+      0%,  100% { transform: translate(0, 0)       rotate(0deg);  }
+      40%        { transform: translate(10px, 18px) rotate(7deg);  }
+      75%        { transform: translate(-14px,-6px) rotate(-8deg); }
+    }
+
+    @keyframes erfaringDrift4 {
+      0%,  100% { transform: translate(0, 0)       rotate(0deg);  }
+      25%        { transform: translate(18px, -8px) rotate(12deg); }
+      60%        { transform: translate(4px,  14px) rotate(-4deg); }
+      85%        { transform: translate(-10px, 2px) rotate(3deg);  }
+    }
+
     .erfaring__head {
       margin-bottom: var(--sp-7);
+      position: relative;
+      z-index: 1;
     }
 
     .erfaring__grid {
@@ -1337,10 +1450,32 @@
       position: relative;
       overflow: hidden;
       box-shadow: var(--shadow-sm);
-      transition: border-color var(--tr-base), transform var(--tr-slow), box-shadow var(--tr-base);
+      transition: border-color var(--tr-base), transform 0.85s cubic-bezier(0.34, 1.2, 0.64, 1),
+                  box-shadow var(--tr-base), opacity 0.85s ease, filter 0.85s ease;
       display: flex;
       flex-direction: column;
       gap: 0;
+    }
+
+    /* Dim non-hovered cards when any card is hovered */
+    .erfaring:has(.erf-card:hover) .erf-card:not(:hover) {
+      opacity: 0.28;
+      filter: blur(1.5px) saturate(0.5);
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    /* Pop the focused card into the forest */
+    .erfaring:has(.erf-card:hover) .erf-card:hover {
+      opacity: 1;
+      filter: none;
+      transform: translateY(-12px) scale(1.03);
+      box-shadow:
+        0 32px 64px rgba(4, 14, 6, 0.45),
+        0  0   0 1px rgba(90, 158, 111, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      border-color: rgba(90, 158, 111, 0.5);
+      z-index: 5;
     }
 
     .erf-card::before {
@@ -2593,6 +2728,80 @@
 
     <!-- ══ ERFARING ════════════════════════════════ -->
     <section class="section erfaring" id="erfaring" aria-labelledby="erfaring-h">
+
+      <canvas class="erfaring__canvas" id="erfaringCanvas" aria-hidden="true"></canvas>
+      <div class="erfaring__forest-overlay" aria-hidden="true"></div>
+
+      <div class="erfaring__leaves" aria-hidden="true">
+        <!-- Top-left: rounded leaf -->
+        <div class="erfaring__leaf" style="top:6%;left:4%;--erf-anim:erfaringDrift1;--erf-dur:27s;--erf-delay:-4s">
+          <svg width="34" height="48" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 26 C4 20, 2 14, 5 7 C6.5 4, 10 1, 10 1 C10 1, 13.5 4, 15 7 C18 14, 16 20, 10 26Z" fill="rgba(132,196,154,0.22)"/>
+            <line x1="10" y1="1" x2="10" y2="26" stroke="rgba(61,122,82,0.15)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Top-right: narrow willow leaf -->
+        <div class="erfaring__leaf" style="top:3%;right:5%;--erf-anim:erfaringDrift2;--erf-dur:31s;--erf-delay:-9s">
+          <svg width="22" height="54" viewBox="0 0 10 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 30 C2 22, 1 14, 3 7 C3.5 5, 5 1, 5 1 C5 1, 6.5 5, 7 7 C9 14, 8 22, 5 30Z" fill="rgba(90,158,111,0.2)"/>
+            <line x1="5" y1="1" x2="5" y2="30" stroke="rgba(61,122,82,0.12)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Left middle: wide leaf -->
+        <div class="erfaring__leaf" style="top:40%;left:1.5%;--erf-anim:erfaringDrift3;--erf-dur:23s;--erf-delay:-6s">
+          <svg width="42" height="58" viewBox="0 0 22 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 28 C4 22, 2 15, 5 8 C6.5 5, 11 1, 11 1 C11 1, 15.5 5, 17 8 C20 15, 18 22, 11 28Z" fill="rgba(200,230,208,0.26)"/>
+            <line x1="11" y1="1" x2="11" y2="28" stroke="rgba(61,122,82,0.13)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Right middle: small gold leaf -->
+        <div class="erfaring__leaf" style="top:48%;right:2.5%;--erf-anim:erfaringDrift4;--erf-dur:29s;--erf-delay:-13s">
+          <svg width="28" height="40" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 20 C3 15, 1 10, 3 5 C4 3, 8 1, 8 1 C8 1, 12 3, 13 5 C15 10, 13 15, 8 20Z" fill="rgba(184,154,88,0.17)"/>
+            <line x1="8" y1="1" x2="8" y2="20" stroke="rgba(92,74,40,0.1)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Bottom-left: narrow leaf -->
+        <div class="erfaring__leaf" style="bottom:7%;left:5%;--erf-anim:erfaringDrift2;--erf-dur:26s;--erf-delay:-19s">
+          <svg width="26" height="60" viewBox="0 0 10 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 30 C2 22, 1 14, 3 7 C3.5 5, 5 1, 5 1 C5 1, 6.5 5, 7 7 C9 14, 8 22, 5 30Z" fill="rgba(90,158,111,0.18)"/>
+            <line x1="5" y1="1" x2="5" y2="30" stroke="rgba(61,122,82,0.11)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Bottom-right: rounded leaf -->
+        <div class="erfaring__leaf" style="bottom:5%;right:4%;--erf-anim:erfaringDrift1;--erf-dur:33s;--erf-delay:-22s">
+          <svg width="36" height="50" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 26 C4 20, 2 14, 5 7 C6.5 4, 10 1, 10 1 C10 1, 13.5 4, 15 7 C18 14, 16 20, 10 26Z" fill="rgba(132,196,154,0.19)"/>
+            <line x1="10" y1="1" x2="10" y2="26" stroke="rgba(61,122,82,0.12)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Top center-left: tiny leaf -->
+        <div class="erfaring__leaf" style="top:2%;left:30%;--erf-anim:erfaringDrift3;--erf-dur:36s;--erf-delay:-8s">
+          <svg width="18" height="26" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(200,230,208,0.24)"/>
+          </svg>
+        </div>
+        <!-- Bottom center-right: tiny gold leaf -->
+        <div class="erfaring__leaf" style="bottom:4%;right:27%;--erf-anim:erfaringDrift4;--erf-dur:21s;--erf-delay:-15s">
+          <svg width="24" height="34" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 18 C3 14, 1 9, 3 5 C4 3, 7 1, 7 1 C7 1, 10 3, 11 5 C13 9, 11 14, 7 18Z" fill="rgba(184,154,88,0.14)"/>
+            <line x1="7" y1="1" x2="7" y2="18" stroke="rgba(92,74,40,0.08)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Right top-mid: medium leaf -->
+        <div class="erfaring__leaf" style="top:18%;right:7%;--erf-anim:erfaringDrift1;--erf-dur:24s;--erf-delay:-17s">
+          <svg width="20" height="28" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(132,196,154,0.18)"/>
+          </svg>
+        </div>
+        <!-- Left bottom-mid: small gold -->
+        <div class="erfaring__leaf" style="bottom:25%;left:3%;--erf-anim:erfaringDrift3;--erf-dur:28s;--erf-delay:-11s">
+          <svg width="16" height="22" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(184,154,88,0.16)"/>
+          </svg>
+        </div>
+      </div>
+
       <div class="container">
         <div class="erfaring__head">
           <p class="section__label reveal">Erfaring</p>
@@ -3409,6 +3618,116 @@
       window.addEventListener('resize', () => {
         if (flies.length) { resize(); flies.forEach(f => { f.x = Math.min(f.x, canvas.width); f.y = Math.min(f.y, canvas.height); }); }
       });
+    })();
+
+    /* ─── Erfaring ambient fireflies ──────── */
+    (function initErfaringFireflies() {
+      const section = document.querySelector('.erfaring');
+      const canvas  = document.getElementById('erfaringCanvas');
+      if (!section || !canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      let flies = [], animId = null, started = false;
+
+      const ffColors = [
+        { r: 184, g: 210, b: 160 },
+        { r: 132, g: 196, b: 154 },
+        { r: 200, g: 230, b: 208 },
+        { r: 220, g: 200, b: 140 },
+        { r: 160, g: 210, b: 170 },
+        { r: 210, g: 195, b: 148 },
+      ];
+
+      function resize() {
+        const r = section.getBoundingClientRect();
+        canvas.width  = r.width;
+        canvas.height = r.height;
+      }
+
+      class Fly {
+        constructor() {
+          const w = canvas.width, h = canvas.height;
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = Math.random() * 1.6 + 0.7;
+          this.baseAlpha = Math.random() * 0.3 + 0.12;
+          this.alpha = 0;
+          this.targetAlpha = this.baseAlpha;
+          this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.vx = (Math.random() - 0.5) * 0.22;
+          this.vy = (Math.random() - 0.5) * 0.16;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = Math.random() * 0.014 + 0.005;
+          this.glowSize = this.size * (Math.random() * 5 + 7);
+          this.w = w; this.h = h;
+        }
+        update() {
+          this.phase += this.pulseSpeed;
+          this.alpha += (this.targetAlpha - this.alpha) * 0.025;
+          const pulse = Math.sin(this.phase) * 0.5 + 0.5;
+          this.x += Math.sin(this.phase * 0.7) * 0.32 + this.vx;
+          this.y += Math.cos(this.phase * 0.5) * 0.22 + this.vy;
+          if (this.x < -20) this.x = this.w + 20;
+          if (this.x > this.w + 20) this.x = -20;
+          if (this.y < -20) this.y = this.h + 20;
+          if (this.y > this.h + 20) this.y = -20;
+          return pulse;
+        }
+        draw(pulse) {
+          const a = this.alpha * (0.35 + pulse * 0.65);
+          if (a < 0.005) return;
+          const { r, g, b } = this.color;
+          const gr = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
+          gr.addColorStop(0,   `rgba(${r},${g},${b},${a * 0.65})`);
+          gr.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.12})`);
+          gr.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+          ctx.fillStyle = gr;
+          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(g+40,255)},${Math.min(b+20,255)},${a})`;
+          ctx.fill();
+        }
+      }
+
+      function initFlies() {
+        resize();
+        flies = [];
+        const count = Math.min(Math.floor(canvas.width / 9), 120);
+        for (let i = 0; i < count; i++) {
+          const f = new Fly();
+          f.phase = Math.random() * Math.PI * 2;
+          flies.push(f);
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flies.forEach(f => { const p = f.update(); f.draw(p); });
+        animId = requestAnimationFrame(animate);
+      }
+
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting && !started) {
+            started = true;
+            section.classList.add('erf-alive');
+            initFlies();
+            flies.forEach(f => { f.targetAlpha = f.baseAlpha; });
+            if (!animId) animate();
+            obs.unobserve(section);
+          }
+        });
+      }, { threshold: 0.08 });
+
+      obs.observe(section);
+
+      window.addEventListener('resize', () => {
+        if (flies.length) {
+          resize();
+          flies.forEach(f => { f.w = canvas.width; f.h = canvas.height; });
+        }
+      }, { passive: true });
     })();
 
     /* ─── Project vines on scroll ─────────── */
