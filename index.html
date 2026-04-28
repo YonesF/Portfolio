@@ -726,8 +726,64 @@
     .about {
       background: var(--bg-card);
       position: relative;
+      overflow: hidden;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
+      transition: background-color 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color     1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .about.about--hovered {
+      background-color: #0c1e10;
+      border-color: rgba(40, 80, 45, 0.25);
+    }
+
+    .about > .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Forest overlay — radial vignette centred on the photo */
+    .about__forest-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at 28% 55%,
+        rgba(4, 14, 6, 0.72)  0%,
+        rgba(8, 22, 10, 0.45) 35%,
+        rgba(8, 20, 10, 0.12) 62%,
+        transparent           80%
+      );
+      opacity: 0;
+      z-index: 0;
+      pointer-events: none;
+      transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .about.about--hovered .about__forest-overlay {
+      opacity: 1;
+    }
+
+    /* Text colour transitions — all scoped to .about */
+    .about .section__label                { transition: color 1.3s ease; }
+    .about .section__title                { transition: color 1.3s ease; }
+    .about .section__title em             { transition: color 1.3s ease, text-shadow 1.3s ease; }
+    .about .about__body                   { transition: color 1.3s ease; }
+    .about .about__body strong            { transition: color 1.3s ease; }
+    .about .about__link                   {
+      transition: color 1.3s ease, border-color 1.3s ease, background 1.3s ease,
+                  gap 0.35s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    }
+
+    .about.about--hovered .section__label       { color: rgba(132, 196, 154, 0.6); }
+    .about.about--hovered .section__title       { color: rgba(200, 230, 208, 0.88); }
+    .about.about--hovered .section__title em    { color: rgba(132, 196, 154, 0.9); text-shadow: 0 0 30px rgba(132, 196, 154, 0.2); }
+    .about.about--hovered .about__body          { color: rgba(175, 208, 183, 0.68); }
+    .about.about--hovered .about__body strong   { color: rgba(200, 230, 208, 0.88); }
+    .about.about--hovered .about__link          {
+      color: rgba(132, 196, 154, 0.82);
+      border-color: rgba(90, 158, 111, 0.28);
+      background: rgba(25, 55, 30, 0.28);
     }
 
     .about__grid {
@@ -751,8 +807,7 @@
       overflow: hidden;
       border: 1px solid var(--border);
       box-shadow: var(--shadow-md);
-      transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99),
-                  box-shadow 0.4s ease;
+      transition: box-shadow 0.7s ease, border-color 1.3s ease;
       will-change: transform;
       transform-style: preserve-3d;
     }
@@ -769,7 +824,7 @@
       pointer-events: none;
       border-radius: var(--r-xl);
       opacity: 0;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.9s ease;
       background: radial-gradient(ellipse at 50% 50%, rgba(200, 230, 208, 0.15) 0%, transparent 70%);
       mix-blend-mode: soft-light;
     }
@@ -1043,7 +1098,13 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(40, 80, 50, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition:
+        opacity      0.75s ease,
+        filter       0.75s ease,
+        transform    0.75s cubic-bezier(0.34, 1.4, 0.64, 1),
+        box-shadow   0.75s ease,
+        border-color 0.4s  ease;
+      will-change: transform, opacity, filter;
       display: flex;
       flex-direction: column;
     }
@@ -1065,6 +1126,70 @@
 
     .skill-card:hover::before {
       opacity: 1;
+    }
+
+    /* ── Skills backdrop overlay ─────────────── */
+    .skills__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(14, 38, 18, 0.28);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .skills:has(.skill-card:hover) .skills__backdrop {
+      opacity: 1;
+    }
+
+    /* ── Skills firefly canvas ────────────────── */
+    .skills__fireflies {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.1s ease;
+    }
+
+    .skills.skills--hover .skills__fireflies {
+      opacity: 1;
+    }
+
+    /* Dim + blur non-focused cards */
+    .skills:has(.skill-card:hover) .skill-card:not(:hover) {
+      opacity: 0.3;
+      filter: blur(1.5px) saturate(0.6);
+      transform: scale(0.96);
+      box-shadow: none;
+    }
+
+    @media (min-width: 961px) {
+      .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):not(:hover) {
+        transform: translateY(40px) scale(0.96);
+      }
+    }
+
+    /* Pop up the focused card */
+    .skills:has(.skill-card:hover) .skill-card:hover {
+      opacity: 1;
+      filter: none;
+      transform: translateY(-20px) scale(1.06);
+      box-shadow:
+        0 40px 80px rgba(14, 38, 18, 0.32),
+        0  0   0 1px rgba(90, 158, 111, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      border-color: rgba(90, 158, 111, 0.55);
+      z-index: 5;
+    }
+
+    @media (min-width: 961px) {
+      .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):hover {
+        transform: translateY(20px) scale(1.06);
+      }
     }
 
     .skill-card__ico {
@@ -1165,6 +1290,69 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       position: relative;
+      overflow: hidden;
+    }
+
+    /* Vine decorations */
+    .vine-wrap {
+      position: absolute;
+      top: 0;
+      width: 120px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    .vine-wrap--left {
+      left: 0;
+    }
+
+    .vine-wrap--right {
+      right: 0;
+      transform: scaleX(-1);
+    }
+
+    .vine-stem {
+      stroke-dasharray: var(--vine-len, 800);
+      stroke-dashoffset: var(--vine-len, 800);
+      transition: none;
+    }
+
+    .projects.vines-active .vine-stem {
+      animation: vineGrow 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .vine-leaf {
+      opacity: 0;
+      transform: scale(0.5) rotate(-20deg);
+      transform-origin: 50% 50%;
+      transform-box: fill-box;
+      transition: none;
+    }
+
+    .projects.vines-active .vine-leaf {
+      animation: vineLeafIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: var(--leaf-delay, 0s);
+    }
+
+    @keyframes vineGrow {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes vineLeafIn {
+      to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    @keyframes vineLeafWaver {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      35%       { transform: scale(1) rotate(3deg); }
+      70%       { transform: scale(1) rotate(-2deg); }
     }
 
     .projects__head {
@@ -2052,6 +2240,7 @@
 
     <!-- ══ ABOUT ═════════════════════════════════ -->
     <section class="section about" id="about" aria-labelledby="about-h">
+      <div class="about__forest-overlay" aria-hidden="true"></div>
       <div class="container">
         <div class="about__grid">
           <div class="about__visual reveal">
@@ -2117,6 +2306,8 @@
 
     <!-- ══ SKILLS ════════════════════════════════ -->
     <section class="section skills" id="skills" aria-labelledby="skills-h">
+      <div class="skills__backdrop" aria-hidden="true"></div>
+      <canvas class="skills__fireflies" aria-hidden="true"></canvas>
       <div class="container">
         <div class="skills__head">
           <p class="section__label reveal">Ferdigheter</p>
@@ -2239,6 +2430,61 @@
 
     <!-- ══ PROJECTS ══════════════════════════════ -->
     <section class="section projects" id="projects" aria-labelledby="projects-h">
+      <!-- Left vine -->
+      <div class="vine-wrap vine-wrap--left" aria-hidden="true">
+        <svg width="120" height="100%" viewBox="0 0 120 900" preserveAspectRatio="xMinYMin slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="vine-stem" d="M60 0 C60 60, 40 100, 50 160 C60 220, 75 260, 65 340 C55 420, 35 460, 45 540 C55 620, 70 660, 60 740 C50 820, 55 860, 55 900"
+            stroke="rgba(90, 158, 111, 0.35)" stroke-width="1.5" stroke-linecap="round" style="--vine-len: 1050" />
+          <!-- Leaves along the vine -->
+          <g class="vine-leaf" style="--leaf-delay: 0.5s; transform-origin: 100% 50%">
+            <path d="M50 120 C38 108, 25 112, 22 125 C19 138, 30 142, 50 130Z" fill="rgba(132, 196, 154, 0.4)" />
+            <line x1="50" y1="120" x2="28" y2="130" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 0.9s; transform-origin: 0% 50%">
+            <path d="M65 250 C78 238, 92 242, 94 255 C96 268, 84 272, 65 260Z" fill="rgba(200, 230, 208, 0.45)" />
+            <line x1="65" y1="250" x2="88" y2="260" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 1.3s; transform-origin: 100% 50%">
+            <path d="M45 400 C30 390, 18 396, 18 408 C18 420, 28 424, 45 412Z" fill="rgba(90, 158, 111, 0.35)" />
+            <line x1="45" y1="400" x2="24" y2="410" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 1.7s; transform-origin: 0% 50%">
+            <path d="M55 550 C68 538, 82 542, 83 555 C84 568, 72 570, 55 560Z" fill="rgba(184, 154, 88, 0.25)" />
+            <line x1="55" y1="550" x2="76" y2="558" stroke="rgba(92, 74, 40, 0.15)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 2.1s; transform-origin: 100% 50%">
+            <path d="M60 700 C48 688, 34 692, 33 705 C32 718, 44 720, 60 710Z" fill="rgba(132, 196, 154, 0.3)" />
+            <line x1="60" y1="700" x2="40" y2="710" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+        </svg>
+      </div>
+      <!-- Right vine -->
+      <div class="vine-wrap vine-wrap--right" aria-hidden="true">
+        <svg width="120" height="100%" viewBox="0 0 120 900" preserveAspectRatio="xMinYMin slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="vine-stem" d="M55 0 C55 50, 70 90, 60 150 C50 210, 38 260, 48 340 C58 420, 72 470, 62 550 C52 630, 42 680, 52 760 C62 840, 58 870, 58 900"
+            stroke="rgba(61, 122, 82, 0.3)" stroke-width="1.2" stroke-linecap="round" style="--vine-len: 1040" />
+          <g class="vine-leaf" style="--leaf-delay: 0.7s; transform-origin: 0% 50%">
+            <path d="M60 130 C72 118, 86 122, 87 135 C88 148, 76 150, 60 140Z" fill="rgba(90, 158, 111, 0.35)" />
+            <line x1="60" y1="130" x2="80" y2="140" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 1.1s; transform-origin: 100% 50%">
+            <path d="M48 300 C34 290, 22 296, 22 308 C22 320, 32 322, 48 312Z" fill="rgba(200, 230, 208, 0.4)" />
+            <line x1="48" y1="300" x2="28" y2="310" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 1.6s; transform-origin: 0% 50%">
+            <path d="M62 480 C76 468, 88 472, 88 485 C88 498, 76 500, 62 490Z" fill="rgba(132, 196, 154, 0.35)" />
+            <line x1="62" y1="480" x2="82" y2="490" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 2.0s; transform-origin: 100% 50%">
+            <path d="M52 650 C38 640, 26 644, 26 658 C26 672, 38 674, 52 662Z" fill="rgba(184, 154, 88, 0.2)" />
+            <line x1="52" y1="650" x2="32" y2="662" stroke="rgba(92, 74, 40, 0.15)" stroke-width="0.5" />
+          </g>
+          <g class="vine-leaf" style="--leaf-delay: 2.4s; transform-origin: 0% 50%">
+            <path d="M58 810 C70 798, 84 802, 85 815 C86 828, 74 830, 58 820Z" fill="rgba(200, 230, 208, 0.3)" />
+            <line x1="58" y1="810" x2="78" y2="820" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
+          </g>
+        </svg>
+      </div>
       <div class="container">
         <div class="projects__head">
           <div>
@@ -2510,7 +2756,7 @@
             </svg>
             Yones Feili
           </div>
-          <p class="footer__copy">© 2025 — Bygget med omtanke</p>
+          <p class="footer__copy">© 2026 — Bygget med kreativitet og omtanke</p>
         </div>
         <nav class="footer__links" aria-label="Bunntekst-navigasjon">
           <a href="#about">Om meg</a>
@@ -2775,30 +3021,193 @@
       });
     })();
 
+    /* ─── Skills section fireflies ──────────── */
+    (function initSkillsFireflies() {
+      const section = document.querySelector('.skills');
+      const canvas  = section && section.querySelector('.skills__fireflies');
+      if (!section || !canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      let flies = [], animId = null, hoverCount = 0;
+
+      const ffColors = [
+        { r: 184, g: 210, b: 160 },
+        { r: 132, g: 196, b: 154 },
+        { r: 200, g: 230, b: 208 },
+        { r: 220, g: 200, b: 140 },
+        { r: 160, g: 210, b: 170 },
+      ];
+
+      function resize() {
+        const r = section.getBoundingClientRect();
+        canvas.width  = r.width;
+        canvas.height = r.height;
+      }
+
+      class Fly {
+        constructor() {
+          const w = canvas.width, h = canvas.height;
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = Math.random() * 2.5 + 1;
+          this.baseAlpha = Math.random() * 0.4 + 0.3;
+          this.alpha = 0;
+          this.targetAlpha = this.baseAlpha;
+          this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.vx = (Math.random() - 0.5) * 0.3;
+          this.vy = (Math.random() - 0.5) * 0.2;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = Math.random() * 0.018 + 0.007;
+          this.glowSize = this.size * (Math.random() * 6 + 8);
+        }
+        update() {
+          this.phase += this.pulseSpeed;
+          this.alpha += (this.targetAlpha - this.alpha) * 0.04;
+          const pulse = Math.sin(this.phase) * 0.5 + 0.5;
+          this.x += Math.sin(this.phase * 0.7) * 0.4 + this.vx;
+          this.y += Math.cos(this.phase * 0.5) * 0.3 + this.vy;
+          const w = canvas.width, h = canvas.height;
+          if (this.x < -20) this.x = w + 20;
+          if (this.x > w + 20) this.x = -20;
+          if (this.y < -20) this.y = h + 20;
+          if (this.y > h + 20) this.y = -20;
+          return pulse;
+        }
+        draw(pulse) {
+          const a = this.alpha * (0.4 + pulse * 0.6);
+          const { r, g, b } = this.color;
+          const gr = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
+          gr.addColorStop(0,   `rgba(${r},${g},${b},${a * 0.7})`);
+          gr.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.15})`);
+          gr.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+          ctx.fillStyle = gr;
+          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(g+40,255)},${Math.min(b+20,255)},${a})`;
+          ctx.fill();
+        }
+        fadeIn()  { this.targetAlpha = this.baseAlpha; }
+        fadeOut() { this.targetAlpha = 0; }
+      }
+
+      function initFlies() {
+        resize();
+        flies = [];
+        const count = Math.min(Math.floor(canvas.width / 28), 38);
+        for (let i = 0; i < count; i++) flies.push(new Fly());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let allGone = true;
+        flies.forEach(f => { const p = f.update(); f.draw(p); if (f.alpha > 0.01) allGone = false; });
+        if (hoverCount === 0 && allGone) { animId = null; return; }
+        animId = requestAnimationFrame(animate);
+      }
+
+      function start() {
+        if (!flies.length) initFlies();
+        section.classList.add('skills--hover');
+        flies.forEach(f => f.fadeIn());
+        if (!animId) animate();
+      }
+
+      function stop() {
+        section.classList.remove('skills--hover');
+        flies.forEach(f => f.fadeOut());
+      }
+
+      section.querySelectorAll('.skill-card').forEach(card => {
+        card.addEventListener('mouseenter', () => { hoverCount++; if (hoverCount === 1) start(); });
+        card.addEventListener('mouseleave', () => { hoverCount = Math.max(0, hoverCount - 1); if (hoverCount === 0) stop(); });
+      });
+
+      window.addEventListener('resize', () => {
+        if (flies.length) { resize(); flies.forEach(f => { f.x = Math.min(f.x, canvas.width); f.y = Math.min(f.y, canvas.height); }); }
+      });
+    })();
+
+    /* ─── Project vines on scroll ─────────── */
+    (function initVines() {
+      const proj = document.getElementById('projects');
+      if (!proj) return;
+
+      const vineObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            proj.classList.add('vines-active');
+            vineObs.unobserve(e.target);
+
+            proj.querySelectorAll('.vine-leaf').forEach(leaf => {
+              const leafDelay = parseFloat(leaf.style.getPropertyValue('--leaf-delay')) || 0;
+              setTimeout(() => {
+                const dur = 3.5 + Math.random() * 2.5;
+                const phase = Math.random() * dur;
+                leaf.style.opacity = '1';
+                leaf.style.animation = `vineLeafWaver ${dur}s ease-in-out -${phase}s infinite`;
+              }, (leafDelay + 0.75) * 1000);
+            });
+          }
+        });
+      }, { threshold: 0.15 });
+
+      vineObs.observe(proj);
+    })();
+
     /* ─── 3D Tilt on About photo ──────────── */
     (function initTilt() {
-      const frame = document.getElementById('aboutFrame');
-      const glare = document.getElementById('tiltGlare');
-      if (!frame || !glare || window.innerWidth < 768) return;
+      const frame   = document.getElementById('aboutFrame');
+      const glare   = document.getElementById('tiltGlare');
+      const section = document.getElementById('about');
+      if (!frame || !glare || !section || window.innerWidth < 768) return;
 
-      const maxTilt = 12;
+      const MAX  = 7;     // max degrees — softer than before
+      const EASE = 0.065; // lerp factor — lower = slower/dreamier
+
+      let tX = 0, tY = 0; // target rotation
+      let cX = 0, cY = 0; // current (interpolated) rotation
+      let rafId = null, isIn = false;
+
+      function tick() {
+        cX += (tX - cX) * EASE;
+        cY += (tY - cY) * EASE;
+        frame.style.transform = `rotateX(${cX}deg) rotateY(${cY}deg)`;
+
+        const settled = !isIn && Math.abs(cX) < 0.008 && Math.abs(cY) < 0.008;
+        if (settled) {
+          frame.style.transform = '';
+          rafId = null;
+        } else {
+          rafId = requestAnimationFrame(tick);
+        }
+      }
+
+      function kick() { if (!rafId) rafId = requestAnimationFrame(tick); }
+
+      frame.addEventListener('mouseenter', () => {
+        isIn = true;
+        section.classList.add('about--hovered');
+        kick();
+      });
 
       frame.addEventListener('mousemove', e => {
-        const rect = frame.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;   // 0‒1
-        const y = (e.clientY - rect.top) / rect.height;    // 0‒1
-        const tiltX = (0.5 - y) * maxTilt;                 // vertical axis
-        const tiltY = (x - 0.5) * maxTilt;                 // horizontal axis
-
-        frame.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-
-        // Move the glow to follow cursor
-        glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(200, 230, 208, 0.18) 0%, rgba(184, 154, 88, 0.06) 40%, transparent 70%)`;
+        const r = frame.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top)  / r.height;
+        tX = (0.5 - y) * MAX;
+        tY = (x - 0.5) * MAX;
+        glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(200,230,208,0.18) 0%, rgba(184,154,88,0.06) 40%, transparent 70%)`;
+        kick();
       });
 
       frame.addEventListener('mouseleave', () => {
-        frame.style.transform = 'rotateX(0) rotateY(0)';
+        isIn = false;
+        tX = 0;
+        tY = 0;
+        section.classList.remove('about--hovered');
         glare.style.background = '';
+        kick();
       });
     })();
 
