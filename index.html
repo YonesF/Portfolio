@@ -1481,6 +1481,12 @@
       }
     }
 
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     /* ── Responsive ─────────────────────────── */
     @media (max-width: 960px) {
       .nav__links {
@@ -2229,7 +2235,12 @@
             </div>
           </div>
 
-          <form class="contact__form reveal d2" id="cForm" novalidate>
+          <form class="contact__form reveal d2" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
+            <!-- Formsubmit.co config -->
+            <input type="hidden" name="_subject" value="Ny melding fra Portfolio">
+            <input type="hidden" name="_template" value="table">
+            <input type="text" name="_honey" style="display:none">
+            <input type="hidden" name="_captcha" value="false">
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="f-name">Navn</label>
@@ -2252,7 +2263,7 @@
               <textarea class="form-ta" id="f-msg" name="message" rows="6" placeholder="Skriv meldingen din her..."
                 required></textarea>
             </div>
-            <button type="submit" class="btn btn--primary" style="align-self:flex-start">
+            <button type="submit" class="btn btn--primary" id="cFormBtn" style="align-self:flex-start">
               Send melding
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2368,13 +2379,46 @@
     }, { threshold: 0.4 });
     sections.forEach(s => linkObs.observe(s));
 
-    /* ─── Contact form ─────────────────────── */
-    document.getElementById('cForm').addEventListener('submit', e => {
+    /* ─── Contact form (Formsubmit.co via AJAX) ── */
+    const cForm = document.getElementById('cForm');
+    const cBtn  = document.getElementById('cFormBtn');
+    const btnDefault = cBtn.innerHTML;
+
+    cForm.addEventListener('submit', e => {
       e.preventDefault();
-      const btn = e.target.querySelector('[type=submit]');
-      btn.textContent = 'Takk! ✓';
-      btn.disabled = true;
-      setTimeout(() => { btn.innerHTML = 'Send melding <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'; btn.disabled = false; }, 3000);
+
+      /* Basic client-side validation */
+      const name  = cForm.querySelector('#f-name').value.trim();
+      const email = cForm.querySelector('#f-email').value.trim();
+      const msg   = cForm.querySelector('#f-msg').value.trim();
+      if (!name || !email || !msg) { return; }
+
+      /* Show loading state */
+      cBtn.disabled = true;
+      cBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px">Sender…<span class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .6s linear infinite"></span></span>';
+
+      /* Send to Formsubmit.co AJAX endpoint */
+      fetch(cForm.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(cForm)))
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          cBtn.innerHTML = 'Sendt! ✓';
+          cBtn.style.background = 'var(--green-mid)';
+          cForm.reset();
+          setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
+        } else {
+          throw new Error('Submission failed');
+        }
+      })
+      .catch(() => {
+        cBtn.innerHTML = 'Feil — prøv igjen';
+        cBtn.style.background = '#b04040';
+        setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
+      });
     });
 
     /* ─── Interactive side leaves ──────────── */
