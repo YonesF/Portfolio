@@ -1284,6 +1284,74 @@
     /* ── Video ──────────────────────────────── */
     .video-section {
       background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      transition: background 1.5s ease;
+    }
+
+    .video-section.forest-mode {
+      background: #0f1e14;
+    }
+
+    /* Dark forest overlay */
+    .forest-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, #142a1a 0%, #0a1a0f 60%, #071209 100%);
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .video-section.forest-mode .forest-overlay {
+      opacity: 1;
+    }
+
+    /* Firefly canvas */
+    .firefly-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.5s ease 0.3s;
+    }
+
+    .video-section.forest-mode .firefly-canvas {
+      opacity: 1;
+    }
+
+    /* Text color transitions in forest mode */
+    .video-section .section__label,
+    .video-section .section__title,
+    .video-section .video__desc {
+      position: relative;
+      z-index: 2;
+      transition: color 1.5s ease;
+    }
+
+    .video-section.forest-mode .section__label {
+      color: rgba(132, 196, 154, 0.7);
+    }
+
+    .video-section.forest-mode .section__title {
+      color: rgba(200, 230, 208, 0.9);
+    }
+
+    .video-section.forest-mode .section__title em {
+      color: rgba(132, 196, 154, 0.85);
+      text-shadow: 0 0 20px rgba(132, 196, 154, 0.2);
+    }
+
+    .video-section.forest-mode .video__desc {
+      color: rgba(200, 230, 208, 0.5);
+    }
+
+    .video-section .video-container,
+    .video-section .video-wrap {
+      position: relative;
+      z-index: 2;
     }
 
     .video-wrap {
@@ -2273,6 +2341,8 @@
 
     <!-- ══ VIDEO ═════════════════════════════════ -->
     <section class="section video-section" id="video" aria-labelledby="video-h">
+      <div class="forest-overlay" id="forestOverlay"></div>
+      <canvas class="firefly-canvas" id="fireflyCanvas"></canvas>
       <div class="container">
         <div class="video-wrap">
           <p class="section__label reveal">Introduksjon</p>
@@ -2569,6 +2639,141 @@
         setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
       });
     });
+
+    /* ─── Forest mode + fireflies on video ─── */
+    (function initForestMode() {
+      const vid = document.getElementById('portfolioVideo');
+      const section = document.getElementById('video');
+      const canvas = document.getElementById('fireflyCanvas');
+      if (!vid || !section || !canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      let fireflies = [];
+      let animId = null;
+      let isPlaying = false;
+
+      function resize() {
+        const rect = section.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+
+      // Firefly colors — warm greens & gold
+      const ffColors = [
+        { r: 184, g: 210, b: 160 },  // pale green
+        { r: 132, g: 196, b: 154 },  // green-light
+        { r: 200, g: 230, b: 208 },  // green-pale
+        { r: 220, g: 200, b: 140 },  // warm gold
+        { r: 160, g: 210, b: 170 },  // soft mint
+      ];
+
+      class Firefly {
+        constructor(w, h) {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = Math.random() * 2.5 + 1;
+          this.baseAlpha = Math.random() * 0.4 + 0.3;
+          this.alpha = 0;
+          this.targetAlpha = this.baseAlpha;
+          this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.vx = (Math.random() - 0.5) * 0.3;
+          this.vy = (Math.random() - 0.5) * 0.2;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = Math.random() * 0.02 + 0.008;
+          this.driftSpeed = Math.random() * 0.005 + 0.003;
+          this.glowSize = this.size * (Math.random() * 6 + 8);
+          this.w = w;
+          this.h = h;
+        }
+
+        update() {
+          this.phase += this.pulseSpeed;
+          // Pulse brightness
+          this.alpha += (this.targetAlpha - this.alpha) * 0.05;
+          const pulse = Math.sin(this.phase) * 0.5 + 0.5;
+          // Organic drift
+          this.x += Math.sin(this.phase * 0.7) * 0.4 + this.vx;
+          this.y += Math.cos(this.phase * 0.5) * 0.3 + this.vy;
+          // Wrap around
+          if (this.x < -20) this.x = this.w + 20;
+          if (this.x > this.w + 20) this.x = -20;
+          if (this.y < -20) this.y = this.h + 20;
+          if (this.y > this.h + 20) this.y = -20;
+          return pulse;
+        }
+
+        draw(pulse) {
+          const a = this.alpha * (0.4 + pulse * 0.6);
+          const { r, g, b } = this.color;
+          // Outer glow
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
+          grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.7})`);
+          grad.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.15})`);
+          grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          ctx.fillStyle = grad;
+          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
+          // Core dot
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${Math.min(r + 40, 255)},${Math.min(g + 40, 255)},${Math.min(b + 20, 255)},${a})`;
+          ctx.fill();
+        }
+
+        fadeIn()  { this.targetAlpha = this.baseAlpha; }
+        fadeOut() { this.targetAlpha = 0; }
+      }
+
+      function initFireflies() {
+        resize();
+        fireflies = [];
+        const count = Math.min(Math.floor(canvas.width / 30), 35);
+        for (let i = 0; i < count; i++) {
+          fireflies.push(new Firefly(canvas.width, canvas.height));
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let allGone = true;
+        fireflies.forEach(f => {
+          const pulse = f.update();
+          f.draw(pulse);
+          if (f.alpha > 0.01) allGone = false;
+        });
+        // Stop animation when fully faded out and not playing
+        if (!isPlaying && allGone) {
+          animId = null;
+          return;
+        }
+        animId = requestAnimationFrame(animate);
+      }
+
+      function startForest() {
+        isPlaying = true;
+        section.classList.add('forest-mode');
+        if (!fireflies.length) initFireflies();
+        fireflies.forEach(f => f.fadeIn());
+        if (!animId) animate();
+      }
+
+      function stopForest() {
+        isPlaying = false;
+        section.classList.remove('forest-mode');
+        fireflies.forEach(f => f.fadeOut());
+        // Animation continues until fireflies fade out
+      }
+
+      vid.addEventListener('play', startForest);
+      vid.addEventListener('pause', stopForest);
+      vid.addEventListener('ended', stopForest);
+
+      window.addEventListener('resize', () => {
+        if (fireflies.length) {
+          resize();
+          fireflies.forEach(f => { f.w = canvas.width; f.h = canvas.height; });
+        }
+      });
+    })();
 
     /* ─── 3D Tilt on About photo ──────────── */
     (function initTilt() {
