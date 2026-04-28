@@ -716,6 +716,7 @@
 
     .about__visual {
       position: relative;
+      perspective: 800px;
     }
 
     .about__frame {
@@ -727,6 +728,30 @@
       overflow: hidden;
       border: 1px solid var(--border);
       box-shadow: var(--shadow-md);
+      transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99),
+                  box-shadow 0.4s ease;
+      will-change: transform;
+      transform-style: preserve-3d;
+    }
+
+    .about__frame:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Soft light reflection overlay for 3D tilt */
+    .about__frame .tilt-glare {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      border-radius: var(--r-xl);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.18) 0%, transparent 70%);
+    }
+
+    .about__frame:hover .tilt-glare {
+      opacity: 1;
     }
 
     .about__frame::before {
@@ -773,6 +798,12 @@
       display: flex;
       justify-content: space-around;
       box-shadow: 0 4px 20px rgba(40, 80, 50, 0.08);
+      z-index: 4;
+      transform: translateZ(30px);
+    }
+
+    .about__stats.visible {
+      animation: statsGlow 2.5s ease-in-out 0.6s;
     }
 
     .about__stat {
@@ -806,6 +837,39 @@
       z-index: -1;
     }
 
+    /* Falling leaf particles */
+    .leaf-fall {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: visible;
+    }
+
+    .falling-leaf {
+      position: absolute;
+      pointer-events: none;
+      will-change: transform, opacity;
+      animation: leafDrift var(--fall-dur, 2.5s) var(--fall-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94)) forwards;
+    }
+
+    @keyframes leafDrift {
+      0% {
+        opacity: 0.85;
+        transform: translate(0, 0) rotate(var(--start-rot, 0deg)) scale(1);
+      }
+      20% {
+        opacity: 0.8;
+      }
+      50% {
+        transform: translate(var(--sway-x, 15px), 50%) rotate(calc(var(--start-rot, 0deg) + var(--mid-rot, 60deg))) scale(0.95);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--end-x, -10px), var(--fall-dist, 120%)) rotate(calc(var(--start-rot, 0deg) + var(--end-rot, 140deg))) scale(0.7);
+      }
+    }
+
     .about__body {
       font-size: var(--fs-lg);
       line-height: 1.82;
@@ -820,6 +884,32 @@
     .about__body strong {
       color: var(--text);
       font-weight: 500;
+    }
+
+    /* Animated text highlights */
+    .about__highlight {
+      position: relative;
+      display: inline;
+      background: none;
+      color: inherit;
+      font-weight: inherit;
+    }
+
+    .about__highlight::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 1px;
+      width: 0;
+      height: 7px;
+      background: linear-gradient(90deg, rgba(132, 196, 154, 0.3), rgba(200, 230, 208, 0.45));
+      border-radius: 3px;
+      z-index: -1;
+      transition: none;
+    }
+
+    .about__highlight.drawn::after {
+      animation: highlightDraw 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .about__links {
@@ -837,14 +927,29 @@
       font-weight: 500;
       color: var(--green);
       border-bottom: 1px solid rgba(61, 122, 82, 0.3);
-      padding-bottom: 2px;
-      transition: color var(--tr-fast), border-color var(--tr-fast), gap var(--tr-base);
+      padding: 0.4rem 0.7rem 0.35rem;
+      border-radius: var(--r-md);
+      background: transparent;
+      border: 1px solid rgba(61, 122, 82, 0.2);
+      transition: color 0.25s ease, border-color 0.25s ease, gap 0.35s ease,
+                  background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+      will-change: transform;
     }
 
     .about__link:hover {
       color: var(--green-mid);
-      border-color: var(--green-mid);
+      border-color: rgba(90, 158, 111, 0.45);
       gap: 10px;
+      background: rgba(232, 243, 235, 0.6);
+      box-shadow: 0 4px 16px rgba(61, 122, 82, 0.12);
+    }
+
+    .about__link svg {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .about__link:hover svg {
+      transform: scale(1.15) rotate(-6deg);
     }
 
     /* ── Skills ─────────────────────────────── */
@@ -1487,6 +1592,24 @@
       }
     }
 
+    @keyframes highlightDraw {
+      from {
+        width: 0;
+      }
+      to {
+        width: 100%;
+      }
+    }
+
+    @keyframes statsGlow {
+      0%, 100% {
+        box-shadow: 0 4px 20px rgba(40, 80, 50, 0.08);
+      }
+      50% {
+        box-shadow: 0 4px 30px rgba(61, 122, 82, 0.2), 0 0 0 2px rgba(132, 196, 154, 0.15);
+      }
+    }
+
     /* ── Responsive ─────────────────────────── */
     @media (max-width: 960px) {
       .nav__links {
@@ -1840,10 +1963,11 @@
       <div class="container">
         <div class="about__grid">
           <div class="about__visual reveal">
-            <div class="about__frame" role="img" aria-label="Profilbilde">
+            <div class="about__frame" id="aboutFrame" role="img" aria-label="Profilbilde">
+              <div class="tilt-glare" id="tiltGlare"></div>
               <img src="IMG_4177.jpg" alt="Profilbilde"
                 style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0;" />
-              <div class="about__stats" aria-label="Nøkkeltall">
+              <div class="about__stats" id="aboutStats" aria-label="Nøkkeltall">
                 <div class="about__stat">
                   <span class="about__stat-n">AI</span>
                   <span class="about__stat-l">Drevet</span>
@@ -1859,6 +1983,7 @@
               </div>
             </div>
             <div class="about__deco" aria-hidden="true"></div>
+            <div class="leaf-fall" id="leafFall" aria-hidden="true"></div>
           </div>
 
           <div>
@@ -1867,16 +1992,16 @@
               Hvor teknologi<br>møter <em>kreativitet</em>
             </h2>
             <p class="about__body reveal d2">
-              Jeg er student ved <strong>Universitetet i Agder (UiA)</strong> i Kristiansand, der jeg studerer IT og
-              Informasjonssystem. Jeg er genuint nysgjerrig på teknologi og elsker å finne ut hvordan ting fungerer.
+              Jeg er student ved <strong><span class="about__highlight">Universitetet i Agder (UiA)</span></strong> i Kristiansand, der jeg studerer IT og
+              Informasjonssystem. Jeg er genuint <span class="about__highlight">nysgjerrig på teknologi</span> og elsker å finne ut hvordan ting fungerer.
             </p>
             <p class="about__body reveal d3">
-              Spesialiteten min er <strong>AI-verktøy og prompt engineering</strong> — jeg vet hvordan man jobber smart
-              med teknologi. Som nybegynnere utvikler trives jeg med å lære, og kombinerer det med et kreativt blikk for
-              design.
+              Spesialiteten min er <strong><span class="about__highlight">AI-verktøy og prompt engineering</span></strong> — jeg vet hvordan man jobber smart
+              med teknologi. Som nybegynnere utvikler trives jeg med å lære, og kombinerer det med et <span class="about__highlight">kreativt blikk for
+              design</span>.
             </p>
             <div class="about__links reveal d4">
-              <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer" class="about__link">
+              <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer" class="about__link" data-magnetic>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path
                     d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
@@ -1884,7 +2009,7 @@
                 GitHub
               </a>
               <a href="https://www.linkedin.com/in/yones-m-44616536a" target="_blank" rel="noopener noreferrer"
-                class="about__link">
+                class="about__link" data-magnetic>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path
                     d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
@@ -2420,6 +2545,184 @@
         setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
       });
     });
+
+    /* ─── 3D Tilt on About photo ──────────── */
+    (function initTilt() {
+      const frame = document.getElementById('aboutFrame');
+      const glare = document.getElementById('tiltGlare');
+      if (!frame || !glare || window.innerWidth < 768) return;
+
+      const maxTilt = 12;
+
+      frame.addEventListener('mousemove', e => {
+        const rect = frame.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;   // 0‒1
+        const y = (e.clientY - rect.top) / rect.height;    // 0‒1
+        const tiltX = (0.5 - y) * maxTilt;                 // vertical axis
+        const tiltY = (x - 0.5) * maxTilt;                 // horizontal axis
+
+        frame.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+
+        // Move the glare to follow cursor
+        glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(255,255,255,0.2) 0%, transparent 65%)`;
+      });
+
+      frame.addEventListener('mouseleave', () => {
+        frame.style.transform = 'rotateX(0) rotateY(0)';
+        glare.style.background = '';
+      });
+    })();
+
+    /* ─── Falling leaves on photo hover ────── */
+    (function initFallingLeaves() {
+      const frame = document.getElementById('aboutFrame');
+      const container = document.getElementById('leafFall');
+      if (!frame || !container || window.innerWidth < 768) return;
+
+      const maxLeaves = 20;
+      let leafCount = 0;
+      let lastSpawn = 0;
+      const spawnInterval = 180; // ms between spawns
+
+      // Leaf SVG shapes — small, delicate
+      const leafSVGs = [
+        // Rounded leaf
+        (w, fill) => `<svg width="${w}" height="${w * 1.4}" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 26 C4 20, 2 14, 5 7 C6.5 4, 10 1, 10 1 C10 1, 13.5 4, 15 7 C18 14, 16 20, 10 26Z" fill="${fill}" />
+          <line x1="10" y1="1" x2="10" y2="26" stroke="rgba(61,122,82,0.25)" stroke-width="0.5"/>
+        </svg>`,
+        // Narrow willow leaf
+        (w, fill) => `<svg width="${w * 0.5}" height="${w * 1.6}" viewBox="0 0 10 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 30 C2 22, 1 14, 3 7 C3.5 5, 5 1, 5 1 C5 1, 6.5 5, 7 7 C9 14, 8 22, 5 30Z" fill="${fill}" />
+          <line x1="5" y1="1" x2="5" y2="30" stroke="rgba(61,122,82,0.2)" stroke-width="0.4"/>
+        </svg>`,
+        // Small round petal
+        (w, fill) => `<svg width="${w}" height="${w}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="8" cy="8" rx="7" ry="5" fill="${fill}" transform="rotate(-25 8 8)"/>
+        </svg>`
+      ];
+
+      // Colors from the site palette
+      const colors = [
+        'rgba(132, 196, 154, 0.55)',  // green-light
+        'rgba(90, 158, 111, 0.45)',   // green-mid
+        'rgba(200, 230, 208, 0.6)',   // green-pale
+        'rgba(184, 154, 88, 0.35)',   // gold (subtle)
+        'rgba(132, 196, 154, 0.4)',   // lighter green
+      ];
+
+      function rand(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function spawnLeaf(mouseX, mouseY) {
+        if (leafCount >= maxLeaves) return;
+
+        const rect = container.getBoundingClientRect();
+        // Spawn near cursor position relative to container
+        const containerRect = frame.getBoundingClientRect();
+        const spawnX = mouseX - containerRect.left + rand(-30, 30);
+        const spawnY = mouseY - containerRect.top + rand(-10, 10);
+
+        const size = rand(8, 15);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const shape = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
+        const duration = rand(2, 3.5);
+        const startRot = rand(-30, 30);
+        const midRot = rand(40, 100);
+        const endRot = rand(100, 200);
+        const swayX = rand(-25, 25);
+        const endX = rand(-20, 20);
+        const fallDist = rand(100, 180);
+
+        const leaf = document.createElement('div');
+        leaf.className = 'falling-leaf';
+        leaf.innerHTML = shape(size, color);
+        leaf.style.left = spawnX + 'px';
+        leaf.style.top = spawnY + 'px';
+        leaf.style.setProperty('--fall-dur', duration + 's');
+        leaf.style.setProperty('--start-rot', startRot + 'deg');
+        leaf.style.setProperty('--mid-rot', midRot + 'deg');
+        leaf.style.setProperty('--end-rot', endRot + 'deg');
+        leaf.style.setProperty('--sway-x', swayX + 'px');
+        leaf.style.setProperty('--end-x', endX + 'px');
+        leaf.style.setProperty('--fall-dist', fallDist + '%');
+
+        container.appendChild(leaf);
+        leafCount++;
+
+        // Clean up after animation
+        leaf.addEventListener('animationend', () => {
+          leaf.remove();
+          leafCount--;
+        });
+      }
+
+      frame.addEventListener('mousemove', e => {
+        const now = Date.now();
+        if (now - lastSpawn < spawnInterval) return;
+        lastSpawn = now;
+        spawnLeaf(e.clientX, e.clientY);
+      });
+    })();
+
+    /* ─── Text highlight draw-in ──────────── */
+    (function initHighlights() {
+      const highlights = document.querySelectorAll('.about__highlight');
+      if (!highlights.length) return;
+
+      let delay = 0;
+      const hlObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            setTimeout(() => {
+              e.target.classList.add('drawn');
+            }, delay);
+            delay += 200; // stagger each highlight
+            hlObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      highlights.forEach(h => hlObs.observe(h));
+    })();
+
+    /* ─── Stats glow on scroll ────────────── */
+    (function initStatsGlow() {
+      const stats = document.getElementById('aboutStats');
+      if (!stats) return;
+
+      const statsObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            stats.classList.add('visible');
+            statsObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.6 });
+
+      statsObs.observe(stats);
+    })();
+
+    /* ─── Magnetic links ──────────────────── */
+    (function initMagnetic() {
+      if (window.innerWidth < 768) return;
+      const magnets = document.querySelectorAll('[data-magnetic]');
+
+      magnets.forEach(el => {
+        el.addEventListener('mousemove', e => {
+          const rect = el.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          const strength = 0.3;
+          el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+        });
+
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'translate(0, 0)';
+        });
+      });
+    })();
 
     /* ─── Interactive side leaves ──────────── */
     (function buildSideLeaves() {
