@@ -207,6 +207,26 @@
       color: var(--green-mid);
     }
 
+    #about-h em {
+      display: inline-block;
+      animation: softFloat 4s ease-in-out infinite;
+      text-shadow: 0 0 20px rgba(90, 158, 111, 0.12),
+                   0 0 40px rgba(132, 196, 154, 0.06);
+    }
+
+    @keyframes softFloat {
+      0%, 100% {
+        transform: translateY(0);
+        text-shadow: 0 0 20px rgba(90, 158, 111, 0.12),
+                     0 0 40px rgba(132, 196, 154, 0.06);
+      }
+      50% {
+        transform: translateY(-4px);
+        text-shadow: 0 0 25px rgba(90, 158, 111, 0.2),
+                     0 0 50px rgba(132, 196, 154, 0.1);
+      }
+    }
+
     /* ── Scroll reveal ─────────────────────── */
     .reveal {
       opacity: 0;
