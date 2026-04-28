@@ -761,7 +761,7 @@
       box-shadow: var(--shadow-hover);
     }
 
-    /* Soft light reflection overlay for 3D tilt */
+    /* Soft botanical glow overlay for 3D tilt */
     .about__frame .tilt-glare {
       position: absolute;
       inset: 0;
@@ -770,7 +770,8 @@
       border-radius: var(--r-xl);
       opacity: 0;
       transition: opacity 0.4s ease;
-      background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.18) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 50%, rgba(200, 230, 208, 0.15) 0%, transparent 70%);
+      mix-blend-mode: soft-light;
     }
 
     .about__frame:hover .tilt-glare {
@@ -2586,8 +2587,8 @@
 
         frame.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
 
-        // Move the glare to follow cursor
-        glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(255,255,255,0.2) 0%, transparent 65%)`;
+        // Move the glow to follow cursor
+        glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(200, 230, 208, 0.18) 0%, rgba(184, 154, 88, 0.06) 40%, transparent 70%)`;
       });
 
       frame.addEventListener('mouseleave', () => {
