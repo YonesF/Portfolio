@@ -1284,6 +1284,163 @@
       opacity: 1;
     }
 
+    /* ── Erfaring ───────────────────────────── */
+    .erfaring {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .erfaring::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 55vw;
+      height: 55vw;
+      background: radial-gradient(circle, rgba(138, 114, 64, 0.07) 0%, transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .erfaring::after {
+      content: '';
+      position: absolute;
+      bottom: -15%;
+      left: -8%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(132, 196, 154, 0.07) 0%, transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .erfaring__head {
+      margin-bottom: var(--sp-7);
+    }
+
+    .erfaring__grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--sp-4);
+      position: relative;
+      z-index: 1;
+    }
+
+    .erf-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: var(--sp-4) var(--sp-5) var(--sp-5);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--tr-base), transform var(--tr-slow), box-shadow var(--tr-base);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .erf-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(132, 196, 154, 0.07) 0%, rgba(138, 114, 64, 0.03) 100%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .erf-card:hover {
+      border-color: rgba(61, 122, 82, 0.3);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .erf-card:hover::before {
+      opacity: 1;
+    }
+
+    .erf-card__ico {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #fff, var(--green-wash));
+      border: 1px solid rgba(61, 122, 82, 0.12);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--sp-3);
+      box-shadow: 0 4px 12px rgba(61, 122, 82, 0.06);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+      flex-shrink: 0;
+    }
+
+    .erf-card:hover .erf-card__ico {
+      transform: scale(1.08) rotate(-4deg);
+      box-shadow: 0 8px 20px rgba(61, 122, 82, 0.12);
+    }
+
+    .erf-card__meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: var(--sp-1);
+      flex-wrap: wrap;
+    }
+
+    .erf-card__meta-dot {
+      width: 3px;
+      height: 3px;
+      background: var(--green-light);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+
+    .erf-card__title {
+      font-family: var(--ff-display);
+      font-size: var(--fs-2xl);
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: var(--sp-2);
+    }
+
+    .erf-card__desc {
+      font-size: var(--fs-sm);
+      color: var(--text-muted);
+      line-height: 1.8;
+      flex-grow: 1;
+      margin-bottom: var(--sp-4);
+    }
+
+    .erf-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .erf-tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: var(--green-wash);
+      border: 1px solid rgba(61, 122, 82, 0.15);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--r-full);
+    }
+
     /* ── Projects ───────────────────────────── */
     .projects {
       background: var(--bg-2);
@@ -1917,6 +2074,10 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
+      .erfaring__grid {
+        grid-template-columns: 1fr;
+      }
+
       .projects__grid {
         grid-template-columns: 1fr;
       }
@@ -2144,6 +2305,7 @@
         <ul class="nav__links" role="list">
           <li><a href="#about">Om meg</a></li>
           <li><a href="#skills">Ferdigheter</a></li>
+          <li><a href="#erfaring">Erfaring</a></li>
           <li><a href="#projects">Prosjekter</a></li>
           <li><a href="#video">Video</a></li>
           <li><a href="#contact" class="nav__cta">Kontakt</a></li>
@@ -2160,6 +2322,7 @@
     <button class="nav-overlay__x" id="navClose" aria-label="Lukk meny">×</button>
     <a href="#about" onclick="closeNav()">Om meg</a>
     <a href="#skills" onclick="closeNav()">Ferdigheter</a>
+    <a href="#erfaring" onclick="closeNav()">Erfaring</a>
     <a href="#projects" onclick="closeNav()">Prosjekter</a>
     <a href="#video" onclick="closeNav()">Video</a>
     <a href="#contact" onclick="closeNav()">Kontakt</a>
@@ -2423,6 +2586,126 @@
               <div class="skill-card__fill" data-w="35"></div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ══ ERFARING ════════════════════════════════ -->
+    <section class="section erfaring" id="erfaring" aria-labelledby="erfaring-h">
+      <div class="container">
+        <div class="erfaring__head">
+          <p class="section__label reveal">Erfaring</p>
+          <h2 class="section__title reveal d1" id="erfaring-h">Hva jeg har<br><em>opplevd</em></h2>
+        </div>
+
+        <div class="erfaring__grid" role="list">
+
+          <!-- Card 1: LuksusEiendom -->
+          <article class="erf-card reveal" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>Lansert 2026</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>Web Platform</span>
+            </div>
+            <h3 class="erf-card__title">LuksusEiendom</h3>
+            <p class="erf-card__desc">En digital annonsetjeneste for eiendomsmeglere som forbedrer boligannonser gjennom premium tekst, struktur og visuell optimalisering. Bygget for å effektivisere annonseproduksjon og løfte kvaliteten på boligpresentasjoner på FINN.no.<br><br>Meg og en venns ansvar for hele prosessen: konseptutvikling, forretningsmodell, UX/UI, innholdsstruktur, AI-integrasjon og kvalitetssikring. Utviklet med fokus på å spare meglere tid, standardisere annonsekvalitet og skape sterkere førsteinntrykk i markedet!</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">Oppstart</span>
+              <span class="erf-tag">Eiendomsteknologi</span>
+              <span class="erf-tag">KI</span>
+              <span class="erf-tag">Eiendom</span>
+              <span class="erf-tag">UX/UI</span>
+              <span class="erf-tag">Innholdsstrategi</span>
+            </div>
+          </article>
+
+          <!-- Card 2: Kartverket NRL System -->
+          <article class="erf-card reveal d1" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>2025</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>Database Engineering</span>
+            </div>
+            <h3 class="erf-card__title">Kartverket NRL System</h3>
+            <p class="erf-card__desc">Utviklet et relasjonsdatabasesystem for Kartverket for håndtering av luftfartshindringer, med fokus på sikker rapportering, rollebasert tilgang og dataintegritet.<br><br>Bidro med hele databasedesignet fra konsept til implementasjon — UML/ER-modellering, normalisering, SQL-spørringer og fysisk implementasjon i MariaDB. Bygget for skalerbarhet, sporbarhet og effektiv datahåndtering i et kritisk rapporteringssystem.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">SQL</span>
+              <span class="erf-tag">MariaDB</span>
+              <span class="erf-tag">Databasedesign</span>
+              <span class="erf-tag">ER-diagram</span>
+              <span class="erf-tag">UML</span>
+              <span class="erf-tag">Normalisering</span>
+            </div>
+          </article>
+
+          <!-- Card 3: Atlas -->
+          <article class="erf-card reveal d2" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>2026</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>GIS &amp; 3D Visualisering</span>
+            </div>
+            <h3 class="erf-card__title">Atlas</h3>
+            <p class="erf-card__desc">Utviklet en webbasert GIS-løsning for kriseberedskap med interaktive kart, nødressurser og navigasjon i sanntid.<br><br>Ansvarlig for UI/UX-design og utvikling av kartopplevelsen med MapLibre GL JS, inkludert implementering av 3D-bygninger, 3D-terrengvisualisering, filtrering, geosøk og rutevisning. Fokus på å skape en intuitiv, moderne og realistisk kartplattform med høy brukervennlighet og visuell klarhet.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">MapLibre GL JS</span>
+              <span class="erf-tag">GIS</span>
+              <span class="erf-tag">3D-kart</span>
+              <span class="erf-tag">UI/UX</span>
+              <span class="erf-tag">JavaScript</span>
+              <span class="erf-tag">Webkartlegging</span>
+            </div>
+          </article>
+
+          <!-- Card 4: AI Lab Projects -->
+          <article class="erf-card reveal d3" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>Pågående</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>KI-drevet utvikling</span>
+            </div>
+            <h3 class="erf-card__title">AI Lab Projects</h3>
+            <p class="erf-card__desc">En kontinuerlig serie eksperimentelle prosjekter hvor jeg utforsker hvordan kunstig intelligens kan brukes som utviklingspartner for å bygge, teste og validere nye digitale produkter raskere. Fokus på å kombinere idéutvikling, produkttenkning og teknisk implementasjon.<br><br>Bygger alt fra AI-assisterte nettbutikker til dataplattformer som Palantir Technologies-inspirerte analyseverktøy, som Parhesia — en data intelligence-plattform utviklet for norske bruksområder innen integrasjon, analyse og visualisering av beslutningsdata for offentlig og privat sektor. Arbeider med rask prototyping, systemdesign, UI/UX og AI-drevet utviklingsflyt.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">KI-utvikling</span>
+              <span class="erf-tag">Rask prototyping</span>
+              <span class="erf-tag">Produktbygging</span>
+              <span class="erf-tag">Dataanalyse</span>
+              <span class="erf-tag">UI/UX</span>
+              <span class="erf-tag">Eksperimentelle prosjekter</span>
+            </div>
+          </article>
+
         </div>
       </div>
     </section>
