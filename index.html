@@ -272,22 +272,20 @@
       pointer-events: none;
       z-index: 9999;
       border-radius: 50%;
-      transform: translate(-50%, -50%);
+      will-change: transform;
     }
 
     #c-dot {
       width: 6px;
       height: 6px;
       background: var(--green);
-      transition: transform 0.1s ease;
     }
 
     #c-ring {
       width: 26px;
       height: 26px;
       border: 1.5px solid rgba(61, 122, 82, 0.35);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-        border-color 0.25s, width 0.25s, height 0.25s;
+      transition: border-color 0.25s, width 0.25s, height 0.25s;
     }
 
     /* ── Side leaf layer ───────────────────── */
@@ -3606,14 +3604,12 @@
 
     document.addEventListener('mousemove', e => {
       mx = e.clientX; my = e.clientY;
-      dot.style.left = mx + 'px';
-      dot.style.top = my + 'px';
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
     });
     (function animRing() {
       rx += (mx - rx) * 0.1;
       ry += (my - ry) * 0.1;
-      ring.style.left = rx + 'px';
-      ring.style.top = ry + 'px';
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
       requestAnimationFrame(animRing);
     })();
     document.querySelectorAll('a, button').forEach(el => {
@@ -3717,6 +3713,27 @@
       });
     });
 
+    /* ─── Shared firefly glow sprite cache ─── */
+    const _glowSpriteCache = new Map();
+    function makeGlowSprite(r, g, b) {
+      const key = `${r},${g},${b}`;
+      if (_glowSpriteCache.has(key)) return _glowSpriteCache.get(key);
+      const s = 48;
+      const d = s * 2;
+      const oc = document.createElement('canvas');
+      oc.width = oc.height = d;
+      const oct = oc.getContext('2d');
+      const grad = oct.createRadialGradient(s, s, 0, s, s, s);
+      grad.addColorStop(0,   `rgba(${r},${g},${b},0.7)`);
+      grad.addColorStop(0.4, `rgba(${r},${g},${b},0.15)`);
+      grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+      oct.fillStyle = grad;
+      oct.fillRect(0, 0, d, d);
+      const entry = { canvas: oc, half: s };
+      _glowSpriteCache.set(key, entry);
+      return entry;
+    }
+
     /* ─── Forest mode + fireflies on video ─── */
     (function initForestMode() {
       const vid = document.getElementById('portfolioVideo');
@@ -3753,11 +3770,11 @@
           this.alpha = 0;
           this.targetAlpha = this.baseAlpha;
           this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
           this.vx = (Math.random() - 0.5) * 0.3;
           this.vy = (Math.random() - 0.5) * 0.2;
           this.phase = Math.random() * Math.PI * 2;
           this.pulseSpeed = Math.random() * 0.02 + 0.008;
-          this.driftSpeed = Math.random() * 0.005 + 0.003;
           this.glowSize = this.size * (Math.random() * 6 + 8);
           this.w = w;
           this.h = h;
@@ -3765,13 +3782,10 @@
 
         update() {
           this.phase += this.pulseSpeed;
-          // Pulse brightness
           this.alpha += (this.targetAlpha - this.alpha) * 0.05;
           const pulse = Math.sin(this.phase) * 0.5 + 0.5;
-          // Organic drift
           this.x += Math.sin(this.phase * 0.7) * 0.4 + this.vx;
           this.y += Math.cos(this.phase * 0.5) * 0.3 + this.vy;
-          // Wrap around
           if (this.x < -20) this.x = this.w + 20;
           if (this.x > this.w + 20) this.x = -20;
           if (this.y < -20) this.y = this.h + 20;
@@ -3781,18 +3795,15 @@
 
         draw(pulse) {
           const a = this.alpha * (0.4 + pulse * 0.6);
-          const { r, g, b } = this.color;
-          // Outer glow
-          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
-          grad.addColorStop(0, `rgba(${r},${g},${b},${a * 0.7})`);
-          grad.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.15})`);
-          grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-          ctx.fillStyle = grad;
-          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
-          // Core dot
+          if (a < 0.01) return;
+          const g = this.glowSize;
+          ctx.globalAlpha = a;
+          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
+          ctx.globalAlpha = 1;
+          const { r, g: cg, b } = this.color;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${Math.min(r + 40, 255)},${Math.min(g + 40, 255)},${Math.min(b + 20, 255)},${a})`;
+          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
           ctx.fill();
         }
 
@@ -3885,6 +3896,7 @@
           this.alpha = 0;
           this.targetAlpha = this.baseAlpha;
           this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
           this.vx = (Math.random() - 0.5) * 0.3;
           this.vy = (Math.random() - 0.5) * 0.2;
           this.phase = Math.random() * Math.PI * 2;
@@ -3906,16 +3918,15 @@
         }
         draw(pulse) {
           const a = this.alpha * (0.4 + pulse * 0.6);
-          const { r, g, b } = this.color;
-          const gr = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
-          gr.addColorStop(0,   `rgba(${r},${g},${b},${a * 0.7})`);
-          gr.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.15})`);
-          gr.addColorStop(1,   `rgba(${r},${g},${b},0)`);
-          ctx.fillStyle = gr;
-          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
+          if (a < 0.01) return;
+          const g = this.glowSize;
+          ctx.globalAlpha = a;
+          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
+          ctx.globalAlpha = 1;
+          const { r, g: cg, b } = this.color;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(g+40,255)},${Math.min(b+20,255)},${a})`;
+          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
           ctx.fill();
         }
         fadeIn()  { this.targetAlpha = this.baseAlpha; }
@@ -3925,7 +3936,7 @@
       function initFlies() {
         resize();
         flies = [];
-        const count = Math.min(Math.floor(canvas.width / 28), 38);
+        const count = Math.min(Math.floor(canvas.width / 28), 25);
         for (let i = 0; i < count; i++) flies.push(new Fly());
       }
 
@@ -3966,7 +3977,7 @@
       if (!section || !canvas) return;
 
       const ctx = canvas.getContext('2d');
-      let flies = [], animId = null, started = false;
+      let flies = [], animId = null, started = false, sectionVisible = false;
 
       const ffColors = [
         { r: 184, g: 210, b: 160 },
@@ -3993,6 +4004,7 @@
           this.alpha = 0;
           this.targetAlpha = this.baseAlpha;
           this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
+          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
           this.vx = (Math.random() - 0.5) * 0.22;
           this.vy = (Math.random() - 0.5) * 0.16;
           this.phase = Math.random() * Math.PI * 2;
@@ -4014,17 +4026,15 @@
         }
         draw(pulse) {
           const a = this.alpha * (0.35 + pulse * 0.65);
-          if (a < 0.005) return;
-          const { r, g, b } = this.color;
-          const gr = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowSize);
-          gr.addColorStop(0,   `rgba(${r},${g},${b},${a * 0.65})`);
-          gr.addColorStop(0.4, `rgba(${r},${g},${b},${a * 0.12})`);
-          gr.addColorStop(1,   `rgba(${r},${g},${b},0)`);
-          ctx.fillStyle = gr;
-          ctx.fillRect(this.x - this.glowSize, this.y - this.glowSize, this.glowSize * 2, this.glowSize * 2);
+          if (a < 0.01) return;
+          const g = this.glowSize;
+          ctx.globalAlpha = a;
+          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
+          ctx.globalAlpha = 1;
+          const { r, g: cg, b } = this.color;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(g+40,255)},${Math.min(b+20,255)},${a})`;
+          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
           ctx.fill();
         }
       }
@@ -4032,7 +4042,7 @@
       function initFlies() {
         resize();
         flies = [];
-        const count = Math.min(Math.floor(canvas.width / 9), 120);
+        const count = Math.min(Math.floor(canvas.width / 14), 70);
         for (let i = 0; i < count; i++) {
           const f = new Fly();
           f.phase = Math.random() * Math.PI * 2;
@@ -4043,19 +4053,19 @@
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         flies.forEach(f => { const p = f.update(); f.draw(p); });
-        animId = requestAnimationFrame(animate);
+        animId = sectionVisible ? requestAnimationFrame(animate) : null;
       }
 
       const obs = new IntersectionObserver(entries => {
         entries.forEach(e => {
+          sectionVisible = e.isIntersecting;
           if (e.isIntersecting && !started) {
             started = true;
             section.classList.add('erf-alive');
             initFlies();
             flies.forEach(f => { f.targetAlpha = f.baseAlpha; });
-            if (!animId) animate();
-            obs.unobserve(section);
           }
+          if (sectionVisible && !animId && started) animate();
         });
       }, { threshold: 0.08 });
 
@@ -4126,16 +4136,20 @@
 
       function kick() { if (!rafId) rafId = requestAnimationFrame(tick); }
 
+      let frameRect = frame.getBoundingClientRect();
+      window.addEventListener('resize', () => { frameRect = frame.getBoundingClientRect(); }, { passive: true });
+      window.addEventListener('scroll', () => { frameRect = frame.getBoundingClientRect(); }, { passive: true });
+
       frame.addEventListener('mouseenter', () => {
+        frameRect = frame.getBoundingClientRect();
         isIn = true;
         section.classList.add('about--hovered');
         kick();
       });
 
       frame.addEventListener('mousemove', e => {
-        const r = frame.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width;
-        const y = (e.clientY - r.top)  / r.height;
+        const x = (e.clientX - frameRect.left) / frameRect.width;
+        const y = (e.clientY - frameRect.top)  / frameRect.height;
         tX = (0.5 - y) * MAX;
         tY = (x - 0.5) * MAX;
         glare.style.background = `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, rgba(200,230,208,0.18) 0%, rgba(184,154,88,0.06) 40%, transparent 70%)`;
@@ -4289,12 +4303,15 @@
       const magnets = document.querySelectorAll('[data-magnetic]');
 
       magnets.forEach(el => {
+        let rect = el.getBoundingClientRect();
+        window.addEventListener('resize', () => { rect = el.getBoundingClientRect(); }, { passive: true });
+
+        el.addEventListener('mouseenter', () => { rect = el.getBoundingClientRect(); });
+
         el.addEventListener('mousemove', e => {
-          const rect = el.getBoundingClientRect();
           const x = e.clientX - rect.left - rect.width / 2;
           const y = e.clientY - rect.top - rect.height / 2;
-          const strength = 0.3;
-          el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+          el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
         });
 
         el.addEventListener('mouseleave', () => {
@@ -4409,44 +4426,40 @@
 
       /* Mouse parallax — leaves breathe slightly toward cursor */
       let targetX = 0, targetY = 0, curX = 0, curY = 0;
+      let leafSettled = true;
 
       document.addEventListener('mousemove', e => {
         targetX = (e.clientX / window.innerWidth - 0.5);
         targetY = (e.clientY / window.innerHeight - 0.5);
+        leafSettled = false;
       });
 
       (function animLeaves() {
+        requestAnimationFrame(animLeaves);
+        if (leafSettled) return;
+
         curX += (targetX - curX) * 0.04;
         curY += (targetY - curY) * 0.04;
 
+        const dxRemain = Math.abs(targetX - curX);
+        const dyRemain = Math.abs(targetY - curY);
+        if (dxRemain < 0.0005 && dyRemain < 0.0005) {
+          curX = targetX;
+          curY = targetY;
+          leafSettled = true;
+        }
+
         leafEls.forEach(({ el, cfg, isLeft }) => {
-          /* Each leaf reacts a little differently based on position */
-          const depth = 0.5 + Math.random() * 0.0; /* fixed per leaf — set below */
           const shiftX = curX * (isLeft ? -18 : 18);
           const shiftY = curY * 10;
-          const baseRot = cfg.rot;
           const rotDelta = curX * (isLeft ? -4 : 4);
           const peekPct = isLeft
             ? `translateX(calc(-55% + ${shiftX}px))`
             : `translateX(calc(55% + ${shiftX}px))`;
-
-          el.style.transform = `rotate(${baseRot + rotDelta}deg) ${peekPct} translateY(${shiftY}px)`;
+          el.style.transform = `rotate(${cfg.rot + rotDelta}deg) ${peekPct} translateY(${shiftY}px)`;
         });
-
-        requestAnimationFrame(animLeaves);
       })();
 
-      /* Scroll parallax — leaves drift slightly on scroll */
-      let lastScroll = 0;
-      window.addEventListener('scroll', () => {
-        const sy = window.scrollY;
-        const delta = (sy - lastScroll) * 0.015;
-        lastScroll = sy;
-        leafEls.forEach(({ el, cfg, isLeft }) => {
-          const cur = el.getBoundingClientRect().top;
-          /* Just let CSS handle it — the animation already accounts for parallax */
-        });
-      }, { passive: true });
     })();
 
     /* ─── Video Animation ──────────────────── */
@@ -4485,6 +4498,12 @@
         mouse.y = -1000;
       });
 
+      const heroParticleColors = [
+        { r: 184, g: 154, b: 88 },
+        { r: 132, g: 196, b: 154 },
+        { r: 200, g: 230, b: 208 }
+      ];
+
       class Particle {
         constructor() {
           this.x = Math.random() * width;
@@ -4492,12 +4511,9 @@
           this.size = Math.random() * 2 + 0.5;
           this.vx = (Math.random() - 0.5) * 0.5;
           this.vy = (Math.random() - 0.5) * 0.5;
-          const colors = [
-            'rgba(184, 154, 88, 0.8)', // Gold
-            'rgba(132, 196, 154, 0.8)', // Green
-            'rgba(200, 230, 208, 0.8)'  // Pale
-          ];
-          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.color = heroParticleColors[Math.floor(Math.random() * heroParticleColors.length)];
+          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
+          this.glowSize = this.size * 7;
           this.angle = Math.random() * Math.PI * 2;
           this.speed = Math.random() * 0.02 + 0.01;
         }
@@ -4514,36 +4530,40 @@
 
           const dx = mouse.x - this.x;
           const dy = mouse.y - this.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const distSq = dx * dx + dy * dy;
           const maxDist = 120;
 
-          if (distance < maxDist) {
+          if (distSq < maxDist * maxDist && distSq > 0) {
+            const distance = Math.sqrt(distSq);
             const force = (maxDist - distance) / maxDist;
-            const dirX = dx / distance;
-            const dirY = dy / distance;
-            this.x -= dirX * force * 3;
-            this.y -= dirY * force * 3;
+            this.x -= (dx / distance) * force * 3;
+            this.y -= (dy / distance) * force * 3;
           }
         }
 
         draw() {
+          const g = this.glowSize;
+          const { r, g: cg, b } = this.color;
+          ctx.globalAlpha = 0.7;
+          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
+          ctx.globalAlpha = 1;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fillStyle = this.color;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = this.color;
+          ctx.fillStyle = `rgba(${r},${cg},${b},0.85)`;
           ctx.fill();
-          ctx.shadowBlur = 0;
         }
       }
 
       function initParticles() {
         particles = [];
-        const numParticles = Math.min(window.innerWidth / 15, 80);
+        const numParticles = Math.min(window.innerWidth / 20, 50);
         for (let i = 0; i < numParticles; i++) {
           particles.push(new Particle());
         }
       }
+
+      let heroAnimId = null;
+      let heroVisible = true;
 
       function animateParticles() {
         ctx.clearRect(0, 0, width, height);
@@ -4551,8 +4571,14 @@
           p.update();
           p.draw();
         });
-        requestAnimationFrame(animateParticles);
+        heroAnimId = heroVisible ? requestAnimationFrame(animateParticles) : null;
       }
+
+      const heroObserver = new IntersectionObserver(entries => {
+        heroVisible = entries[0].isIntersecting;
+        if (heroVisible && !heroAnimId) animateParticles();
+      }, { threshold: 0 });
+      heroObserver.observe(canvas.closest('section') || canvas);
 
       initParticles();
       animateParticles();
@@ -4608,16 +4634,16 @@
 
     if (greenhouseCanvas && greenhouseSection) {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const isMobile = window.innerWidth < 768;
       const renderer = new THREE.WebGLRenderer({
         canvas: greenhouseCanvas,
-        antialias: true,
+        antialias: !isMobile,
         alpha: true,
         powerPreference: 'high-performance'
       });
-
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.enabled = !isMobile;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.setClearColor(0x06110a, 0);
 
@@ -4641,7 +4667,7 @@
         return seed / 4294967296;
       };
 
-      function makeWoodTexture(base = '#b98f5f', grain = '#6f4e2f', width = 512, height = 160) {
+      function makeWoodTexture(base = '#b98f5f', grain = '#6f4e2f', width = 256, height = 128) {
         const texCanvas = document.createElement('canvas');
         texCanvas.width = width;
         texCanvas.height = height;
@@ -4695,22 +4721,22 @@
 
       function makeRugTexture() {
         const texCanvas = document.createElement('canvas');
-        texCanvas.width = 512;
-        texCanvas.height = 512;
+        texCanvas.width = 256;
+        texCanvas.height = 256;
         const ctx = texCanvas.getContext('2d');
         ctx.fillStyle = '#d6c8a6';
-        ctx.fillRect(0, 0, 512, 512);
-        for (let y = 0; y < 512; y += 16) {
-          ctx.fillStyle = y % 32 === 0 ? 'rgba(105, 88, 57, 0.14)' : 'rgba(255, 255, 255, 0.18)';
-          ctx.fillRect(0, y, 512, 4);
+        ctx.fillRect(0, 0, 256, 256);
+        for (let y = 0; y < 256; y += 8) {
+          ctx.fillStyle = y % 16 === 0 ? 'rgba(105, 88, 57, 0.14)' : 'rgba(255, 255, 255, 0.18)';
+          ctx.fillRect(0, y, 256, 2);
         }
-        for (let x = 0; x < 512; x += 18) {
+        for (let x = 0; x < 256; x += 9) {
           ctx.fillStyle = 'rgba(92, 75, 49, 0.09)';
-          ctx.fillRect(x, 0, 2, 512);
+          ctx.fillRect(x, 0, 1, 256);
         }
         ctx.strokeStyle = 'rgba(90, 70, 45, 0.26)';
-        ctx.lineWidth = 18;
-        ctx.strokeRect(28, 28, 456, 456);
+        ctx.lineWidth = 9;
+        ctx.strokeRect(14, 14, 228, 228);
         const texture = new THREE.CanvasTexture(texCanvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.wrapS = THREE.RepeatWrapping;
@@ -4720,15 +4746,15 @@
 
       function makeLeafShadowTexture() {
         const texCanvas = document.createElement('canvas');
-        texCanvas.width = 512;
-        texCanvas.height = 512;
+        texCanvas.width = 256;
+        texCanvas.height = 256;
         const ctx = texCanvas.getContext('2d');
-        ctx.clearRect(0, 0, 512, 512);
+        ctx.clearRect(0, 0, 256, 256);
         ctx.fillStyle = 'rgba(7, 28, 10, 0.42)';
-        for (let i = 0; i < 36; i += 1) {
-          const x = Math.random() * 512;
-          const y = Math.random() * 512;
-          const r = 16 + Math.random() * 36;
+        for (let i = 0; i < 24; i += 1) {
+          const x = Math.random() * 256;
+          const y = Math.random() * 256;
+          const r = 8 + Math.random() * 18;
           ctx.save();
           ctx.translate(x, y);
           ctx.rotate(Math.random() * Math.PI);
