@@ -1068,6 +1068,9 @@
       background: var(--bg-card);
       position: relative;
       overflow: hidden;
+      height: min(900px, 100svh);
+      min-height: 640px;
+      padding: 0;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       transition: background-color 1.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1337,6 +1340,39 @@
       flex-wrap: wrap;
       gap: var(--sp-3);
       margin-top: var(--sp-4);
+    }
+
+    .about__unicorn {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .about__links--overlay {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      bottom: clamp(1.5rem, 5vh, 3.5rem);
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: calc(100% - 2rem);
+      justify-content: center;
+      margin-top: 0;
+    }
+
+    .about__links--overlay .about__link {
+      color: rgba(232, 243, 235, 0.92);
+      border-color: rgba(232, 243, 235, 0.3);
+      background: rgba(8, 18, 12, 0.5);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .about__links--overlay .about__link:hover {
+      color: #fff;
+      border-color: rgba(232, 243, 235, 0.58);
+      background: rgba(20, 44, 28, 0.72);
     }
 
     .about__link {
@@ -3159,49 +3195,9 @@
 
 
     <!-- ══ ABOUT ═════════════════════════════════ -->
-    <section class="section about" id="about" aria-labelledby="about-h">
-      <div class="about__forest-overlay" aria-hidden="true"></div>
-      <div class="container">
-        <div class="about__grid">
-          <div class="about__visual reveal">
-            <div class="about__frame" id="aboutFrame" role="img" aria-label="Profilbilde">
-              <div class="tilt-glare" id="tiltGlare"></div>
-              <img src="IMG_4177.jpg" alt="Profilbilde"
-                style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0;" />
-              <div class="about__stats" id="aboutStats" aria-label="Nøkkeltall">
-                <div class="about__stat">
-                  <span class="about__stat-n">AI</span>
-                  <span class="about__stat-l">Drevet</span>
-                </div>
-                <div class="about__stat">
-                  <span class="about__stat-n">UiA</span>
-                  <span class="about__stat-l">Student</span>
-                </div>
-                <div class="about__stat">
-                  <span class="about__stat-n">∞</span>
-                  <span class="about__stat-l">Nysgjerrighet</span>
-                </div>
-              </div>
-            </div>
-            <div class="about__deco" aria-hidden="true"></div>
-            <div class="leaf-fall" id="leafFall" aria-hidden="true"></div>
-          </div>
-
-          <div>
-            <p class="section__label reveal">Om meg</p>
-            <h2 class="section__title reveal d1" id="about-h">
-              Hvor teknologi<br>møter <em>kreativitet</em>
-            </h2>
-            <p class="about__body reveal d2">
-              Jeg er student ved <strong><span class="about__highlight">Universitetet i Agder (UiA)</span></strong> i Kristiansand, der jeg studerer IT og
-              Informasjonssystem. Jeg er genuint <span class="about__highlight">nysgjerrig på teknologi</span> og elsker å finne ut hvordan ting fungerer.
-            </p>
-            <p class="about__body reveal d3">
-              Spesialiteten min er <strong><span class="about__highlight">AI-verktøy og prompt engineering</span></strong> — jeg vet hvordan man jobber smart
-              med teknologi. Som nybegynnere utvikler trives jeg med å lære, og kombinerer det med et <span class="about__highlight">kreativt blikk for
-              design</span>.
-            </p>
-            <div class="about__links reveal d4">
+    <section class="section about" id="about" aria-label="Om meg">
+      <div class="about__unicorn" style="width: 1440px; height: 900px" data-us-project="p885x5HYtqypNB0U6wZ3"></div>
+      <div class="about__links about__links--overlay" aria-label="Sosiale lenker">
               <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer" class="about__link" data-magnetic>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path
@@ -3217,10 +3213,8 @@
                 </svg>
                 Linkedin
               </a>
-            </div>
-          </div>
-        </div>
       </div>
+      <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.8/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
     </section>
 
 
