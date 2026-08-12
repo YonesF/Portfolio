@@ -1546,6 +1546,11 @@
       z-index: 2;
     }
 
+    .skills > .container {
+      position: relative;
+      z-index: 3;
+    }
+
     .skills__grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -1578,11 +1583,11 @@
       box-shadow: 0 4px 20px rgba(40, 80, 50, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       transition:
         opacity      0.75s ease,
-        filter       0.75s ease,
         transform    0.75s cubic-bezier(0.34, 1.4, 0.64, 1),
+        background   0.35s ease,
         box-shadow   0.75s ease,
         border-color 0.4s  ease;
-      will-change: transform, opacity, filter;
+      will-change: transform, opacity;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
       display: flex;
@@ -1639,25 +1644,28 @@
       opacity: 1;
     }
 
-    /* Dim + blur non-focused cards */
+    /* Keep every label readable while giving the focused card more presence. */
     .skills:has(.skill-card:hover) .skill-card:not(:hover) {
-      opacity: 0.3;
-      filter: blur(1.5px) saturate(0.6);
-      transform: scale(0.96);
+      opacity: 0.58;
+      filter: none;
+      transform: scale(0.985);
       box-shadow: none;
     }
 
     @media (min-width: 961px) {
       .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):not(:hover) {
-        transform: translateY(40px) scale(0.96);
+        transform: translateY(40px) scale(0.985);
       }
     }
 
-    /* Pop up the focused card */
+    /* Lift the focused card without scaling its text into a soft bitmap. */
     .skills:has(.skill-card:hover) .skill-card:hover {
       opacity: 1;
       filter: none;
-      transform: translateY(-20px) scale(1.06);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transform: translateY(-14px);
       box-shadow:
         0 40px 80px rgba(14, 38, 18, 0.32),
         0  0   0 1px rgba(90, 158, 111, 0.45),
@@ -1668,8 +1676,13 @@
 
     @media (min-width: 961px) {
       .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):hover {
-        transform: translateY(20px) scale(1.06);
+        transform: translateY(26px);
       }
+    }
+
+    .skills:has(.skill-card:hover) > .scene-ambient {
+      animation: none;
+      transform: none;
     }
 
     .skill-card__ico {
