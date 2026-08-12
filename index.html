@@ -14,6 +14,15 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
     rel="stylesheet" />
 
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
   <style>
     :root {
       --bg: #f4f7f0;
@@ -2775,6 +2784,44 @@
       z-index: 0;
       pointer-events: none;
     }
+
+    /* ── Hero 3D bird (first section only) ────── */
+    .hero__bird {
+      position: absolute;
+      top: 50%;
+      right: 3%;
+      transform: translateY(-52%);
+      width: min(480px, 38vw);
+      aspect-ratio: 1 / 1.2;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .hero__bird.is-ready {
+      opacity: 1;
+    }
+
+    .hero__bird canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Smaller laptops: shrink and tuck right so the bird clears the hero copy */
+    @media (max-width: 1279px) {
+      .hero__bird {
+        width: min(360px, 33vw);
+        right: 0.5%;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .hero__bird {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -2863,6 +2910,11 @@
         <circle cx="100" cy="240" r="2" fill="rgba(132,196,154,0.3)" />
         <circle cx="280" cy="240" r="2" fill="rgba(132,196,154,0.3)" />
       </svg>
+
+      <!-- 3D bird — hero only, follows the cursor with its head -->
+      <div class="hero__bird" id="heroBirdWrap" aria-hidden="true">
+        <canvas id="heroBird"></canvas>
+      </div>
 
       <div class="container hero__content">
         <p class="hero__eyebrow">Portfolio — IT &amp; Informasjonssystem</p>
@@ -5906,6 +5958,279 @@
         animating = true;
         animateGreenhouse();
       }
+    }
+  </script>
+
+  <!-- ══ HERO BIRD — 3D, cursor-tracking head ══════════════════ -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const wrap = document.getElementById('heroBirdWrap');
+    const canvas = document.getElementById('heroBird');
+    const heroSection = document.getElementById('hero');
+
+    // Skip entirely on small screens — the bird is a desktop-only hero accent.
+    if (wrap && canvas && heroSection && window.matchMedia('(min-width: 961px)').matches) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance'
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+      camera.position.set(0.25, 0.6, 2.15);
+      camera.lookAt(0, 0.54, 0);
+
+      // Lighting tuned to the cream/green hero palette
+      scene.add(new THREE.HemisphereLight(0xfffaf0, 0x6f9e7a, 1.2));
+      const keyLight = new THREE.DirectionalLight(0xfff3dc, 1.45);
+      keyLight.position.set(1.8, 2.4, 2.0);
+      scene.add(keyLight);
+      const rimLight = new THREE.DirectionalLight(0xbfe3cb, 0.8);
+      rimLight.position.set(-1.8, 1.4, -1.6);
+      scene.add(rimLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+      fillLight.position.set(-1.4, 0.2, 1.6);
+      scene.add(fillLight);
+
+      const BASE_YAW = -0.22;
+      const birdGroup = new THREE.Group();
+      birdGroup.rotation.y = BASE_YAW;
+      scene.add(birdGroup);
+
+      // Head orientation is applied in the vertex shader rather than through the
+      // model's skeleton: the exported rig weights head vertices ~74% to the root
+      // bone, so rotating its head bones tears the mesh apart.
+      const uYaw = { value: 0 };
+      const uPitch = { value: 0 };
+      const uRoll = { value: 0 };
+      const uPivot = { value: new THREE.Vector3(0, 0.62, 0.15) };
+      const uMask = { value: new THREE.Vector2(0.58, 0.8) };
+
+      const HEAD_CHUNK = `
+        uniform float uYaw; uniform float uPitch; uniform float uRoll;
+        uniform vec3 uPivot; uniform vec2 uMask;
+        mat3 headRot(float yaw, float pitch, float roll) {
+          float cy = cos(yaw),   sy = sin(yaw);
+          float cp = cos(pitch), sp = sin(pitch);
+          float cr = cos(roll),  sr = sin(roll);
+          mat3 Ry = mat3( cy, 0.0, -sy,  0.0, 1.0, 0.0,   sy, 0.0,  cy);
+          mat3 Rx = mat3(1.0, 0.0, 0.0,  0.0,  cp,  sp,  0.0, -sp,  cp);
+          mat3 Rz = mat3( cr,  sr, 0.0,  -sr,  cr, 0.0,  0.0, 0.0, 1.0);
+          return Ry * Rx * Rz;
+        }
+      `;
+
+      let ready = false;
+      let visible = true;
+      let rafId = 0;
+
+      new GLTFLoader().load('assets/fantasy-bird.glb', gltf => {
+        let skinned = null;
+        gltf.scene.traverse(obj => { if (obj.isSkinnedMesh) skinned = obj; });
+        if (!skinned) return;
+
+        // Drop the skeleton: the GLB ships identity bone transforms with non-identity
+        // inverse-bind matrices, which would deform the mesh on load. The raw geometry
+        // is the correct bind pose, so render it as a plain mesh.
+        const geometry = skinned.geometry;
+        geometry.deleteAttribute('skinIndex');
+        geometry.deleteAttribute('skinWeight');
+
+        const material = skinned.material;
+        material.roughness = 0.62;
+        material.metalness = 0.0;
+        material.onBeforeCompile = shader => {
+          shader.uniforms.uYaw = uYaw;
+          shader.uniforms.uPitch = uPitch;
+          shader.uniforms.uRoll = uRoll;
+          shader.uniforms.uPivot = uPivot;
+          shader.uniforms.uMask = uMask;
+          shader.vertexShader = HEAD_CHUNK + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <beginnormal_vertex>',
+            `vec3 objectNormal = vec3( normal );
+             float headMask = smoothstep(uMask.x, uMask.y, position.y);
+             mat3 headM = headRot(uYaw * headMask, uPitch * headMask, uRoll * headMask);
+             objectNormal = headM * objectNormal;`
+          );
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            'vec3 transformed = uPivot + headM * (position - uPivot);'
+          );
+        };
+        material.needsUpdate = true;
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.frustumCulled = false;
+
+        geometry.computeBoundingBox();
+        const bbox = geometry.boundingBox;
+        const size = bbox.getSize(new THREE.Vector3());
+        const center = bbox.getCenter(new THREE.Vector3());
+
+        // Normalise to 1 unit tall, centred on the floor
+        const inner = new THREE.Group();
+        inner.add(mesh);
+        inner.scale.setScalar(1 / size.y);
+        mesh.position.set(-center.x, -bbox.min.y, -center.z);
+        birdGroup.add(inner);
+
+        ready = true;
+        wrap.classList.add('is-ready');
+      }, undefined, error => {
+        // Opening index.html straight from disk blocks the model fetch (origin "null").
+        if (window.location.protocol === 'file:') {
+          console.warn(
+            'Hero bird: browsers block loading assets/fantasy-bird.glb over file://. ' +
+            'Serve the folder over http (e.g. "npx serve") or open the deployed site.'
+          );
+        } else {
+          console.warn('Hero bird: could not load assets/fantasy-bird.glb', error);
+        }
+        stop();
+      });
+
+      // ── Cursor tracking ───────────────────────────────────────
+      // Angles are measured from the bird's own position on screen, so it looks
+      // *at* the pointer instead of mirroring the viewport centre.
+      const aim = { x: 0, y: 0 };
+      const origin = { x: 0, y: 0 };
+      const pointer = { x: -1, y: -1 };
+
+      function measure() {
+        const rect = wrap.getBoundingClientRect();
+        origin.x = rect.left + rect.width * 0.5;
+        origin.y = rect.top + rect.height * 0.32; // the head sits high in the frame
+        if (pointer.x >= 0) updateAim();
+      }
+
+      function updateAim() {
+        aim.x = (pointer.x - origin.x) / Math.max(window.innerWidth * 0.55, 1);
+        aim.y = (pointer.y - origin.y) / Math.max(window.innerHeight * 0.5, 1);
+      }
+
+      window.addEventListener('pointermove', event => {
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        updateAim();
+      }, { passive: true });
+      window.addEventListener('scroll', measure, { passive: true });
+
+      const head = { yaw: 0, pitch: 0, roll: 0, tYaw: 0, tPitch: 0, tRoll: 0 };
+      let snapUntil = -1;
+      let nextSaccade = 1.4;
+      let nextTilt = 5;
+      let tiltUntil = -1;
+      let elapsed = 0;
+
+      function step(dt) {
+        elapsed += dt;
+        const t = elapsed;
+        const calm = reduceMotion.matches;
+
+        // Slow, breathing idle motion for the whole body
+        if (!calm) {
+          birdGroup.position.y = Math.sin(t * 0.9) * 0.012 + Math.sin(t * 1.63) * 0.005;
+          birdGroup.rotation.z = Math.sin(t * 0.55) * 0.02;
+          birdGroup.rotation.x = Math.sin(t * 0.75 + 1.1) * 0.014;
+        }
+
+        head.tYaw = THREE.MathUtils.clamp(aim.x * 1.15, -0.8, 0.62);
+        head.tPitch = THREE.MathUtils.clamp(aim.y * 0.6, -0.34, 0.4);
+
+        if (calm) {
+          // Reduced motion: a gentle head follow, nothing else.
+          head.yaw += (head.tYaw - head.yaw) * (1 - Math.pow(0.25, dt));
+          head.pitch += (head.tPitch - head.pitch) * (1 - Math.pow(0.25, dt));
+          uYaw.value = head.yaw;
+          uPitch.value = head.pitch;
+          uRoll.value = 0;
+          birdGroup.rotation.y = BASE_YAW + head.yaw * 0.16;
+          return;
+        }
+
+        // Birds move in quick flicks, then hold — a slow drift punctuated by snaps
+        if (t > nextSaccade) {
+          snapUntil = t + 0.15;
+          nextSaccade = t + 0.8 + Math.random() * 2.0;
+        }
+        // Occasional curious head tilt
+        if (t > nextTilt) {
+          head.tRoll = (Math.random() - 0.5) * 0.5;
+          tiltUntil = t + 1.0 + Math.random();
+          nextTilt = t + 5 + Math.random() * 6;
+        }
+        if (t > tiltUntil) head.tRoll = 0;
+
+        const ease = 1 - Math.pow(t < snapUntil ? 0.0008 : 0.17, dt);
+        head.yaw += (head.tYaw - head.yaw) * ease;
+        head.pitch += (head.tPitch - head.pitch) * ease;
+        head.roll += (head.tRoll - head.roll) * (1 - Math.pow(0.35, dt));
+
+        const tremor = Math.sin(t * 11.3) * 0.007 + Math.sin(t * 7.1) * 0.004;
+        uYaw.value = head.yaw + tremor;
+        uPitch.value = head.pitch + Math.sin(t * 9.1) * 0.004;
+        uRoll.value = head.roll;
+
+        // Body drifts lazily after the head
+        birdGroup.rotation.y = BASE_YAW + head.yaw * 0.16;
+      }
+
+      function resize() {
+        const w = wrap.clientWidth;
+        const h = wrap.clientHeight;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        measure();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        rafId = requestAnimationFrame(animate);
+        const dt = Math.min(clock.getDelta(), 0.05);
+        if (ready) step(dt);
+        renderer.render(scene, camera);
+      }
+
+      function start() {
+        if (rafId) return;
+        clock.getDelta();
+        rafId = requestAnimationFrame(animate);
+      }
+
+      function stop() {
+        if (!rafId) return;
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+
+      // Only render while the hero is actually on screen
+      const observer = new IntersectionObserver(entries => {
+        visible = entries[0].isIntersecting;
+        if (visible && !document.hidden) start(); else stop();
+      }, { threshold: 0.01 });
+      observer.observe(heroSection);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden || !visible) stop(); else start();
+      });
+
+      start();
     }
   </script>
 </body>
