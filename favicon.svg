@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#3d7a52"/>
-  <path d="M7 6 L16 17 L25 6 M16 17 L16 27"
-        stroke="white" stroke-width="4.5"
-        stroke-linecap="round" stroke-linejoin="round"
-        fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Y portfolio mark</title>
+  <desc id="desc">A geometric ivory and emerald Y monogram on a near-black background.</desc>
+  <rect width="512" height="512" rx="88" fill="#0B0F14"/>
+  <path fill="#F4F1EA" d="M100 108h84l72 98-44 52z"/>
+  <path fill="#F4F1EA" d="M412 108h-84l-72 98 44 52z"/>
+  <path fill="#31C878" d="m218 260 38-46 38 46v132l-38 38-38-38z"/>
 </svg>

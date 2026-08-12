@@ -2793,9 +2793,10 @@
     /* ── Hero 3D bird (first section only) ────── */
     .hero__bird {
       position: absolute;
-      top: 50%;
-      right: 3%;
-      transform: translateY(-52%);
+      top: auto;
+      bottom: 0;
+      right: 0;
+      transform: none;
       width: min(480px, 38vw);
       aspect-ratio: 1 / 1.2;
       z-index: 2;
@@ -2818,7 +2819,7 @@
     @media (max-width: 1279px) {
       .hero__bird {
         width: min(360px, 33vw);
-        right: 0.5%;
+        right: 0;
       }
     }
 
@@ -6206,10 +6207,10 @@
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-      // Framed low enough to keep the whole perch in shot under the bird's feet
-      camera.position.set(0.25, 0.52, 2.44);
-      camera.lookAt(0, 0.44, 0);
+      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+      // Framed wide and left enough to show the trunk that anchors the perch.
+      camera.position.set(0.10, 0.55, 2.64);
+      camera.lookAt(-0.12, 0.42, 0.04);
 
       // Lighting tuned to the night sky behind it: cool moonlight key, violet
       // bounce from the clouds below, and a bright rim to lift the silhouette
@@ -6236,159 +6237,117 @@
       scene.add(fillLight);
 
       const BASE_YAW = -0.22;
+      const perchRoot = new THREE.Group();
+      perchRoot.rotation.order = 'YXZ';
+      scene.add(perchRoot);
+
       const birdGroup = new THREE.Group();
       birdGroup.rotation.y = BASE_YAW;
-      scene.add(birdGroup);
+      perchRoot.add(birdGroup);
 
       // ── Perch ─────────────────────────────────────────────────
-      // The branch shares the bird's base yaw so it runs along the body axis and
-      // stays under both feet, but it lives in its own group: a branch must not
-      // inherit the bird's idle sway. Coordinates below are therefore in the
+      // The supplied branch shares the bird's wind root and base yaw, but keeps
+      // its own group so the bird can make tiny balancing corrections without
+      // sliding the perch. Coordinates below are therefore in the
       // bird's own frame, where the model measures 1 unit tall with its toes on
       // y = 0 spanning x ±0.15, z 0.10–0.25 (the long tail is what trails back
       // to z ≈ -0.3, and hangs behind the branch rather than resting on it).
       const perchGroup = new THREE.Group();
       perchGroup.rotation.y = BASE_YAW;
-      scene.add(perchGroup);
+      perchRoot.add(perchGroup);
 
-      // Bark and foliage sit darker and cooler than daylight values would be,
-      // so the perch belongs to the night sky rather than looking pasted on.
-      const barkMaterial = new THREE.MeshStandardMaterial({
-        color: 0x53412f,
-        roughness: 0.95,
-        metalness: 0,
-        transparent: true
-      });
+      const BRANCH_ASSET = 'assets/tree-branch.glb';
 
-      // The canvas is narrower than the limb, so without this the branch would
-      // stop dead in mid-air at the edge of the element. Fading it out along its
-      // own axis lets it dissolve into the hero background instead.
-      barkMaterial.onBeforeCompile = shader => {
-        shader.uniforms.uFade = { value: new THREE.Vector2(0.60, 0.87) };
-        shader.vertexShader = 'varying float vAxis;\n' + shader.vertexShader;
-        shader.vertexShader = shader.vertexShader.replace(
-          '#include <begin_vertex>',
-          '#include <begin_vertex>\n vAxis = abs(position.x);'
-        );
-        shader.fragmentShader = 'uniform vec2 uFade;\nvarying float vAxis;\n' + shader.fragmentShader;
-        shader.fragmentShader = shader.fragmentShader.replace(
-          '#include <dithering_fragment>',
-          '#include <dithering_fragment>\n gl_FragColor.a *= 1.0 - smoothstep(uFade.x, uFade.y, vAxis);'
-        );
-      };
-      const leafMaterial = new THREE.MeshStandardMaterial({
-        color: 0x5d8f6d,
-        roughness: 0.75,
-        metalness: 0,
-        side: THREE.DoubleSide,
-        shadowSide: THREE.DoubleSide
-      });
-      const leafDarkMaterial = leafMaterial.clone();
-      leafDarkMaterial.color.setHex(0x416a52);
+      function measureBranchSupport(root, targetX, targetZ) {
+        root.updateMatrixWorld(true);
 
-      // TubeGeometry has a constant radius, so build it at radius 1 and push each
-      // ring out to the tapered radius afterwards.
-      function makeBranch(points, rStart, rEnd, tubular, radial) {
-        const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p[0], p[1], p[2])));
-        const geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
-        const position = geometry.attributes.position;
-        const normal = geometry.attributes.normal;
-        const v = new THREE.Vector3();
-        const centre = new THREE.Vector3();
+        let supportY = -Infinity;
+        const sample = new THREE.Vector3();
 
-        for (let i = 0; i <= tubular; i++) {
-          const t = i / tubular;
-          // Taper, plus a slow swell so the bark is not a perfect cone
-          const radius = THREE.MathUtils.lerp(rStart, rEnd, Math.pow(t, 0.85)) *
-            (1 + Math.sin(t * 17.0) * 0.05);
-          curve.getPointAt(t, centre);
-          for (let j = 0; j <= radial; j++) {
-            const k = i * (radial + 1) + j;
-            v.fromBufferAttribute(position, k).sub(centre).multiplyScalar(radius).add(centre);
-            position.setXYZ(k, v.x, v.y, v.z);
+        root.traverse(obj => {
+          const position = obj.isMesh && obj.geometry?.attributes?.position;
+          if (!position) return;
+
+          const stride = Math.max(1, Math.ceil(position.count / 30000));
+          for (let i = 0; i < position.count; i += stride) {
+            sample.fromBufferAttribute(position, i).applyMatrix4(obj.matrixWorld);
+            if (
+              Math.abs(sample.x - targetX) < 0.18 &&
+              Math.abs(sample.z - targetZ) < 0.18
+            ) {
+              supportY = Math.max(supportY, sample.y);
+            }
           }
-        }
+        });
 
-        geometry.computeVertexNormals();
-        // The tube's seam duplicates a column of vertices; averaging the two
-        // copies keeps a hard shading line from running down the branch.
-        const a = new THREE.Vector3();
-        const b = new THREE.Vector3();
-        for (let i = 0; i <= tubular; i++) {
-          const first = i * (radial + 1);
-          const last = first + radial;
-          a.fromBufferAttribute(normal, first);
-          b.fromBufferAttribute(normal, last);
-          a.add(b).normalize();
-          normal.setXYZ(first, a.x, a.y, a.z);
-          normal.setXYZ(last, a.x, a.y, a.z);
-        }
-
-        const mesh = new THREE.Mesh(geometry, barkMaterial);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        perchGroup.add(mesh);
-        return mesh;
+        return Number.isFinite(supportY)
+          ? supportY
+          : new THREE.Box3().setFromObject(root).max.y;
       }
 
-      // Main limb — runs off both edges of the frame so it reads as part of a
-      // tree rather than a floating stick. Its crown sits a hair above y = 0 so
-      // the toes bite into it instead of hovering.
-      makeBranch([
-        [-0.88, -0.075, 0.02],
-        [-0.45, -0.045, 0.07],
-        [0.00, -0.026, 0.175],
-        [0.42, -0.014, 0.24],
-        [0.88, -0.002, 0.26]
-      ], 0.055, 0.022, 64, 14);
+      function prepareBranchModel(model) {
+        model.traverse(obj => {
+          if (!obj.isMesh) return;
 
-      // Two offshoots climbing out of the limb, one either side of the bird. Both
-      // rise: the limb runs toward the camera as it goes right, so anything
-      // hanging below it there falls straight out of the bottom of the frame.
-      makeBranch([
-        [-0.50, -0.048, 0.04],
-        [-0.44, 0.030, 0.00],
-        [-0.40, 0.115, -0.05],
-        [-0.38, 0.205, -0.09]
-      ], 0.020, 0.007, 28, 10);
-      makeBranch([
-        [0.38, -0.016, 0.235],
-        [0.43, 0.055, 0.215],
-        [0.47, 0.130, 0.195]
-      ], 0.016, 0.006, 22, 10);
+          obj.castShadow = true;
+          obj.receiveShadow = true;
 
-      // Pointed leaf, cupped across its width so it catches the key light
-      const leafShape = new THREE.Shape();
-      leafShape.moveTo(0, 0);
-      leafShape.bezierCurveTo(0.42, 0.18, 0.50, 0.62, 0, 1.2);
-      leafShape.bezierCurveTo(-0.50, 0.62, -0.42, 0.18, 0, 0);
-      const leafGeometry = new THREE.ShapeGeometry(leafShape, 16);
-      {
-        const p = leafGeometry.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-          p.setZ(i, -(p.getX(i) * p.getX(i)) * 0.3 - p.getY(i) * 0.06);
+          const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+          for (const material of materials) {
+            if (!material) continue;
+            if (material.map) material.map.colorSpace = THREE.SRGBColorSpace;
+            if ('roughness' in material) {
+              material.roughness = Math.max(material.roughness ?? 0.78, 0.72);
+            }
+            if ('metalness' in material) material.metalness = 0;
+            material.needsUpdate = true;
+          }
+        });
+
+        const inner = new THREE.Group();
+        inner.add(model);
+
+        const rawBox = new THREE.Box3().setFromObject(model);
+        const rawSize = rawBox.getSize(new THREE.Vector3());
+        const rawCenter = rawBox.getCenter(new THREE.Vector3());
+        if (!Number.isFinite(rawSize.lengthSq()) || rawSize.lengthSq() === 0) {
+          throw new Error('The supplied branch model has no visible geometry.');
         }
-        leafGeometry.computeVertexNormals();
-      }
 
-      // [x, y, z, scale, rotX, rotY, rotZ, dark]
-      const LEAVES = [
-        [-0.385, 0.200, -0.09, 0.115, -0.30, 0.40, 0.20, false],
-        [-0.350, 0.170, -0.07, 0.100, -0.20, -0.90, -0.75, true],
-        [-0.420, 0.150, -0.11, 0.090, 0.30, 1.60, 1.15, false],
-        [0.470, 0.128, 0.195, 0.105, -0.20, -0.45, -0.30, false],
-        [0.440, 0.100, 0.215, 0.085, 0.25, 0.80, 0.80, true],
-        [0.500, 0.085, 0.180, 0.075, -0.30, -1.30, -0.95, false]
-      ];
+        model.position.sub(rawCenter);
 
-      for (const [x, y, z, scale, rx, ry, rz, dark] of LEAVES) {
-        const leaf = new THREE.Mesh(leafGeometry, dark ? leafDarkMaterial : leafMaterial);
-        leaf.position.set(x, y, z);
-        leaf.rotation.set(rx, ry, rz);
-        leaf.scale.setScalar(scale);
-        leaf.castShadow = true;
-        leaf.receiveShadow = true;
-        perchGroup.add(leaf);
+        const longestAxis = Math.max(rawSize.x, rawSize.y, rawSize.z);
+        if (rawSize.y === longestAxis) {
+          model.rotation.z = Math.PI / 2;
+        } else if (rawSize.z === longestAxis) {
+          model.rotation.y = Math.PI / 2;
+        }
+
+        inner.updateMatrixWorld(true);
+        const orientedSize = new THREE.Box3()
+          .setFromObject(inner)
+          .getSize(new THREE.Vector3());
+        inner.scale.setScalar(1.72 / Math.max(orientedSize.x, 0.001));
+
+        inner.updateMatrixWorld(true);
+        const fittedBox = new THREE.Box3().setFromObject(inner);
+        const fittedCenter = fittedBox.getCenter(new THREE.Vector3());
+
+        const branchCenterX = -0.33;
+        const perchX = 0;
+        const perchZ = 0.17;
+        inner.position.x += branchCenterX - fittedCenter.x;
+        inner.position.z += perchZ - fittedCenter.z;
+
+        const supportY = measureBranchSupport(inner, perchX, perchZ);
+        inner.position.y += 0.04 - supportY;
+
+        const branch = new THREE.Group();
+        branch.name = 'treeBranch';
+        branch.position.y = 0.09;
+        branch.rotation.z = 0.76;
+        branch.add(inner);
+        perchGroup.add(branch);
       }
 
       // Head orientation is applied in the vertex shader rather than through the
@@ -6415,10 +6374,33 @@
       `;
 
       let ready = false;
+      let birdReady = false;
+      let branchReady = false;
       let visible = true;
       let rafId = 0;
 
-      new GLTFLoader().load('assets/fantasy-bird.glb', gltf => {
+      const modelLoader = new GLTFLoader();
+
+      function revealWhenReady() {
+        ready = birdReady && branchReady;
+        if (ready) wrap.classList.add('is-ready');
+      }
+
+      modelLoader.load(BRANCH_ASSET, gltf => {
+        try {
+          prepareBranchModel(gltf.scene);
+          branchReady = true;
+          revealWhenReady();
+        } catch (error) {
+          console.warn('Hero bird: could not prepare the supplied tree branch', error);
+          stop();
+        }
+      }, undefined, error => {
+        console.warn(`Hero bird: could not load ${BRANCH_ASSET}`, error);
+        stop();
+      });
+
+      modelLoader.load('assets/fantasy-bird.glb', gltf => {
         let skinned = null;
         gltf.scene.traverse(obj => { if (obj.isSkinnedMesh) skinned = obj; });
         if (!skinned) return;
@@ -6491,8 +6473,8 @@
         mesh.position.set(-center.x, -bbox.min.y, -center.z);
         birdGroup.add(inner);
 
-        ready = true;
-        wrap.classList.add('is-ready');
+        birdReady = true;
+        revealWhenReady();
       }, undefined, error => {
         // Opening index.html straight from disk blocks the model fetch (origin "null").
         if (window.location.protocol === 'file:') {
@@ -6544,13 +6526,23 @@
         const t = elapsed;
         const calm = reduceMotion.matches;
 
-        // Perched idle: the feet stay planted, so this is a balancing sway about
-        // the toes rather than the free-floating bob it used to be. What vertical
-        // travel is left stays inside the toes' overlap with the branch.
+        // The bird and branch share this wind pivot, so the feet never slide.
         if (!calm) {
-          birdGroup.position.y = Math.sin(t * 0.9) * 0.004;
-          birdGroup.rotation.z = Math.sin(t * 0.55) * 0.022;
-          birdGroup.rotation.x = Math.sin(t * 0.75 + 1.1) * 0.016;
+          perchRoot.position.y = Math.sin(t * 0.64 + 0.4) * 0.0015;
+          perchRoot.rotation.z =
+            Math.sin(t * 0.52) * 0.006 + Math.sin(t * 1.31 + 0.8) * 0.0025;
+          perchRoot.rotation.x = Math.sin(t * 0.43 + 1.2) * 0.0035;
+
+          birdGroup.position.y = 0;
+          birdGroup.rotation.z = 0;
+          birdGroup.rotation.x = 0;
+        } else {
+          perchRoot.position.y = 0;
+          perchRoot.rotation.x = 0;
+          perchRoot.rotation.z = 0;
+          birdGroup.position.y = 0;
+          birdGroup.rotation.x = 0;
+          birdGroup.rotation.z = 0;
         }
 
         head.tYaw = THREE.MathUtils.clamp(aim.x * 1.15, -0.8, 0.62);
