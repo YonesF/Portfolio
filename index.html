@@ -47,6 +47,11 @@
       --gold-light: #b89a58;
       --cream: #fdfaf5;
 
+      /* Night-sky hero: the only part of the site on a dark ground */
+      --night-text: #eef2ec;
+      --night-text-muted: rgba(226, 235, 255, 0.76);
+      --night-green: #9fd8b6;
+
       --ff-display: 'Cormorant Garamond', serif;
       --ff-body: 'DM Sans', sans-serif;
 
@@ -2822,6 +2827,170 @@
         display: none;
       }
     }
+
+    /* ══ Night-sky hero ═══════════════════════════════════════════
+       The hero carries a scroll-scrubbed video of a starfield over
+       clouds, so this whole section inverts to a dark treatment. The
+       rest of the page stays cream — the bottom scrim handles the
+       handover. Everything here is scoped to .hero so no other
+       section is affected. */
+    .hero {
+      /* Fallback ground colour: shows through if the video never loads */
+      background: linear-gradient(170deg, #131132 0%, #1a1338 45%, #241a45 100%);
+      color: var(--night-text);
+    }
+
+    .hero__video {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hero__video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* The source is 640x640 and gets upscaled hard; a touch of
+         saturation and contrast keeps it from going flat and grey. */
+      filter: saturate(1.12) contrast(1.06);
+    }
+
+    /* Readability scrim: dark on the left where the copy sits, easing
+       off to the right so the sky stays visible behind the bird. The
+       second layer settles the bottom into the dark green that opens
+       the greenhouse section below — fading to cream here would wedge a
+       bright band between two dark sections. */
+    .hero__video::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(100deg,
+          rgba(11, 9, 32, 0.90) 0%,
+          rgba(11, 9, 32, 0.72) 34%,
+          rgba(11, 9, 32, 0.34) 62%,
+          rgba(11, 9, 32, 0.12) 82%,
+          rgba(11, 9, 32, 0.20) 100%),
+        linear-gradient(to bottom,
+          rgba(11, 9, 32, 0.55) 0%,
+          transparent 18%,
+          transparent 72%,
+          rgba(9, 20, 15, 0.72) 92%,
+          #07130c 100%);
+    }
+
+    /* Grid lines were dark green for a cream page — invert them */
+    .hero .hero__grid {
+      background-image:
+        linear-gradient(rgba(214, 226, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(214, 226, 255, 0.05) 1px, transparent 1px);
+    }
+
+    /* Green wash glows read as muddy over indigo; retint them */
+    .hero .hero__glow {
+      background: radial-gradient(ellipse, rgba(150, 130, 255, 0.20) 0%, transparent 65%);
+    }
+
+    .hero .hero__glow-2 {
+      background: radial-gradient(ellipse, rgba(120, 200, 190, 0.12) 0%, transparent 65%);
+    }
+
+    /* The botanical SVG is drawn in pale green; screen-blend it so it
+       reads as a faint light form instead of a dark smudge */
+    .hero .hero__deco {
+      mix-blend-mode: screen;
+      opacity: 0.16;
+    }
+
+    .hero .hero__eyebrow {
+      color: var(--night-green);
+    }
+
+    .hero .hero__eyebrow::before {
+      background: linear-gradient(to right, transparent, var(--night-green));
+    }
+
+    .hero .hero__name {
+      color: var(--night-text);
+      text-shadow: 0 2px 30px rgba(8, 6, 24, 0.5);
+    }
+
+    .hero .hero__name span {
+      color: var(--night-green);
+    }
+
+    .hero .hero__desc {
+      color: var(--night-text-muted);
+    }
+
+    .hero .tag {
+      color: var(--night-text);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(214, 226, 255, 0.22);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: none;
+    }
+
+    .hero .tag:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(214, 226, 255, 0.38);
+    }
+
+    .hero .btn--outline {
+      color: var(--night-text);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(214, 226, 255, 0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: none;
+    }
+
+    .hero .btn--outline:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(214, 226, 255, 0.45);
+    }
+
+    .hero .hero__scroll-label {
+      color: rgba(214, 226, 255, 0.55);
+    }
+
+    .hero .hero__scroll-line {
+      background: linear-gradient(to bottom, var(--night-green), transparent);
+    }
+
+    /* The nav sits transparent over the hero until the page scrolls, so
+       its resting state has to be legible against the night sky. Once
+       .scrolled swaps in the cream bar, the original colours return. */
+    .nav:not(.scrolled) .nav__logo {
+      color: var(--night-text);
+    }
+
+    .nav:not(.scrolled) .nav__logo span,
+    .nav:not(.scrolled) .nav__logo-leaf {
+      color: var(--night-green);
+      fill: var(--night-green);
+    }
+
+    .nav:not(.scrolled) .nav__links a {
+      color: rgba(226, 235, 255, 0.72);
+    }
+
+    .nav:not(.scrolled) .nav__links a:hover,
+    .nav:not(.scrolled) .nav__links a.is-active {
+      color: #fff;
+    }
+
+    .nav:not(.scrolled) .nav__links a::after {
+      background: var(--night-green);
+    }
+
+    .nav:not(.scrolled) .nav__burger span {
+      background: var(--night-text);
+    }
   </style>
 </head>
 
@@ -2877,6 +3046,14 @@
 
     <!-- ══ HERO ══════════════════════════════════ -->
     <section class="hero section" id="hero" aria-label="Intro">
+      <!-- Night sky on an endless loop. The clip's own last frame does not
+           match its first, so the encode cross-blends the tail back over the
+           head — without that the wrap reads as a hard cut every few seconds. -->
+      <div class="hero__video" aria-hidden="true">
+        <video id="heroVideo" src="assets/hero-sky.mp4" loop muted playsinline preload="auto"
+          disablepictureinpicture tabindex="-1"></video>
+      </div>
+
       <div class="hero__glow" aria-hidden="true"></div>
       <div class="hero__glow-2" aria-hidden="true"></div>
       <div class="hero__grid" aria-hidden="true"></div>
@@ -5961,6 +6138,47 @@
     }
   </script>
 
+  <!-- ══ HERO SKY — looping background video ═══════════════════ -->
+  <script>
+    (function () {
+      const video = document.getElementById('heroVideo');
+      const hero = document.getElementById('hero');
+      if (!video || !hero) return;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let onScreen = true;
+
+      function update() {
+        // Reduced motion: hold the opening frame as a still backdrop. No seek
+        // involved, so this works even where the clip is not seekable.
+        if (reduceMotion.matches) {
+          video.pause();
+          return;
+        }
+        if (onScreen && !document.hidden) {
+          // Autoplay can still be refused; a paused first frame is a fine
+          // fallback, so swallow the rejection rather than logging noise.
+          const played = video.play();
+          if (played && played.catch) played.catch(function () { });
+        } else {
+          // Nothing decodes while the hero is off screen or the tab is hidden.
+          video.pause();
+        }
+      }
+
+      const observer = new IntersectionObserver(function (entries) {
+        onScreen = entries[0].isIntersecting;
+        update();
+      }, { threshold: 0 });
+      observer.observe(hero);
+
+      document.addEventListener('visibilitychange', update);
+      if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', update);
+
+      update();
+    })();
+  </script>
+
   <!-- ══ HERO BIRD — 3D, cursor-tracking head ══════════════════ -->
   <script type="module">
     import * as THREE from 'three';
@@ -5993,9 +6211,11 @@
       camera.position.set(0.25, 0.52, 2.44);
       camera.lookAt(0, 0.44, 0);
 
-      // Lighting tuned to the cream/green hero palette
-      scene.add(new THREE.HemisphereLight(0xfffaf0, 0x6f9e7a, 1.2));
-      const keyLight = new THREE.DirectionalLight(0xfff3dc, 1.45);
+      // Lighting tuned to the night sky behind it: cool moonlight key, violet
+      // bounce from the clouds below, and a bright rim to lift the silhouette
+      // off a dark background.
+      scene.add(new THREE.HemisphereLight(0xdfe4ff, 0x4c3d86, 1.05));
+      const keyLight = new THREE.DirectionalLight(0xf2f0ff, 1.5);
       keyLight.position.set(1.8, 2.4, 2.0);
       keyLight.castShadow = true;
       keyLight.shadow.mapSize.set(1024, 1024);
@@ -6008,10 +6228,10 @@
       keyLight.shadow.bias = -0.0015;
       keyLight.shadow.normalBias = 0.02;
       scene.add(keyLight);
-      const rimLight = new THREE.DirectionalLight(0xbfe3cb, 0.8);
+      const rimLight = new THREE.DirectionalLight(0xa98cff, 1.15);
       rimLight.position.set(-1.8, 1.4, -1.6);
       scene.add(rimLight);
-      const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+      const fillLight = new THREE.DirectionalLight(0x8fb6ff, 0.35);
       fillLight.position.set(-1.4, 0.2, 1.6);
       scene.add(fillLight);
 
@@ -6031,8 +6251,10 @@
       perchGroup.rotation.y = BASE_YAW;
       scene.add(perchGroup);
 
+      // Bark and foliage sit darker and cooler than daylight values would be,
+      // so the perch belongs to the night sky rather than looking pasted on.
       const barkMaterial = new THREE.MeshStandardMaterial({
-        color: 0x6f5a4a,
+        color: 0x53412f,
         roughness: 0.95,
         metalness: 0,
         transparent: true
@@ -6055,14 +6277,14 @@
         );
       };
       const leafMaterial = new THREE.MeshStandardMaterial({
-        color: 0x74a97f,
+        color: 0x5d8f6d,
         roughness: 0.75,
         metalness: 0,
         side: THREE.DoubleSide,
         shadowSide: THREE.DoubleSide
       });
       const leafDarkMaterial = leafMaterial.clone();
-      leafDarkMaterial.color.setHex(0x557f61);
+      leafDarkMaterial.color.setHex(0x416a52);
 
       // TubeGeometry has a constant radius, so build it at radius 1 and push each
       // ring out to the tapered radius afterwards.
