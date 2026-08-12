@@ -188,6 +188,107 @@
       padding-block: var(--sp-8);
     }
 
+    /* Cinematic section-to-section depth transitions */
+    main {
+      position: relative;
+      overflow: clip;
+      background: #07110d;
+      perspective: 1400px;
+    }
+
+    .scene-section {
+      --scene-scale: 1;
+      --scene-y: 0px;
+      --scene-opacity: 1;
+      --scene-shade: 0;
+      --scene-origin-y: 50%;
+      position: relative;
+      z-index: var(--scene-layer, 1);
+      opacity: var(--scene-opacity);
+      transform: translate3d(0, var(--scene-y), 0) scale(var(--scene-scale));
+      transform-origin: 50% var(--scene-origin-y);
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+    }
+
+    .scene-section + .scene-section {
+      margin-top: clamp(-64px, -6vh, -36px);
+    }
+
+    .scene-section > .scene-transition-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 80;
+      pointer-events: none;
+      opacity: var(--scene-shade);
+      background: rgba(4, 11, 9, 0.34);
+      will-change: opacity;
+    }
+
+    .scene-ambient {
+      --scene-drift-x: 4px;
+      --scene-drift-y: -5px;
+      --scene-drift-back-x: -2px;
+      --scene-drift-back-y: 2px;
+      animation: sceneAmbient var(--scene-drift-duration, 10s) ease-in-out var(--scene-drift-delay, 0s) infinite;
+      animation-play-state: paused;
+      will-change: transform;
+    }
+
+    .is-scene-near .scene-ambient {
+      animation-play-state: running;
+    }
+
+    .scene-ambient:focus-within {
+      animation-play-state: paused;
+      transform: none;
+    }
+
+    main > section:nth-of-type(even) .scene-ambient {
+      --scene-drift-x: -4px;
+      --scene-drift-y: 4px;
+      --scene-drift-back-x: 2px;
+      --scene-drift-back-y: -2px;
+    }
+
+    @keyframes sceneAmbient {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      45% { transform: translate3d(var(--scene-drift-x), var(--scene-drift-y), 0); }
+      72% { transform: translate3d(var(--scene-drift-back-x), var(--scene-drift-back-y), 0); }
+    }
+
+    @media (max-width: 700px) {
+      .scene-ambient {
+        --scene-drift-x: 2px;
+        --scene-drift-y: -3px;
+        --scene-drift-back-x: -1px;
+        --scene-drift-back-y: 1px;
+      }
+
+      main > section:nth-of-type(even) .scene-ambient {
+        --scene-drift-x: -2px;
+        --scene-drift-y: 3px;
+        --scene-drift-back-x: 1px;
+        --scene-drift-back-y: -1px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scene-section {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .scene-ambient {
+        animation: none !important;
+        transform: none !important;
+      }
+
+      .scene-transition-shade {
+        display: none;
+      }
+    }
+
     .section__label {
       display: flex;
       align-items: center;
@@ -3163,6 +3264,29 @@
       </div>
     </section>
 
+    <!-- ══ ABOUT ═════════════════════════════════ -->
+    <section class="section about" id="about" aria-label="Om meg">
+      <div class="about__unicorn" style="width: 1440px; height: 900px" data-us-project="p885x5HYtqypNB0U6wZ3"></div>
+      <div class="about__links about__links--overlay" aria-label="Sosiale lenker">
+              <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer" class="about__link" data-magnetic>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                </svg>
+                GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/yones-m-44616536a" target="_blank" rel="noopener noreferrer"
+                class="about__link" data-magnetic>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+                Linkedin
+              </a>
+      </div>
+      <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.8/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
+    </section>
+
 
     <!-- 3D GREENHOUSE -->
     <section class="greenhouse" id="greenhouse" aria-labelledby="greenhouse-h">
@@ -3191,30 +3315,6 @@
       <p class="greenhouse__fallback">
         Animert 3D-scene av et botanisk studio med skrivebord, skjerm, planter, bokhylle og flytende kodepaneler.
       </p>
-    </section>
-
-
-    <!-- ══ ABOUT ═════════════════════════════════ -->
-    <section class="section about" id="about" aria-label="Om meg">
-      <div class="about__unicorn" style="width: 1440px; height: 900px" data-us-project="p885x5HYtqypNB0U6wZ3"></div>
-      <div class="about__links about__links--overlay" aria-label="Sosiale lenker">
-              <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer" class="about__link" data-magnetic>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                </svg>
-                GitHub
-              </a>
-              <a href="https://www.linkedin.com/in/yones-m-44616536a" target="_blank" rel="noopener noreferrer"
-                class="about__link" data-magnetic>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                </svg>
-                Linkedin
-              </a>
-      </div>
-      <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.8/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
     </section>
 
 
@@ -3923,6 +4023,149 @@
     burger.addEventListener('click', openNav);
     closeBtn.addEventListener('click', closeNav);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeNav(); });
+
+    /* Smooth zoom handoff between the site's main scenes */
+    (function initSceneTransitions() {
+      const main = document.querySelector('main');
+      if (!main) return;
+
+      const definitions = [
+        { id: 'hero', ambient: '.hero__content', zoom: 'out' },
+        { id: 'about', ambient: '.about__links--overlay', zoom: 'in' },
+        { id: 'greenhouse', ambient: '.greenhouse__content' },
+        { id: 'skills', ambient: ':scope > .container' },
+        { id: 'erfaring', ambient: ':scope > .container' },
+        { id: 'projects', ambient: ':scope > .container' },
+        { id: 'video', ambient: ':scope > .container' },
+        { id: 'contact', ambient: ':scope > .container' }
+      ];
+
+      const motionSections = [];
+      const scenes = definitions.map((definition, index) => {
+        const element = document.getElementById(definition.id);
+        if (!element) return null;
+
+        motionSections.push(element);
+        element.style.setProperty('--scene-drift-duration', `${9 + (index % 4) * 1.35}s`);
+        element.style.setProperty('--scene-drift-delay', `${index * -1.15}s`);
+
+        const ambient = element.querySelector(definition.ambient);
+        ambient?.classList.add('scene-ambient');
+
+        if (!definition.zoom) return null;
+
+        element.classList.add('scene-section');
+        element.style.setProperty('--scene-layer', definitions.length - index);
+
+        const shade = document.createElement('div');
+        shade.className = 'scene-transition-shade';
+        shade.setAttribute('aria-hidden', 'true');
+        element.prepend(shade);
+
+        return {
+          element,
+          zoomIn: definition.zoom === 'in',
+          zoomOut: definition.zoom === 'out',
+          current: null,
+          target: null
+        };
+      }).filter(Boolean);
+
+      if (!scenes.length) return;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const clamp = value => Math.min(1, Math.max(0, value));
+      const easeInOut = value => value * value * (3 - 2 * value);
+      let frame = 0;
+      let needsMeasure = true;
+
+      const nearObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          entry.target.classList.toggle('is-scene-near', entry.isIntersecting);
+        });
+      }, { rootMargin: '35% 0px' });
+      motionSections.forEach(section => nearObserver.observe(section));
+
+      function measureScenes() {
+        const viewportHeight = Math.max(window.innerHeight, 1);
+        const mainTop = main.getBoundingClientRect().top + window.scrollY;
+        const mobile = window.innerWidth <= 700;
+        const incomingZoom = mobile ? 0.055 : 0.075;
+        const outgoingZoom = mobile ? 0.085 : 0.11;
+
+        scenes.forEach(scene => {
+          const top = mainTop + scene.element.offsetTop - window.scrollY;
+          const bottom = top + scene.element.offsetHeight;
+          const enter = clamp((viewportHeight - top) / (viewportHeight * 0.78));
+          const exit = clamp((viewportHeight * 0.92 - bottom) / (viewportHeight * 0.92));
+          const enterEase = scene.zoomIn ? easeInOut(enter) : 1;
+          const exitEase = scene.zoomOut ? easeInOut(exit) : 0;
+
+          scene.target = {
+            scale: 1 + (1 - enterEase) * incomingZoom - exitEase * outgoingZoom,
+            y: (1 - enterEase) * (mobile ? 26 : 42) - exitEase * (mobile ? 22 : 34),
+            opacity: (0.68 + enterEase * 0.32) * (1 - exitEase * 0.38),
+            shade: (1 - enterEase) * 0.28 + exitEase * 0.78,
+            origin: enterEase * 50 + exitEase * 50
+          };
+
+          if (!scene.current) scene.current = { ...scene.target };
+        });
+      }
+
+      function paintScene(scene) {
+        scene.element.style.setProperty('--scene-scale', scene.current.scale.toFixed(5));
+        scene.element.style.setProperty('--scene-y', `${scene.current.y.toFixed(2)}px`);
+        scene.element.style.setProperty('--scene-opacity', scene.current.opacity.toFixed(4));
+        scene.element.style.setProperty('--scene-shade', scene.current.shade.toFixed(4));
+        scene.element.style.setProperty('--scene-origin-y', `${scene.current.origin.toFixed(2)}%`);
+      }
+
+      function resetScenes() {
+        scenes.forEach(scene => {
+          scene.current = null;
+          scene.target = null;
+          ['--scene-scale', '--scene-y', '--scene-opacity', '--scene-shade', '--scene-origin-y']
+            .forEach(property => scene.element.style.removeProperty(property));
+        });
+      }
+
+      function animateScenes() {
+        frame = 0;
+        if (reduceMotion.matches) {
+          resetScenes();
+          return;
+        }
+
+        if (needsMeasure) {
+          measureScenes();
+          needsMeasure = false;
+        }
+
+        let moving = false;
+        scenes.forEach(scene => {
+          const speed = 0.14;
+          Object.keys(scene.target).forEach(key => {
+            const difference = scene.target[key] - scene.current[key];
+            scene.current[key] += difference * speed;
+            if (Math.abs(difference) > (key === 'y' || key === 'origin' ? 0.04 : 0.0005)) moving = true;
+          });
+          paintScene(scene);
+        });
+
+        if (moving || needsMeasure) frame = requestAnimationFrame(animateScenes);
+      }
+
+      function requestSceneUpdate() {
+        needsMeasure = true;
+        if (!frame) frame = requestAnimationFrame(animateScenes);
+      }
+
+      window.addEventListener('scroll', requestSceneUpdate, { passive: true });
+      window.addEventListener('resize', requestSceneUpdate, { passive: true });
+      reduceMotion.addEventListener?.('change', requestSceneUpdate);
+      requestSceneUpdate();
+    })();
 
     /* ─── Scroll reveal ────────────────────── */
     const revealObs = new IntersectionObserver(entries => {
