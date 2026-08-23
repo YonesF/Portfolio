@@ -14,6 +14,10 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@300;400&display=swap"
     rel="stylesheet" />
 
+  <!-- Lenis smooth scroll — https://github.com/darkroomengineering/lenis -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" />
+  <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+
   <style>
     :root {
       --bg: #f4f7f0;
@@ -95,10 +99,29 @@
       padding: 0;
     }
 
+    /* No scroll-behavior: smooth — Lenis drives scrolling now and the
+       native smoothing fights it. The nav offset that scroll-padding-top
+       used to give anchors is passed to Lenis as its anchors offset. */
     html {
-      scroll-behavior: smooth;
-      scroll-padding-top: 64px;
       font-size: 16px;
+    }
+
+    /* Velocity skew: sections lean with scroll speed and settle at rest,
+       the angle fed in from lenis.velocity. Opted in per section with the
+       attribute rather than applied broadly — it is deliberately kept off
+       the WebGL scenes, where skewing a live canvas looks wrong and costs
+       frames, and off #projects, whose chapter logic reads bounding rects
+       that a skew would quietly shift. */
+    [data-scroll-skew] {
+      transform: skewY(var(--scroll-skew, 0deg));
+      will-change: transform;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-scroll-skew] {
+        transform: none;
+        will-change: auto;
+      }
     }
 
     html.is-project-gliding { scroll-snap-type: none; }
@@ -417,7 +440,15 @@
       z-index: 200;
       padding-block: var(--sp-3);
       transition: background var(--tr-base), backdrop-filter var(--tr-base),
-        padding var(--tr-base), box-shadow var(--tr-base);
+        padding var(--tr-base), box-shadow var(--tr-base),
+        transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Direction-aware: driven from Lenis's scroll position, the bar steps
+       out of the way going down and comes straight back on the way up,
+       which gives the full-bleed scenes the whole screen. */
+    .nav--hidden {
+      transform: translateY(-100%);
     }
 
     .nav.scrolled {
@@ -522,28 +553,6 @@
     @media (prefers-reduced-motion: reduce) {
       .nav__logo,
       .nav__links li { opacity: 1; animation: none; }
-    }
-
-    .nav__cta {
-      font-size: var(--fs-sm) !important;
-      font-weight: 500 !important;
-      color: #fff !important;
-      background: var(--green) !important;
-      padding: 0.5rem 1.375rem;
-      border-radius: var(--r-full);
-      transition: background var(--tr-fast), transform var(--tr-fast),
-        box-shadow var(--tr-base) !important;
-      box-shadow: 0 2px 12px rgba(61, 122, 82, 0.22);
-    }
-
-    .nav__cta::after {
-      display: none !important;
-    }
-
-    .nav__cta:hover {
-      background: var(--green-mid) !important;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(61, 122, 82, 0.28) !important;
     }
 
     .nav__burger {
@@ -865,285 +874,6 @@
 
     .us-scene__link:hover svg {
       transform: scale(1.15) rotate(-6deg);
-    }
-
-    /* ── Skills ─────────────────────────────── */
-    .skills {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .skills::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      right: -10%;
-      width: 60vw;
-      height: 60vw;
-      background: radial-gradient(circle, rgba(132, 196, 154, 0.12) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .skills::after {
-      content: '';
-      position: absolute;
-      bottom: -10%;
-      left: -10%;
-      width: 50vw;
-      height: 50vw;
-      background: radial-gradient(circle, rgba(138, 114, 64, 0.08) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .skills__head {
-      margin-bottom: var(--sp-7);
-      position: relative;
-      z-index: 2;
-    }
-
-    .skills > .container {
-      position: relative;
-      z-index: 3;
-    }
-
-    .skills__grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--sp-4);
-      position: relative;
-      z-index: 2;
-      padding-bottom: 40px;
-      /* space for stagger */
-    }
-
-    @media (min-width: 961px) {
-      .skills__grid .skill-card:nth-child(3n+2) {
-        transform: translateY(40px);
-      }
-
-      .skills__grid .skill-card:nth-child(3n+2):hover {
-        transform: translateY(32px);
-      }
-    }
-
-    .skill-card {
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: var(--r-xl);
-      padding: var(--sp-4);
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(40, 80, 50, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      transition:
-        opacity      0.75s ease,
-        transform    0.75s cubic-bezier(0.34, 1.4, 0.64, 1),
-        background   0.35s ease,
-        box-shadow   0.75s ease,
-        border-color 0.4s  ease;
-      will-change: transform, opacity;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .skill-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(132, 196, 154, 0.08) 0%, transparent 100%);
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-
-    .skill-card:hover {
-      border-color: rgba(132, 196, 154, 0.4);
-      transform: translateY(-8px);
-      box-shadow: 0 15px 35px rgba(40, 80, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    }
-
-    .skill-card:hover::before {
-      opacity: 1;
-    }
-
-    /* ── Skills backdrop overlay ─────────────── */
-    .skills__backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(14, 38, 18, 0.28);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      opacity: 0;
-      z-index: 1;
-      pointer-events: none;
-      transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .skills:has(.skill-card:hover) .skills__backdrop {
-      opacity: 1;
-    }
-
-    /* ── Skills firefly canvas ────────────────── */
-    .skills__fireflies {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 1.1s ease;
-    }
-
-    .skills.skills--hover .skills__fireflies {
-      opacity: 1;
-    }
-
-    /* Keep every label readable while giving the focused card more presence. */
-    .skills:has(.skill-card:hover) .skill-card:not(:hover) {
-      opacity: 0.58;
-      filter: none;
-      transform: scale(0.985);
-      box-shadow: none;
-    }
-
-    @media (min-width: 961px) {
-      .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):not(:hover) {
-        transform: translateY(40px) scale(0.985);
-      }
-    }
-
-    /* Lift the focused card without scaling its text into a soft bitmap. */
-    .skills:has(.skill-card:hover) .skill-card:hover {
-      opacity: 1;
-      filter: none;
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transform: translateY(-14px);
-      box-shadow:
-        0 40px 80px rgba(14, 38, 18, 0.32),
-        0  0   0 1px rgba(90, 158, 111, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
-      border-color: rgba(90, 158, 111, 0.55);
-      z-index: 5;
-    }
-
-    @media (min-width: 961px) {
-      .skills:has(.skill-card:hover) .skills__grid .skill-card:nth-child(3n+2):hover {
-        transform: translateY(26px);
-      }
-    }
-
-    .skills:has(.skill-card:hover) > .scene-ambient {
-      animation: none;
-      transform: none;
-    }
-
-    .skill-card__ico {
-      width: 52px;
-      height: 52px;
-      background: linear-gradient(135deg, #fff, var(--green-wash));
-      border: 1px solid rgba(61, 122, 82, 0.12);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: var(--sp-4);
-      box-shadow: 0 4px 12px rgba(61, 122, 82, 0.06);
-      position: relative;
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
-    }
-
-    .skill-card:hover .skill-card__ico {
-      transform: scale(1.08) rotate(-4deg);
-      box-shadow: 0 8px 20px rgba(61, 122, 82, 0.12);
-    }
-
-    .skill-card__name {
-      font-family: var(--ff-display);
-      font-size: var(--fs-2xl);
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 8px;
-      line-height: 1.1;
-      position: relative;
-    }
-
-    .skill-card__level {
-      font-size: 0.62rem;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--green-mid);
-      margin-bottom: var(--sp-3);
-      display: inline-block;
-      padding: 0.25rem 0.7rem;
-      background: rgba(90, 158, 111, 0.08);
-      border: 1px solid rgba(90, 158, 111, 0.15);
-      border-radius: var(--r-full);
-      position: relative;
-    }
-
-    .skill-card__desc {
-      font-size: var(--fs-sm);
-      color: var(--text-faint);
-      line-height: 1.7;
-      margin-bottom: var(--sp-4);
-      flex-grow: 1;
-      position: relative;
-    }
-
-    .skill-card__bar {
-      width: 100%;
-      height: 4px;
-      background: rgba(61, 122, 82, 0.06);
-      border-radius: var(--r-full);
-      margin-top: auto;
-      position: relative;
-    }
-
-    .skill-card__fill {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(to right, var(--green-mid), var(--green-light), var(--green-mid));
-      background-size: 200% 100%;
-      border-radius: var(--r-full);
-      position: relative;
-      transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .reveal.visible .skill-card__fill {
-      animation: barShimmer 2.4s 1.5s ease-in-out infinite;
-    }
-
-    @keyframes barShimmer {
-      0%   { background-position: 100% 0; }
-      50%  { background-position:   0% 0; }
-      100% { background-position: 100% 0; }
-    }
-
-    .skill-card__fill::after {
-      content: '';
-      position: absolute;
-      right: -3px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 8px;
-      height: 8px;
-      background: #fff;
-      border: 2px solid var(--green);
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.3s ease 1s;
-    }
-
-    .reveal.visible .skill-card__fill::after {
-      opacity: 1;
     }
 
     /* ── Erfaring ───────────────────────────── */
@@ -2650,10 +2380,6 @@
         display: flex;
       }
 
-      .skills__grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
       .erfaring__grid {
         grid-template-columns: 1fr;
       }
@@ -2697,10 +2423,6 @@
 
       .section__title {
         font-size: clamp(2rem, 8vw, 2.5rem);
-      }
-
-      .skills__grid {
-        grid-template-columns: 1fr;
       }
 
       .contact__form .btn {
@@ -2827,7 +2549,6 @@
 
     /* ── Reduced-motion overrides ────────────── */
     @media (prefers-reduced-motion: reduce) {
-      .reveal.visible .skill-card__fill { animation: none; }
       .nav__logo, .nav__links li { opacity: 1; animation: none; }
       .section__label::before { transition: none; }
     }
@@ -2888,11 +2609,11 @@
         </a>
         <ul class="nav__links" role="list">
           <li><a href="#alder">Om meg</a></li>
-          <li><a href="#skills">Ferdigheter</a></li>
+          <li><a href="#ferdigheter">Ferdigheter</a></li>
           <li><a href="#erfaring">Erfaring</a></li>
           <li><a href="#projects">Prosjekter</a></li>
           <li><a href="#video">Video</a></li>
-          <li><a href="#contact" class="nav__cta">Kontakt</a></li>
+          <li><a href="#contact">Kontakt</a></li>
         </ul>
         <button class="nav__burger" id="navBurger" aria-label="Åpne meny" aria-expanded="false">
           <span></span><span></span><span></span>
@@ -2905,7 +2626,7 @@
   <div class="nav-overlay" id="navOverlay" role="dialog" aria-modal="true">
     <button class="nav-overlay__x" id="navClose" aria-label="Lukk meny">×</button>
     <a href="#alder" onclick="closeNav()">Om meg</a>
-    <a href="#skills" onclick="closeNav()">Ferdigheter</a>
+    <a href="#ferdigheter" onclick="closeNav()">Ferdigheter</a>
     <a href="#erfaring" onclick="closeNav()">Erfaring</a>
     <a href="#projects" onclick="closeNav()">Prosjekter</a>
     <a href="#video" onclick="closeNav()">Video</a>
@@ -2955,9 +2676,10 @@
       </p>
     </section>
 
-    <!-- ══ FERDIGHETER (tittelkort) ══════════════
-         Leads into the skills cards below, on the same black ground as
-         the two scenes above it. -->
+    <!-- ══ FERDIGHETER ═══════════════════════════
+         Carries the skills on its own now — the card grid that used to
+         follow it has been removed. Same black ground as the two scenes
+         above it. -->
     <section class="us-scene" id="ferdigheter" data-nav-dark aria-label="Ferdigheter">
       <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-reserve="96" data-us-project="h1QfJCx9UZWIygGIzksa"
         data-us-arialabel="Animert tittelkort med teksten Ferdigheter"></div>
@@ -3001,132 +2723,8 @@
 
     <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.10/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
 
-    <!-- ══ SKILLS ════════════════════════════════ -->
-    <section class="section skills" id="skills" aria-labelledby="skills-h">
-      <div class="skills__backdrop" aria-hidden="true"></div>
-      <canvas class="skills__fireflies" aria-hidden="true"></canvas>
-      <div class="container">
-        <div class="skills__head">
-          <p class="section__label reveal">Ferdigheter</p>
-          <h2 class="section__title reveal d1" id="skills-h">
-            Hva jeg bringer<br>til <em>bordet</em>
-          </h2>
-        </div>
-
-        <div class="skills__grid" role="list">
-          <div class="skill-card reveal" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <rect x="3" y="11" width="18" height="10" rx="2" />
-                <circle cx="12" cy="5" r="2" />
-                <path d="M12 7v4" />
-                <path d="M8 15h.01M12 15h.01M16 15h.01" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">AI &amp; Prompt Engineering</h3>
-            <p class="skill-card__level">Avansert bruker</p>
-            <p class="skill-card__desc">LLM-er, arbeidsflyt-automatisering og prompt-design for å jobbe smartere og
-              raskere.</p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="85"></div>
-            </div>
-          </div>
-
-          <div class="skill-card reveal d1" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.53-.21-1.04-.58-1.41-.37-.38-.58-.89-.58-1.42 0-1.04.84-1.89 1.89-1.89h1.77c2.76 0 5-2.24 5-5 0-4.42-4.48-8-10-8z" />
-                <circle cx="6.5" cy="11.5" r="1.5" />
-                <circle cx="8.5" cy="7.5" r="1.5" />
-                <circle cx="14.5" cy="7.5" r="1.5" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">Design &amp; Kreativitet</h3>
-            <p class="skill-card__level">Godt kjent</p>
-            <p class="skill-card__desc">Visuell kommunikasjon, layout-prinsipper, Figma og en naturlig sans for
-              estetikk.</p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="70"></div>
-            </div>
-          </div>
-
-          <div class="skill-card reveal d2" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <line x1="6" y1="3" x2="6" y2="15" />
-                <circle cx="18" cy="6" r="3" />
-                <circle cx="6" cy="18" r="3" />
-                <path d="M18 9a9 9 0 0 1-9 9" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">Git &amp; GitHub</h3>
-            <p class="skill-card__level">Godt kjent</p>
-            <p class="skill-card__desc">Versjonskontroll, repositories, branches og samarbeid via pull requests.</p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="65"></div>
-            </div>
-          </div>
-
-          <div class="skill-card reveal d1" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <polyline points="16 18 22 12 16 6" />
-                <polyline points="8 6 2 12 8 18" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">Webutvikling</h3>
-            <p class="skill-card__level">Nybegynner</p>
-            <p class="skill-card__desc">HTML, CSS og JavaScript. Bygger funksjonelle og pene nettsider fra grunnen av.
-            </p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="45"></div>
-            </div>
-          </div>
-
-          <div class="skill-card reveal d2" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <ellipse cx="12" cy="5" rx="9" ry="3" />
-                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">IT &amp; Informasjonssystem</h3>
-            <p class="skill-card__level">Under utdanning</p>
-            <p class="skill-card__desc">Systemanalyse, databaser og IT-infrastruktur fra studiene ved UiA.</p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="55"></div>
-            </div>
-          </div>
-
-          <div class="skill-card reveal d3" role="listitem">
-            <div class="skill-card__ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                <polyline points="4 17 10 11 4 5" />
-                <line x1="12" y1="19" x2="20" y2="19" />
-              </svg>
-            </div>
-            <h3 class="skill-card__name">C#</h3>
-            <p class="skill-card__level">Nybegynner</p>
-            <p class="skill-card__desc">Grunnleggende programmering, scripting og enkle automatiseringsoppgaver.</p>
-            <div class="skill-card__bar" role="progressbar" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
-              <div class="skill-card__fill" data-w="35"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
     <!-- ══ ERFARING ════════════════════════════════ -->
-    <section class="section erfaring" id="erfaring" aria-labelledby="erfaring-h">
+    <section class="section erfaring" id="erfaring" data-scroll-skew aria-labelledby="erfaring-h">
 
       <canvas class="erfaring__canvas" id="erfaringCanvas" aria-hidden="true"></canvas>
       <div class="erfaring__forest-overlay" aria-hidden="true"></div>
@@ -3603,7 +3201,7 @@
 
 
     <!-- ══ VIDEO ═════════════════════════════════ -->
-    <section class="section video-section" id="video" aria-labelledby="video-h">
+    <section class="section video-section" id="video" data-scroll-skew aria-labelledby="video-h">
       <div class="forest-overlay" id="forestOverlay"></div>
       <canvas class="firefly-canvas" id="fireflyCanvas"></canvas>
       <div class="container">
@@ -3666,7 +3264,7 @@
 
 
     <!-- ══ CONTACT ═══════════════════════════════ -->
-    <section class="section contact" id="contact" aria-labelledby="contact-h">
+    <section class="section contact" id="contact" data-scroll-skew aria-labelledby="contact-h">
       <div class="container">
         <div class="contact__grid">
           <div class="contact__info">
@@ -3785,6 +3383,28 @@
   </footer>
 
   <script>
+    /* ─── Lenis smooth scroll ───────────────── */
+    // Declared first so the scroll-driven code further down can reach it.
+    // autoRaf runs Lenis's own frame loop. Lenis honours
+    // prefers-reduced-motion by default, falling back to native scrolling.
+    const lenis = new Lenis({ autoRaf: true });
+
+    // In-page links, handled here rather than with Lenis's own `anchors`
+    // option: the project index links run their own click handler and
+    // scroll themselves, and this way defaultPrevented reliably opts them
+    // out instead of both animators firing at the same target. The offset
+    // is what scroll-padding-top used to give us — clearance for the nav.
+    document.addEventListener('click', event => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+      const link = event.target.closest('a[href^="#"]');
+      if (!link) return;
+      const hash = link.getAttribute('href');
+      if (hash === '#' || !document.querySelector(hash)) return;
+      event.preventDefault();
+      history.replaceState(null, '', hash);
+      lenis.scrollTo(hash, { offset: -64 });
+    });
+
     /* ─── Custom cursor ─────────────────────── */
     const dot = document.getElementById('c-dot');
     const ring = document.getElementById('c-ring');
@@ -3855,11 +3475,58 @@
     const burger = document.getElementById('navBurger');
     const overlay = document.getElementById('navOverlay');
     const closeBtn = document.getElementById('navClose');
-    function openNav() { overlay.classList.add('open'); burger.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; }
-    function closeNav() { overlay.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; }
+    // lenis.stop() does the scroll locking here: Lenis scrolls the window
+    // itself, so body { overflow: hidden } alone no longer holds the page
+    // still behind the overlay.
+    function openNav() { overlay.classList.add('open'); burger.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; lenis.stop(); nav.classList.remove('nav--hidden'); }
+    function closeNav() { overlay.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; lenis.start(); }
     burger.addEventListener('click', openNav);
     closeBtn.addEventListener('click', closeNav);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeNav(); });
+
+    /* ─── Scroll-velocity skew ──────────────── */
+    // Leans the opted-in sections with scroll speed. Lenis emits velocity
+    // every frame it animates, and it decays to ~0 as the glide settles,
+    // so the sections straighten up on their own without a reset timer.
+    (function initVelocitySkew() {
+      const targets = document.querySelectorAll('[data-scroll-skew]');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (!targets.length || reduceMotion.matches) return;
+
+      const MAX_DEG = 2.2;      // past roughly this it stops reading as motion
+      const PER_VELOCITY = 0.05;
+      let applied = null;
+
+      lenis.on('scroll', ({ velocity }) => {
+        let deg = velocity * PER_VELOCITY;
+        deg = Math.max(-MAX_DEG, Math.min(MAX_DEG, deg));
+        if (Math.abs(deg) < 0.02) deg = 0;
+        if (deg === applied) return;
+        applied = deg;
+        targets.forEach(el => el.style.setProperty('--scroll-skew', deg.toFixed(3) + 'deg'));
+      });
+    })();
+
+    /* ─── Direction-aware nav ───────────────── */
+    // Reads the scroll position rather than lenis.direction so the sign is
+    // unambiguous. Stays put near the top and while the mobile menu is
+    // open, where hiding it would strand the close button.
+    (function initNavAutoHide() {
+      const REVEAL_AT = 160;    // px before it is allowed to hide at all
+      const DEADZONE = 6;       // ignore sub-pixel jitter
+      let last = window.scrollY;
+
+      lenis.on('scroll', ({ scroll }) => {
+        const delta = scroll - last;
+        if (Math.abs(delta) < DEADZONE) return;
+        last = scroll;
+        if (overlay.classList.contains('open') || scroll <= REVEAL_AT) {
+          nav.classList.remove('nav--hidden');
+          return;
+        }
+        nav.classList.toggle('nav--hidden', delta > 0);
+      });
+    })();
 
     /* Smooth zoom handoff between the site's main scenes */
     (function initSceneTransitions() {
@@ -3874,7 +3541,6 @@
         { id: 'landing' },
         { id: 'alder', ambient: '.us-scene__blend' },
         { id: 'ferdigheter', ambient: '.us-scene__blend', zoom: 'out' },
-        { id: 'skills', ambient: ':scope > .container' },
         { id: 'erfaring', ambient: ':scope > .container' },
         { id: 'projects', ambient: '.projects__intro-inner' },
         { id: 'video', ambient: ':scope > .container' },
@@ -4015,18 +3681,6 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-
-    /* ─── Skill bars ───────────────────────── */
-    const barObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          const fill = e.target.querySelector('.skill-card__fill');
-          if (fill) fill.style.width = fill.dataset.w + '%';
-          barObs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.25 });
-    document.querySelectorAll('.skill-card').forEach(c => barObs.observe(c));
 
     /* ─── Active nav links ─────────────────── */
     const sections = document.querySelectorAll('section[id]');
@@ -4231,113 +3885,6 @@
           resize();
           fireflies.forEach(f => { f.w = canvas.width; f.h = canvas.height; });
         }
-      });
-    })();
-
-    /* ─── Skills section fireflies ──────────── */
-    (function initSkillsFireflies() {
-      const section = document.querySelector('.skills');
-      const canvas  = section && section.querySelector('.skills__fireflies');
-      if (!section || !canvas) return;
-
-      const ctx = canvas.getContext('2d');
-      let flies = [], animId = null, hoverCount = 0;
-
-      const ffColors = [
-        { r: 184, g: 210, b: 160 },
-        { r: 132, g: 196, b: 154 },
-        { r: 200, g: 230, b: 208 },
-        { r: 220, g: 200, b: 140 },
-        { r: 160, g: 210, b: 170 },
-      ];
-
-      function resize() {
-        const r = section.getBoundingClientRect();
-        canvas.width  = r.width;
-        canvas.height = r.height;
-      }
-
-      class Fly {
-        constructor() {
-          const w = canvas.width, h = canvas.height;
-          this.x = Math.random() * w;
-          this.y = Math.random() * h;
-          this.size = Math.random() * 2.5 + 1;
-          this.baseAlpha = Math.random() * 0.4 + 0.3;
-          this.alpha = 0;
-          this.targetAlpha = this.baseAlpha;
-          this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
-          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
-          this.vx = (Math.random() - 0.5) * 0.3;
-          this.vy = (Math.random() - 0.5) * 0.2;
-          this.phase = Math.random() * Math.PI * 2;
-          this.pulseSpeed = Math.random() * 0.018 + 0.007;
-          this.glowSize = this.size * (Math.random() * 6 + 8);
-        }
-        update() {
-          this.phase += this.pulseSpeed;
-          this.alpha += (this.targetAlpha - this.alpha) * 0.04;
-          const pulse = Math.sin(this.phase) * 0.5 + 0.5;
-          this.x += Math.sin(this.phase * 0.7) * 0.4 + this.vx;
-          this.y += Math.cos(this.phase * 0.5) * 0.3 + this.vy;
-          const w = canvas.width, h = canvas.height;
-          if (this.x < -20) this.x = w + 20;
-          if (this.x > w + 20) this.x = -20;
-          if (this.y < -20) this.y = h + 20;
-          if (this.y > h + 20) this.y = -20;
-          return pulse;
-        }
-        draw(pulse) {
-          const a = this.alpha * (0.4 + pulse * 0.6);
-          if (a < 0.01) return;
-          const g = this.glowSize;
-          ctx.globalAlpha = a;
-          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
-          ctx.globalAlpha = 1;
-          const { r, g: cg, b } = this.color;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
-          ctx.fill();
-        }
-        fadeIn()  { this.targetAlpha = this.baseAlpha; }
-        fadeOut() { this.targetAlpha = 0; }
-      }
-
-      function initFlies() {
-        resize();
-        flies = [];
-        const count = Math.min(Math.floor(canvas.width / 28), 25);
-        for (let i = 0; i < count; i++) flies.push(new Fly());
-      }
-
-      function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let allGone = true;
-        flies.forEach(f => { const p = f.update(); f.draw(p); if (f.alpha > 0.01) allGone = false; });
-        if (hoverCount === 0 && allGone) { animId = null; return; }
-        animId = requestAnimationFrame(animate);
-      }
-
-      function start() {
-        if (!flies.length) initFlies();
-        section.classList.add('skills--hover');
-        flies.forEach(f => f.fadeIn());
-        if (!animId) animate();
-      }
-
-      function stop() {
-        section.classList.remove('skills--hover');
-        flies.forEach(f => f.fadeOut());
-      }
-
-      section.querySelectorAll('.skill-card').forEach(card => {
-        card.addEventListener('mouseenter', () => { hoverCount++; if (hoverCount === 1) start(); });
-        card.addEventListener('mouseleave', () => { hoverCount = Math.max(0, hoverCount - 1); if (hoverCount === 0) stop(); });
-      });
-
-      window.addEventListener('resize', () => {
-        if (flies.length) { resize(); flies.forEach(f => { f.x = Math.min(f.x, canvas.width); f.y = Math.min(f.y, canvas.height); }); }
       });
     })();
 
@@ -4555,29 +4102,22 @@
         if (moving) frame = requestAnimationFrame(renderProjectMotion);
       }
 
+      // Hand the chapter glide to Lenis instead of driving window.scrollTo
+      // from our own rAF loop — two animators writing scroll position fight
+      // each other. lock replaces what the wheel handler's preventDefault
+      // used to do: hold the user off until the target is reached.
       function animateToChapter(chapter) {
-        cancelAnimationFrame(scrollAnimation);
+        scrollAnimation = 1;
         document.documentElement.classList.add('is-project-gliding');
-        const start = window.scrollY;
-        const destination = start + chapter.getBoundingClientRect().top - 64;
-        const distance = destination - start;
-        const duration = window.innerWidth <= 700 ? 900 : 1250;
-        const startedAt = performance.now();
-
-        function step(now) {
-          const progress = clamp((now - startedAt) / duration);
-          const eased = progress < 0.5
-            ? 16 * Math.pow(progress, 5)
-            : 1 - Math.pow(-2 * progress + 2, 5) / 2;
-          window.scrollTo({ top: start + distance * eased, behavior: 'instant' });
-          if (progress < 1) scrollAnimation = requestAnimationFrame(step);
-          else {
+        lenis.scrollTo(chapter, {
+          offset: -64,
+          duration: (window.innerWidth <= 700 ? 900 : 1250) / 1000,
+          lock: true,
+          onComplete: () => {
             scrollAnimation = 0;
             document.documentElement.classList.remove('is-project-gliding');
           }
-        }
-
-        scrollAnimation = requestAnimationFrame(step);
+        });
       }
 
       function queueProjectUpdate() {
