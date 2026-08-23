@@ -18,6 +18,11 @@
   <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" />
   <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
 
+  <!-- GSAP — https://gsap.com (standard 'no charge' license) -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+
   <style>
     :root {
       --bg: #f4f7f0;
@@ -353,37 +358,23 @@
       color: var(--green-mid);
     }
 
-    /* ── Scroll reveal ─────────────────────── */
+    /* ── Scroll reveal ───────────────────────
+       Just the resting state now — ScrollTrigger.batch animates out of it,
+       and its stagger replaces the d1–d5 delay classes this used to carry.
+       No CSS transition here: GSAP tweens the same two properties, and a
+       transition on top of that fights the tween. */
     .reveal {
       opacity: 0;
       transform: translateY(30px) scale(0.97);
-      transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
-    }
-
-    .reveal.d1 {
-      transition-delay: 0.08s;
-    }
-
-    .reveal.d2 {
-      transition-delay: 0.16s;
-    }
-
-    .reveal.d3 {
-      transition-delay: 0.24s;
-    }
-
-    .reveal.d4 {
-      transition-delay: 0.32s;
-    }
-
-    .reveal.d5 {
-      transition-delay: 0.40s;
+    /* Reduced motion never runs the batch, so nothing would clear the
+       resting state — show everything outright instead. */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
     }
 
     /* ── Custom cursor ─────────────────────── */
@@ -878,18 +869,88 @@
 
     /* ── Erfaring ───────────────────────────── */
     .erfaring {
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      background: #020806;
+      border-top: 1px solid rgba(159, 216, 182, 0.12);
+      border-bottom: 1px solid rgba(159, 216, 182, 0.12);
+      padding-block: clamp(4rem, 7vw, 6rem) 0.75rem;
       position: relative;
       overflow: hidden;
+      isolation: isolate;
       transition: background-color 1.8s cubic-bezier(0.4, 0, 0.2, 1),
                   border-color     1.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* ── Erfaring backdrop scene ─────────────
+       WebGL scene behind the whole section. It is decorative, so unlike
+       the opening scenes it is allowed to crop: the stage is pinned to the
+       viewport height and centred, and the section scrolls past it. */
+    .erfaring__scene {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: #020806;
+    }
+
+    .erfaring__scene-stage {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      min-width: calc(100vh * 1.6);
+      height: 100%;
+    }
+
+    .erfaring__scene-stage canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Content sits above the backdrop scene layer. */
+    .erfaring > .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Keep the moving scene present while pulling it into the same dark
+       forest palette as the opening sections. */
+    .erfaring__scene-veil {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom,
+          #020806 0%,
+          rgba(2, 8, 6, 0.66) 9%,
+          rgba(2, 8, 6, 0.38) 28%,
+          rgba(2, 8, 6, 0.34) 76%,
+          rgba(2, 8, 6, 0.7) 94%,
+          #020806 100%),
+        linear-gradient(to right,
+          rgba(1, 5, 4, 0.58),
+          rgba(1, 5, 4, 0.12) 28%,
+          rgba(1, 5, 4, 0.12) 72%,
+          rgba(1, 5, 4, 0.58));
+    }
+
+    .erfaring .section__label {
+      color: var(--night-green);
+    }
+
+    .erfaring .section__title {
+      font-size: clamp(2.4rem, 4.5vw, 3.5rem);
+      color: var(--night-text);
+      margin-bottom: 0;
+      text-shadow: 0 2px 26px rgba(0, 0, 0, 0.42);
+    }
+
+    .erfaring .section__title em {
+      color: #a7dfba;
+    }
+
     .erfaring:has(.erf-card:hover) {
-      background-color: #0c1f10;
-      border-color: rgba(30, 65, 35, 0.22);
+      background-color: #020806;
+      border-color: rgba(159, 216, 182, 0.18);
     }
 
     .erfaring__forest-overlay {
@@ -921,40 +982,24 @@
     }
 
     .erfaring:has(.erf-card:hover) .section__label {
-      color: rgba(132, 196, 154, 0.58);
+      color: rgba(159, 216, 182, 0.78);
     }
 
     .erfaring:has(.erf-card:hover) .section__title {
-      color: rgba(200, 230, 208, 0.86);
+      color: var(--night-text);
     }
 
     .erfaring:has(.erf-card:hover) .section__title em {
-      color: rgba(132, 196, 154, 0.92);
+      color: #a7dfba;
       text-shadow: 0 0 28px rgba(132, 196, 154, 0.18);
     }
 
     .erfaring::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      right: -10%;
-      width: 55vw;
-      height: 55vw;
-      background: radial-gradient(circle, rgba(138, 114, 64, 0.07) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
+      content: none;
     }
 
     .erfaring::after {
-      content: '';
-      position: absolute;
-      bottom: -15%;
-      left: -8%;
-      width: 45vw;
-      height: 45vw;
-      background: radial-gradient(circle, rgba(132, 196, 154, 0.07) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
+      content: none;
     }
 
     .erfaring__canvas {
@@ -1021,7 +1066,7 @@
     }
 
     .erfaring__head {
-      margin-bottom: var(--sp-7);
+      margin-bottom: clamp(2rem, 3.5vw, 2.5rem);
       position: relative;
       z-index: 1;
     }
@@ -1029,20 +1074,25 @@
     .erfaring__grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: var(--sp-4);
+      gap: 1rem;
       position: relative;
       z-index: 1;
     }
 
+    /* Dark glass keeps the scene visible without asking body copy to compete
+       with its moving detail. */
     .erf-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--r-xl);
-      padding: var(--sp-4) var(--sp-5) var(--sp-5);
+      background: rgba(0, 3, 2, 0.16);
+      backdrop-filter: blur(4px) saturate(1.02) brightness(0.62);
+      -webkit-backdrop-filter: blur(4px) saturate(1.02) brightness(0.62);
+      border: 1px solid rgba(0, 0, 0, 0.58);
+      border-radius: var(--r-lg);
+      padding: 1.125rem 1.25rem 1.25rem;
       position: relative;
+      z-index: 1;
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      transition: border-color var(--tr-base), transform 0.85s cubic-bezier(0.34, 1.2, 0.64, 1),
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+      transition: background-color var(--tr-base), border-color var(--tr-base), transform 0.85s cubic-bezier(0.34, 1.2, 0.64, 1),
                   box-shadow var(--tr-base), opacity 0.85s ease, filter 0.85s ease;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -1053,9 +1103,9 @@
 
     /* Dim non-hovered cards when any card is hovered */
     .erfaring:has(.erf-card:hover) .erf-card:not(:hover) {
-      opacity: 0.28;
-      filter: blur(1.5px) saturate(0.5);
-      transform: scale(0.97);
+      opacity: 0.7;
+      filter: saturate(0.82);
+      transform: scale(0.985);
       box-shadow: none;
     }
 
@@ -1065,10 +1115,10 @@
       filter: none;
       transform: translateY(-12px) scale(1.03);
       box-shadow:
-        0 32px 64px rgba(4, 14, 6, 0.45),
-        0  0   0 1px rgba(90, 158, 111, 0.42),
-        inset 0 1px 0 rgba(255, 255, 255, 0.92);
-      border-color: rgba(90, 158, 111, 0.5);
+        0 32px 64px rgba(0, 0, 0, 0.52),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.32);
+      background: rgba(0, 4, 2, 0.24);
+      border-color: rgba(0, 0, 0, 0.72);
       z-index: 5;
     }
 
@@ -1076,16 +1126,16 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(132, 196, 154, 0.07) 0%, rgba(138, 114, 64, 0.03) 100%);
+      background: linear-gradient(135deg, rgba(132, 196, 154, 0.09), rgba(184, 154, 88, 0.025));
       opacity: 0;
       transition: opacity 0.5s ease;
       pointer-events: none;
     }
 
     .erf-card:hover {
-      border-color: rgba(61, 122, 82, 0.3);
+      border-color: rgba(0, 0, 0, 0.72);
       transform: translateY(-6px);
-      box-shadow: var(--shadow-hover);
+      box-shadow: 0 24px 58px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.28);
     }
 
     .erf-card:hover::before {
@@ -1093,35 +1143,39 @@
     }
 
     .erf-card__ico {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #fff, var(--green-wash));
-      border: 1px solid rgba(61, 122, 82, 0.12);
-      border-radius: 14px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 10, 6, 0.52);
+      border: 1px solid rgba(159, 216, 182, 0.2);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: var(--sp-3);
-      box-shadow: 0 4px 12px rgba(61, 122, 82, 0.06);
+      margin-bottom: 0.75rem;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
       flex-shrink: 0;
     }
 
     .erf-card:hover .erf-card__ico {
       transform: scale(1.08) rotate(-4deg);
-      box-shadow: 0 8px 20px rgba(61, 122, 82, 0.12);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3), 0 0 20px rgba(132, 196, 154, 0.08);
+    }
+
+    .erf-card__ico svg {
+      color: var(--night-green) !important;
     }
 
     .erf-card__meta {
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.68rem;
+      font-size: 0.58rem;
       font-weight: 500;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--green);
-      margin-bottom: var(--sp-1);
+      color: var(--night-green);
+      margin-bottom: 0.3rem;
       flex-wrap: wrap;
     }
 
@@ -1136,38 +1190,39 @@
 
     .erf-card__title {
       font-family: var(--ff-display);
-      font-size: var(--fs-2xl);
+      font-size: 1.3rem;
       font-weight: 500;
-      color: var(--text);
-      line-height: 1.15;
-      margin-bottom: var(--sp-2);
+      color: var(--night-text);
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
     }
 
     .erf-card__desc {
-      font-size: var(--fs-sm);
-      color: var(--text-muted);
-      line-height: 1.8;
+      font-size: 0.75rem;
+      color: rgba(226, 235, 227, 0.78);
+      line-height: 1.5;
       flex-grow: 1;
-      margin-bottom: var(--sp-4);
+      margin-bottom: 0.875rem;
     }
 
     .erf-card__tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      column-gap: 0.9rem;
+      row-gap: 0.35rem;
       margin-top: auto;
     }
 
     .erf-tag {
-      font-size: 0.68rem;
+      font-size: 0.55rem;
       font-weight: 500;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--green);
-      background: var(--green-wash);
-      border: 1px solid rgba(61, 122, 82, 0.15);
-      padding: 0.2rem 0.6rem;
-      border-radius: var(--r-full);
+      color: rgba(211, 238, 219, 0.74);
+      background: none;
+      border: 0;
+      padding: 0;
+      border-radius: 0;
     }
 
     /* ── Projects ───────────────────────────── */
@@ -2721,10 +2776,15 @@
       })();
     </script>
 
-    <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.10/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
+    <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.12/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
 
     <!-- ══ ERFARING ════════════════════════════════ -->
-    <section class="section erfaring" id="erfaring" data-scroll-skew aria-labelledby="erfaring-h">
+    <section class="section erfaring" id="erfaring" data-scroll-skew data-nav-dark aria-labelledby="erfaring-h">
+
+      <div class="erfaring__scene" aria-hidden="true">
+        <div class="erfaring__scene-stage" data-us-project="33QfVPytUlcTCM9e6Tu5"></div>
+        <div class="erfaring__scene-veil"></div>
+      </div>
 
       <canvas class="erfaring__canvas" id="erfaringCanvas" aria-hidden="true"></canvas>
       <div class="erfaring__forest-overlay" aria-hidden="true"></div>
@@ -2802,7 +2862,7 @@
       <div class="container">
         <div class="erfaring__head">
           <p class="section__label reveal">Erfaring</p>
-          <h2 class="section__title reveal d1" id="erfaring-h">Hva jeg har<br><em>opplevd</em></h2>
+          <h2 class="section__title" id="erfaring-h">Hva jeg har<br><em>opplevd</em></h2>
         </div>
 
         <div class="erfaring__grid" role="list">
@@ -2834,7 +2894,7 @@
           </article>
 
           <!-- Card 2: Kartverket NRL System -->
-          <article class="erf-card reveal d1" role="listitem">
+          <article class="erf-card reveal" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2861,7 +2921,7 @@
           </article>
 
           <!-- Card 3: Atlas -->
-          <article class="erf-card reveal d2" role="listitem">
+          <article class="erf-card reveal" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2888,7 +2948,7 @@
           </article>
 
           <!-- Card 4: AI Lab Projects -->
-          <article class="erf-card reveal d3" role="listitem">
+          <article class="erf-card reveal" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2923,9 +2983,9 @@
         <div class="container projects__intro-inner">
           <div>
             <p class="section__label reveal">Utvalgte arbeider</p>
-            <h2 class="section__title reveal d1" id="projects-h">Prosjekter i <em>dybden</em></h2>
+            <h2 class="section__title" id="projects-h">Prosjekter i <em>dybden</em></h2>
           </div>
-          <p class="projects__intro-copy reveal d2">
+          <p class="projects__intro-copy reveal">
             Tre forskjellige problemrom, presentert som en sammenhengende reise fra visuell KI til kart og kritiske data.
           </p>
         </div>
@@ -3104,10 +3164,10 @@
         <div class="projects__head">
           <div>
             <p class="section__label reveal">Prosjekter</p>
-            <h2 class="section__title reveal d1" id="projects-h-legacy">Ting jeg har<br><em>laget</em></h2>
+            <h2 class="section__title" id="projects-h-legacy">Ting jeg har<br><em>laget</em></h2>
           </div>
           <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer"
-            class="btn btn--outline reveal d2">Alle
+            class="btn btn--outline reveal">Alle
             prosjekter på GitHub →</a>
         </div>
 
@@ -3137,7 +3197,7 @@
             </div>
           </article>
 
-          <article class="proj-card reveal d1" role="listitem">
+          <article class="proj-card reveal" role="listitem">
             <div class="proj-card__thumb">
               <div class="proj-card__emoji" aria-hidden="true">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
@@ -3169,7 +3229,7 @@
             </div>
           </article>
 
-          <article class="proj-card reveal d2" role="listitem">
+          <article class="proj-card reveal" role="listitem">
             <div class="proj-card__thumb">
               <div class="proj-card__emoji" aria-hidden="true">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.6"
@@ -3207,8 +3267,8 @@
       <div class="container">
         <div class="video-wrap">
           <p class="section__label reveal">Introduksjon</p>
-          <h2 class="section__title reveal d1" id="video-h">Se meg i <em>aksjon</em></h2>
-          <p class="video__desc reveal d2">
+          <h2 class="section__title" id="video-h">Se meg i <em>aksjon</em></h2>
+          <p class="video__desc reveal">
             En 2-minutters introduksjon der jeg forteller hvem jeg er, hva jeg brenner for og hva jeg kan bidra med.
           </p>
           <div class="video-container" id="videoContainer">
@@ -3252,7 +3312,7 @@
                 <line x1="24" y1="4" x2="24" y2="58" stroke="rgba(92, 74, 40, 0.2)" stroke-width="0.8" />
               </svg>
             </div>
-            <div class="video-frame reveal d3">
+            <div class="video-frame reveal">
               <video controls id="portfolioVideo">
                 <source src="copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4" type="video/mp4">
               </video>
@@ -3269,12 +3329,12 @@
         <div class="contact__grid">
           <div class="contact__info">
             <p class="section__label reveal">Kontakt</p>
-            <h2 class="section__title reveal d1" id="contact-h">La oss<br><em>snakke</em></h2>
-            <p class="contact__copy reveal d2">
+            <h2 class="section__title" id="contact-h">La oss<br><em>snakke</em></h2>
+            <p class="contact__copy reveal">
               Har du et prosjekt, spørsmål, eller vil bare ta en prat? Ikke nøl — skriv til meg.
             </p>
 
-            <div class="contact__item reveal d3">
+            <div class="contact__item reveal">
               <div class="contact__ico" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                   stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -3287,7 +3347,7 @@
                 <p class="contact__item-val">Yonesmf@uia.no</p>
               </div>
             </div>
-            <div class="contact__item reveal d4">
+            <div class="contact__item reveal">
               <div class="contact__ico" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                   stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -3300,7 +3360,7 @@
                 <p class="contact__item-val">Kristiansand, Norge</p>
               </div>
             </div>
-            <div class="contact__item reveal d5">
+            <div class="contact__item reveal">
               <div class="contact__ico" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                   stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -3315,7 +3375,7 @@
             </div>
           </div>
 
-          <form class="contact__form reveal d2" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
+          <form class="contact__form reveal" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
             <!-- Formsubmit.co config -->
             <input type="hidden" name="_subject" value="Ny melding fra Portfolio">
             <input type="hidden" name="_template" value="table">
@@ -3383,11 +3443,24 @@
   </footer>
 
   <script>
-    /* ─── Lenis smooth scroll ───────────────── */
+    /* ─── Lenis + GSAP ScrollTrigger ────────── */
     // Declared first so the scroll-driven code further down can reach it.
-    // autoRaf runs Lenis's own frame loop. Lenis honours
-    // prefers-reduced-motion by default, falling back to native scrolling.
-    const lenis = new Lenis({ autoRaf: true });
+    // Lenis honours prefers-reduced-motion by default, falling back to
+    // native scrolling.
+    //
+    // No autoRaf here: ScrollTrigger has to be told about Lenis or it reads
+    // a scroll position that is always a frame or more stale. The handshake
+    // is the one from Lenis's own docs — ScrollTrigger updates on every
+    // Lenis scroll, Lenis's frame loop is driven by GSAP's ticker so the
+    // two never run on separate clocks, and lagSmoothing is off so GSAP
+    // does not silently skip time after a slow frame.
+    const lenis = new Lenis();
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(time => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // In-page links, handled here rather than with Lenis's own `anchors`
     // option: the project index links run their own click handler and
@@ -3676,11 +3749,70 @@
       requestSceneUpdate();
     })();
 
-    /* ─── Scroll reveal ────────────────────── */
-    const revealObs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+    /* ─── Scroll reveal + headline split ───── */
+    (function initScrollReveals() {
+      if (prefersReducedMotion.matches) return;
+
+      // Batch groups everything entering on the same frame, so its stagger
+      // does the job the hand-tuned d1–d5 delay classes used to. The
+      // `visible` class is still set: .section__label::before hangs its
+      // draw-in off it, and that is not something GSAP is animating here.
+      ScrollTrigger.batch('.reveal', {
+        start: 'top 88%',
+        once: true,
+        onEnter: batch => {
+          batch.forEach(el => el.classList.add('visible'));
+          gsap.to(batch, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.95,
+            ease: 'power3.out',
+            stagger: 0.08,
+            overwrite: true
+          });
+        }
+      });
+
+      // Headlines rise in character by character behind a per-line mask.
+      // Split has to wait for fonts: measuring the fallback face breaks the
+      // lines in the wrong places, and the mask then crops the wrong rows.
+      // autoSplit re-runs it on resize, with onSplit rebuilding the tween.
+      document.fonts.ready.then(() => {
+        gsap.utils.toArray('.section__title').forEach(title => {
+          SplitText.create(title, {
+            type: 'lines,chars',
+            mask: 'lines',
+            autoSplit: true,
+            onSplit: self => gsap.from(self.chars, {
+              yPercent: 110,
+              opacity: 0,
+              duration: 0.85,
+              ease: 'power3.out',
+              stagger: 0.018,
+              scrollTrigger: { trigger: title, start: 'top 85%', once: true }
+            })
+          });
+        });
+        ScrollTrigger.refresh();
+      });
+
+      // Parallax on the decorative leaves — scrubbed, so it tracks the
+      // scrollbar rather than playing on its own clock. Only the wrapper is
+      // touched; the SVG inside keeps its own idle drift animation.
+      gsap.utils.toArray('.erfaring__leaf').forEach((leaf, i) => {
+        gsap.to(leaf, {
+          yPercent: i % 2 ? 24 : -32,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#erfaring',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      });
+    })();
 
     /* ─── Active nav links ─────────────────── */
     const sections = document.querySelectorAll('section[id]');
@@ -4009,13 +4141,8 @@
       if (!chapters.length || !links.length || !index) return;
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const motionStates = chapters.map(() => ({ opacity: 1, contentY: 0, visualY: 0, line: 1 }));
       let activeProject = '';
-      let frame = 0;
       let scrollAnimation = 0;
-
-      const clamp = value => Math.min(1, Math.max(0, value));
-      const smoothstep = value => value * value * (3 - 2 * value);
 
       function setActive(project, chapterIndex) {
         if (project === activeProject) return;
@@ -4036,70 +4163,54 @@
         if (counter) counter.textContent = `${String(chapterIndex + 1).padStart(2, '0')} / ${String(chapters.length).padStart(2, '0')}`;
       }
 
-      function updateActiveProject() {
-        const viewportFocus = window.innerHeight * 0.48;
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-
+      // Chapter motion, scrubbed. This was a hand-rolled rAF lerp that ran a
+      // spring toward focus targets every frame; ScrollTrigger expresses the
+      // same shape declaratively and stops running when nothing is on screen.
+      // Each chapter fades and lifts in as it enters, peaks mid-pass, and
+      // settles back out — driving the same CSS custom properties the
+      // stylesheet already reads.
+      function buildChapterMotion() {
         chapters.forEach((chapter, chapterIndex) => {
-          const rect = chapter.getBoundingClientRect();
-          const chapterFocus = rect.top + Math.min(rect.height, window.innerHeight) * 0.5;
-          const distance = Math.abs(chapterFocus - viewportFocus);
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = chapterIndex;
-          }
-        });
-
-        setActive(chapters[closestIndex].dataset.project, closestIndex);
-      }
-
-      function renderProjectMotion() {
-        frame = 0;
-        updateActiveProject();
-
-        if (reduceMotion.matches) {
-          chapters.forEach(chapter => {
-            chapter.style.setProperty('--chapter-opacity', '1');
-            chapter.style.setProperty('--chapter-content-y', '0px');
-            chapter.style.setProperty('--chapter-visual-y', '0px');
-            chapter.style.setProperty('--chapter-line-scale', '1');
-          });
-          return;
-        }
-
-        const viewportHeight = Math.max(window.innerHeight, 1);
-        const viewportFocus = viewportHeight * 0.48;
-        let moving = false;
-
-        chapters.forEach((chapter, chapterIndex) => {
-          const rect = chapter.getBoundingClientRect();
-          const chapterFocus = rect.top + Math.min(rect.height, viewportHeight) * 0.5;
-          const signedDistance = chapterFocus - viewportFocus;
-          const distance = clamp(Math.abs(signedDistance) / (viewportHeight * 0.82));
-          const focus = 1 - smoothstep(distance);
-          const direction = Math.sign(signedDistance) || 1;
-          const targets = {
-            opacity: 0.48 + focus * 0.52,
-            contentY: direction * (1 - focus) * 34,
-            visualY: direction * (1 - focus) * 15,
-            line: 0.22 + focus * 0.78
-          };
-          const state = motionStates[chapterIndex];
-
-          Object.keys(targets).forEach(key => {
-            const difference = targets[key] - state[key];
-            state[key] += difference * 0.09;
-            if (Math.abs(difference) > (key === 'contentY' || key === 'visualY' ? 0.05 : 0.001)) moving = true;
+          // Active chapter for the index/counter: fires while the chapter
+          // spans the same 48%-from-top line the old focus maths used.
+          ScrollTrigger.create({
+            trigger: chapter,
+            start: 'top 52%',
+            end: 'bottom 52%',
+            onToggle: self => {
+              if (self.isActive) setActive(chapter.dataset.project, chapterIndex);
+            }
           });
 
-          chapter.style.setProperty('--chapter-opacity', state.opacity.toFixed(4));
-          chapter.style.setProperty('--chapter-content-y', `${state.contentY.toFixed(2)}px`);
-          chapter.style.setProperty('--chapter-visual-y', `${state.visualY.toFixed(2)}px`);
-          chapter.style.setProperty('--chapter-line-scale', state.line.toFixed(4));
-        });
+          if (reduceMotion.matches) return;
 
-        if (moving) frame = requestAnimationFrame(renderProjectMotion);
+          gsap.timeline({
+            defaults: { ease: 'none', duration: 1 },
+            scrollTrigger: {
+              trigger: chapter,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 0.5
+            }
+          })
+            .fromTo(chapter, {
+              '--chapter-opacity': 0.48,
+              '--chapter-content-y': '34px',
+              '--chapter-visual-y': '15px',
+              '--chapter-line-scale': 0.22
+            }, {
+              '--chapter-opacity': 1,
+              '--chapter-content-y': '0px',
+              '--chapter-visual-y': '0px',
+              '--chapter-line-scale': 1
+            })
+            .to(chapter, {
+              '--chapter-opacity': 0.48,
+              '--chapter-content-y': '-34px',
+              '--chapter-visual-y': '-15px',
+              '--chapter-line-scale': 0.22
+            });
+        });
       }
 
       // Hand the chapter glide to Lenis instead of driving window.scrollTo
@@ -4118,11 +4229,6 @@
             document.documentElement.classList.remove('is-project-gliding');
           }
         });
-      }
-
-      function queueProjectUpdate() {
-        if (frame) return;
-        frame = requestAnimationFrame(renderProjectMotion);
       }
 
       function handleProjectWheel(event) {
@@ -4164,11 +4270,12 @@
         });
       });
 
-      window.addEventListener('scroll', queueProjectUpdate, { passive: true });
-      window.addEventListener('resize', queueProjectUpdate, { passive: true });
+      // No scroll/resize listeners of our own any more: ScrollTrigger owns
+      // when this recomputes, including on resize. The wheel handler stays —
+      // it steps chapter to chapter, and it is tuned for chapters that run
+      // taller than the viewport, which a naive snap would fight.
       window.addEventListener('wheel', handleProjectWheel, { passive: false });
-      reduceMotion.addEventListener?.('change', queueProjectUpdate);
-      renderProjectMotion();
+      buildChapterMotion();
     })();
 
     /* ─── Magnetic links ──────────────────── */
