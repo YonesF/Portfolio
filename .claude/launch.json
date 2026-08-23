@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:\\Users\\Danie\\AppData\\Local\\Temp\\claude\\C--Users-Danie-Portfolio\\b9430c3e-a298-4a2e-81c3-472366273e3b\\scratchpad\\server.js",
+        "C:\\Users\\Danie\\Portfolio",
+        "4173"
+      ],
+      "port": 4173
+    }
+  ]
+}
