@@ -686,16 +686,16 @@
       z-index: 2;
       pointer-events: none;
       background:
-        linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%),
-        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%);
+        linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.7) 9%, rgba(0, 0, 0, 0) 26%),
+        linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.7) 9%, rgba(0, 0, 0, 0) 26%);
     }
 
     /* Alder also darkens its flanks: the columns run bright marble right
        out to the edges, and the side notes need a ground to sit on. */
     #alder .us-scene__blend {
       background:
-        linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%),
-        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%),
+        linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
+        linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
         linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.78) 18%, rgba(0, 0, 0, 0.5) 32%, rgba(0, 0, 0, 0) 48%),
         linear-gradient(to left, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.78) 18%, rgba(0, 0, 0, 0.5) 32%, rgba(0, 0, 0, 0) 48%);
     }
@@ -713,6 +713,31 @@
       mask-image: linear-gradient(to right,
           transparent 0%, rgba(0, 0, 0, 0.45) 2%, #000 6%,
           #000 94%, rgba(0, 0, 0, 0.45) 98%, transparent 100%);
+    }
+
+    /* Full-bleed rather than letterboxed. A viewport-height section can
+       only ever show this 3:2 artboard as a floating panel with black
+       down both sides, so data-scene-fill drops the viewport height and
+       gives the section the artboard's own aspect at full width — the
+       scene reaches both edges, and nothing is cropped to get there. The
+       trade is height: on most screens the section is taller than the
+       viewport and scrolls through rather than fitting in one screen.
+
+       Its heading sits right against the top of the artboard and would
+       land under the fixed nav, so data-scene-reserve adds a clear strip
+       above it and this offset re-centres the scene below that strip.
+       Alder needs no such strip — its top edge is just cornice.
+
+       That reserved strip is pure black, so the artwork's top edge lands
+       partway down the section, where the section blend cannot reach it —
+       it needs feathering on the stage itself. Kept short: the heading
+       begins 3.4% down the artboard, so the fade finishes before it. */
+    #ferdigheter .us-scene__stage {
+      top: calc(50% + 48px);
+      -webkit-mask-image: linear-gradient(to bottom,
+          transparent 0%, rgba(0, 0, 0, 0.5) 1.3%, #000 2.6%);
+      mask-image: linear-gradient(to bottom,
+          transparent 0%, rgba(0, 0, 0, 0.5) 1.3%, #000 2.6%);
     }
 
     /* ── Alder side notes ───────────────────────
@@ -773,8 +798,8 @@
       /* Nothing sits in the flanks now, so let the columns keep them. */
       #alder .us-scene__blend {
         background:
-          linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%),
-          linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.72) 6%, rgba(0, 0, 0, 0) 24%);
+          linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
+          linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%);
       }
     }
 
@@ -2919,7 +2944,7 @@
          edge blend with the landing above, so the two run together as
          one field instead of reading as a section break. -->
     <section class="us-scene" id="alder" data-nav-dark aria-label="21 år gammel">
-      <div class="us-scene__stage" data-scene-fit data-us-project="RAyPIbd2ejj6vhK4n049"
+      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-fill-min="861" data-us-project="RAyPIbd2ejj6vhK4n049"
         data-us-arialabel="Animert scene med marmorsøyler og teksten 21 år gammel"></div>
       <div class="us-scene__blend" aria-hidden="true"></div>
       <p class="alder__note alder__note--left">
@@ -2930,16 +2955,41 @@
       </p>
     </section>
 
+    <!-- ══ FERDIGHETER (tittelkort) ══════════════
+         Leads into the skills cards below, on the same black ground as
+         the two scenes above it. -->
+    <section class="us-scene" id="ferdigheter" data-nav-dark aria-label="Ferdigheter">
+      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-reserve="96" data-us-project="h1QfJCx9UZWIygGIzksa"
+        data-us-arialabel="Animert tittelkort med teksten Ferdigheter"></div>
+      <div class="us-scene__blend" aria-hidden="true"></div>
+    </section>
+
     <script>
-      // Both opening scenes have fixed 1440x900 artboards, so scale each
-      // to contain its section rather than letting the canvas restretch
-      // it — fixed-pixel type would otherwise overflow narrow viewports.
+      // The opening scenes have fixed 1440x900 artboards, so scale each to
+      // contain its section rather than letting the canvas restretch it —
+      // fixed-pixel type would otherwise overflow narrow viewports.
+      // data-scene-reserve holds back a strip of height for a scene whose
+      // own layout has to clear the fixed nav.
       (function () {
         var stages = document.querySelectorAll('[data-scene-fit]');
         function fit() {
           stages.forEach(function (stage) {
             var box = stage.parentNode;
-            var scale = Math.min(box.clientWidth / 1440, box.clientHeight / 900);
+            var reserve = +stage.dataset.sceneReserve || 0;
+            // A fill scene takes the artboard's aspect at the section's own
+            // width, so it runs edge to edge instead of being letterboxed.
+            // Measured rather than done in CSS with 100vw, which would
+            // include the scrollbar and leave a sliver below the scene.
+            // data-scene-fill-min opts a scene out below a given width,
+            // for one whose HTML overlay needs the taller viewport section.
+            if ('sceneFill' in stage.dataset) {
+              var fills = window.innerWidth >= (+stage.dataset.sceneFillMin || 0);
+              box.style.height = fills
+                ? Math.round(reserve + box.clientWidth * 900 / 1440) + 'px'
+                : '';
+              box.style.minHeight = fills ? '0px' : '';
+            }
+            var scale = Math.min(box.clientWidth / 1440, (box.clientHeight - reserve) / 900);
             stage.style.setProperty('--scene-fit', scale);
           });
         }
@@ -3817,11 +3867,13 @@
       if (!main) return;
 
       const definitions = [
-        // No zoom between these two: the shrink-away handoff would frame
-        // each as its own card, and they are meant to read as one field.
-        // The zoom picks back up on the way out of 'alder' into the page.
+        // No zoom between the three opening scenes: the shrink-away
+        // handoff would frame each as its own card, and they are meant to
+        // read as one continuous field. The zoom picks back up on the way
+        // out of 'ferdigheter' into the rest of the page.
         { id: 'landing' },
-        { id: 'alder', ambient: '.us-scene__blend', zoom: 'out' },
+        { id: 'alder', ambient: '.us-scene__blend' },
+        { id: 'ferdigheter', ambient: '.us-scene__blend', zoom: 'out' },
         { id: 'skills', ambient: ':scope > .container' },
         { id: 'erfaring', ambient: ':scope > .container' },
         { id: 'projects', ambient: '.projects__intro-inner' },
