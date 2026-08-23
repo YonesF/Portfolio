@@ -263,7 +263,7 @@
       will-change: transform;
     }
 
-    .is-scene-near .scene-ambient {
+    .is-render-active .scene-ambient {
       animation-play-state: running;
     }
 
@@ -1038,6 +1038,11 @@
 
     .erfaring__leaf svg {
       animation: var(--erf-anim, erfaringDrift1) var(--erf-dur, 24s) ease-in-out var(--erf-delay, 0s) infinite;
+      animation-play-state: paused;
+    }
+
+    .erfaring.is-render-active .erfaring__leaf svg {
+      animation-play-state: running;
     }
 
     @keyframes erfaringDrift1 {
@@ -1933,6 +1938,11 @@
       height: 30px;
       background: linear-gradient(to bottom, var(--project-accent), transparent);
       animation: scrollBob 2.4s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+
+    .projects.is-render-active .project-index__scroll::after {
+      animation-play-state: running;
     }
 
     @media (max-width: 960px) {
@@ -2776,7 +2786,30 @@
       })();
     </script>
 
-    <script type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.12/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script>
+    <script>
+      (function loadUnicornStudio() {
+        function announceRuntime() {
+          if (!window.UnicornStudio?.addScene) {
+            console.error('Unicorn Studio runtime loaded without addScene support.');
+            return;
+          }
+          window.__unicornRuntimeReady = true;
+          window.dispatchEvent(new CustomEvent('unicorn-runtime-ready'));
+        }
+
+        if (window.UnicornStudio?.addScene) {
+          announceRuntime();
+          return;
+        }
+
+        window.UnicornStudio = { isInitialized: false };
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.12/dist/unicornStudio.umd.js';
+        script.onload = announceRuntime;
+        script.onerror = () => console.error('Unicorn Studio runtime failed to load.');
+        (document.head || document.body).appendChild(script);
+      })();
+    </script>
 
     <!-- ══ ERFARING ════════════════════════════════ -->
     <section class="section erfaring" id="erfaring" data-scroll-skew data-nav-dark aria-labelledby="erfaring-h">
@@ -3448,19 +3481,386 @@
     // Lenis honours prefers-reduced-motion by default, falling back to
     // native scrolling.
     //
-    // No autoRaf here: ScrollTrigger has to be told about Lenis or it reads
-    // a scroll position that is always a frame or more stale. The handshake
-    // is the one from Lenis's own docs — ScrollTrigger updates on every
-    // Lenis scroll, Lenis's frame loop is driven by GSAP's ticker so the
-    // two never run on separate clocks, and lagSmoothing is off so GSAP
-    // does not silently skip time after a slow frame.
+    // No autoRaf here: ScrollTrigger still receives every Lenis update and
+    // both systems share GSAP's clock while scrolling. The Lenis callback is
+    // detached after four settled frames, allowing GSAP's ticker to sleep
+    // normally whenever no other tween is active.
     const lenis = new Lenis();
     gsap.registerPlugin(ScrollTrigger, SplitText);
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add(time => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
+    const lenisTicker = (() => {
+      const SETTLED_FRAMES = 4;
+      let attached = false;
+      let resetClock = true;
+      let settledFrames = 0;
+
+      function detach() {
+        if (!attached) return;
+        gsap.ticker.remove(drive);
+        attached = false;
+        document.documentElement.dataset.lenisTicker = 'idle';
+      }
+
+      function drive(time) {
+        const timeMs = time * 1000;
+        if (resetClock) {
+          // Do not treat time spent asleep as one enormous animation frame.
+          lenis.time = timeMs;
+          resetClock = false;
+        }
+        lenis.raf(timeMs);
+
+        const distance = Math.abs(lenis.targetScroll - lenis.animatedScroll);
+        if (lenis.isScrolling || distance > 0.1) {
+          settledFrames = 0;
+          return;
+        }
+
+        settledFrames += 1;
+        if (settledFrames >= SETTLED_FRAMES) detach();
+      }
+
+      function wake() {
+        settledFrames = 0;
+        if (attached || document.hidden) return;
+        resetClock = true;
+        attached = true;
+        document.documentElement.dataset.lenisTicker = 'running';
+        gsap.ticker.add(drive);
+      }
+
+      lenis.on('scroll', instance => {
+        ScrollTrigger.update();
+        if (instance.isScrolling) wake();
+      });
+      lenis.on('virtual-scroll', wake);
+
+      // Programmatic anchor and project glides must wake from a fully idle page.
+      const scrollTo = lenis.scrollTo.bind(lenis);
+      lenis.scrollTo = (...args) => {
+        wake();
+        return scrollTo(...args);
+      };
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) detach();
+        else wake();
+      });
+
+      wake();
+      return { wake, get running() { return attached; } };
+    })();
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    /* One active render section at a time */
+    const renderSectionActivity = (() => {
+      const main = document.querySelector('main');
+      const sections = [...main.querySelectorAll(':scope > section')];
+      const listeners = new Set();
+      let activeSection = null;
+      let effectiveSection = null;
+      let frame = 0;
+
+      function sectionAtViewportCenter() {
+        const centerX = Math.max(0, Math.min(window.innerWidth - 1, window.innerWidth / 2));
+        const centerY = Math.max(0, Math.min(window.innerHeight - 1, window.innerHeight / 2));
+        const hit = document.elementFromPoint(centerX, centerY);
+        const hitSection = hit?.closest('section');
+        if (hitSection && hitSection.parentElement === main) return hitSection;
+
+        let bestSection = null;
+        let bestVisibleArea = 0;
+        sections.forEach(section => {
+          const rect = section.getBoundingClientRect();
+          const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
+          const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+          const visibleArea = visibleWidth * visibleHeight;
+          if (visibleArea > bestVisibleArea) {
+            bestVisibleArea = visibleArea;
+            bestSection = section;
+          }
+        });
+        return bestSection;
+      }
+
+      function publish(nextSection, force = false) {
+        activeSection = nextSection;
+        const nextEffective = document.hidden ? null : activeSection;
+        if (!force && nextEffective === effectiveSection) return;
+
+        effectiveSection = nextEffective;
+        sections.forEach(section => {
+          section.classList.toggle('is-render-active', section === effectiveSection);
+        });
+        document.documentElement.dataset.activeRenderSection = effectiveSection?.id || '';
+        listeners.forEach(listener => listener(effectiveSection));
+      }
+
+      function update() {
+        frame = 0;
+        publish(sectionAtViewportCenter());
+      }
+
+      function requestUpdate() {
+        if (!frame) frame = requestAnimationFrame(update);
+      }
+
+      window.addEventListener('scroll', requestUpdate, { passive: true });
+      window.addEventListener('resize', requestUpdate, { passive: true });
+      window.addEventListener('orientationchange', requestUpdate);
+      document.addEventListener('visibilitychange', () => {
+        publish(document.hidden ? activeSection : sectionAtViewportCenter(), true);
+      });
+
+      publish(sectionAtViewportCenter(), true);
+
+      return {
+        get active() { return effectiveSection; },
+        isActive(section) { return section === effectiveSection; },
+        onChange(listener) {
+          listeners.add(listener);
+          listener(effectiveSection);
+          return () => listeners.delete(listener);
+        }
+      };
+    })();
+
+    /* Keep only the active Unicorn scene and its directional neighbour warm. */
+    (function initUnicornSceneLifecycle() {
+      const sections = [...document.querySelectorAll('main > section')];
+      const entries = [...document.querySelectorAll('[data-us-project]')]
+        .map(host => ({
+          host,
+          section: host.closest('section'),
+          projectId: host.getAttribute('data-us-project'),
+          scene: null,
+          promise: null,
+          destroyTimer: 0,
+          visible: false,
+          wanted: false
+        }))
+        .filter(entry => entry.section && entry.projectId);
+      if (!entries.length) return;
+
+      const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
+      const DESTROY_DELAY = 650;
+      let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
+      let activeSection = renderSectionActivity.active;
+      let direction = 1;
+      let lastScrollY = window.scrollY;
+      let navigationTarget = null;
+      let navigationTimer = 0;
+      let syncFrame = 0;
+
+      function updateSceneCount() {
+        document.documentElement.dataset.unicornLiveScenes = String(
+          entries.filter(entry => entry.scene).length
+        );
+      }
+
+      function mark(entry, state, paused = true) {
+        entry.host.dataset.renderState = state;
+        entry.host.dataset.renderPaused = paused ? 'true' : 'false';
+      }
+
+      function sceneOptions(entry) {
+        const options = {
+          element: entry.host,
+          projectId: entry.projectId
+        };
+        const ariaLabel = entry.host.getAttribute('data-us-arialabel');
+        const altText = entry.host.getAttribute('data-us-alttext');
+        if (ariaLabel) options.ariaLabel = ariaLabel;
+        if (altText) options.altText = altText;
+
+        ['scale', 'dpi', 'fps'].forEach(name => {
+          const value = entry.host.getAttribute(`data-us-${name}`);
+          if (value !== null && Number.isFinite(Number(value))) options[name] = Number(value);
+        });
+        return options;
+      }
+
+      function destroyEntry(entry) {
+        clearTimeout(entry.destroyTimer);
+        entry.destroyTimer = 0;
+        if (entry.scene) {
+          try { entry.scene.destroy(); }
+          catch (error) { console.warn('Unicorn scene teardown failed:', error); }
+          entry.scene = null;
+        }
+        mark(entry, 'unloaded');
+        updateSceneCount();
+      }
+
+      function releaseEntry(entry) {
+        if (!entry.scene && !entry.promise) {
+          clearTimeout(entry.destroyTimer);
+          entry.destroyTimer = 0;
+          mark(entry, 'unloaded');
+          return;
+        }
+
+        if (entry.scene) entry.scene.paused = true;
+        mark(entry, entry.visible ? 'visible-paused' : (entry.promise ? 'loading' : 'cooling'));
+
+        // Keep the last rendered frame while any part of its section remains
+        // visible. Once fully offscreen, release its WebGL context shortly
+        // after to avoid churn from tiny direction reversals at a boundary.
+        if (entry.visible || entry.destroyTimer) return;
+        entry.destroyTimer = window.setTimeout(() => {
+          entry.destroyTimer = 0;
+          if (entry.wanted || entry.visible || entry.promise) return;
+          destroyEntry(entry);
+        }, DESTROY_DELAY);
+      }
+
+      function applyEntryState(entry) {
+        if (!entry.scene) return;
+        if (!entry.wanted) {
+          releaseEntry(entry);
+          return;
+        }
+
+        clearTimeout(entry.destroyTimer);
+        entry.destroyTimer = 0;
+        const isActive = !document.hidden && entry.section === activeSection;
+        entry.scene.paused = !isActive;
+        mark(entry, isActive ? 'active' : 'warm', !isActive);
+      }
+
+      function ensureEntry(entry) {
+        clearTimeout(entry.destroyTimer);
+        entry.destroyTimer = 0;
+        if (entry.scene) {
+          applyEntryState(entry);
+          return;
+        }
+        if (entry.promise || !runtimeReady) {
+          mark(entry, runtimeReady ? 'loading' : 'waiting');
+          return;
+        }
+
+        mark(entry, 'loading');
+        entry.promise = Promise.resolve(window.UnicornStudio.addScene(sceneOptions(entry)))
+          .then(scene => {
+            entry.promise = null;
+            entry.scene = scene;
+            updateSceneCount();
+            applyEntryState(entry);
+          })
+          .catch(error => {
+            entry.promise = null;
+            mark(entry, 'error');
+            console.error(`Unicorn scene failed to load (${entry.section.id}):`, error);
+          });
+      }
+
+      function adjacentEntry(section) {
+        const index = sections.indexOf(section);
+        if (index < 0) return null;
+        return entryBySection.get(sections[index + direction]) || null;
+      }
+
+      function syncLifecycle() {
+        syncFrame = 0;
+
+        if (document.hidden) {
+          entries.forEach(entry => {
+            if (entry.scene) {
+              entry.scene.paused = true;
+              mark(entry, 'warm');
+            }
+          });
+          return;
+        }
+
+        if (navigationTarget === activeSection) {
+          navigationTarget = null;
+          clearTimeout(navigationTimer);
+          navigationTimer = 0;
+        }
+
+        const wanted = new Set();
+        const activeEntry = entryBySection.get(activeSection);
+        const nextEntry = adjacentEntry(activeSection);
+        if (activeEntry) wanted.add(activeEntry);
+        if (nextEntry) wanted.add(nextEntry);
+        if (navigationTarget && entryBySection.has(navigationTarget)) {
+          wanted.add(entryBySection.get(navigationTarget));
+        }
+
+        entries.forEach(entry => {
+          entry.wanted = wanted.has(entry);
+          if (entry.wanted) ensureEntry(entry);
+          else releaseEntry(entry);
+        });
+      }
+
+      function scheduleSync() {
+        if (!syncFrame) syncFrame = requestAnimationFrame(syncLifecycle);
+      }
+
+      entries.forEach(entry => mark(entry, 'unloaded'));
+      updateSceneCount();
+
+      renderSectionActivity.onChange(section => {
+        activeSection = section;
+        scheduleSync();
+      });
+
+      window.addEventListener('scroll', () => {
+        const nextY = window.scrollY;
+        const delta = nextY - lastScrollY;
+        lastScrollY = nextY;
+        if (Math.abs(delta) < 2) return;
+        const nextDirection = delta > 0 ? 1 : -1;
+        if (nextDirection !== direction) {
+          direction = nextDirection;
+          scheduleSync();
+        }
+      }, { passive: true });
+
+      const visibilityObserver = new IntersectionObserver(changes => {
+        changes.forEach(change => {
+          const entry = entryBySection.get(change.target);
+          if (entry) entry.visible = change.isIntersecting;
+        });
+        scheduleSync();
+      }, { threshold: 0 });
+      entries.forEach(entry => visibilityObserver.observe(entry.section));
+
+      // A long anchor jump can skip every intermediate section. Start its
+      // scene immediately so it is ready before Lenis reaches the target.
+      document.addEventListener('click', event => {
+        if (!(event.target instanceof Element)) return;
+        const link = event.target.closest('a[href^="#"]');
+        const hash = link?.getAttribute('href');
+        if (!hash || hash === '#') return;
+        const target = hash === '#top'
+          ? document.getElementById('landing')
+          : document.querySelector(hash)?.closest('section');
+        if (!target || !entryBySection.has(target)) return;
+
+        navigationTarget = target;
+        clearTimeout(navigationTimer);
+        navigationTimer = window.setTimeout(() => {
+          navigationTarget = null;
+          navigationTimer = 0;
+          scheduleSync();
+        }, 8000);
+        scheduleSync();
+      }, true);
+
+      window.addEventListener('unicorn-runtime-ready', () => {
+        runtimeReady = true;
+        scheduleSync();
+      }, { once: true });
+      window.addEventListener('pageshow', scheduleSync);
+
+      scheduleSync();
+    })();
 
     // In-page links, handled here rather than with Lenis's own `anchors`
     // option: the project index links run their own click handler and
@@ -3479,36 +3879,57 @@
     });
 
     /* ─── Custom cursor ─────────────────────── */
-    const dot = document.getElementById('c-dot');
-    const ring = document.getElementById('c-ring');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    let pvx = 0, pvy = 0; // previous ring position for velocity
+    (function initCustomCursor() {
+      if (!window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
 
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
-    });
-    (function animRing() {
-      const prevRx = rx, prevRy = ry;
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      const vx = rx - prevRx, vy = ry - prevRy;
-      const speed = Math.sqrt(vx * vx + vy * vy);
-      const stretch = Math.min(1 + speed * 0.028, 1.38);
-      const angle = speed > 0.5 ? Math.atan2(vy, vx) * 180 / Math.PI : 0;
-      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%) rotate(${angle}deg) scaleX(${stretch}) scaleY(${1 / Math.sqrt(stretch)})`;
-      requestAnimationFrame(animRing);
+      const dot = document.getElementById('c-dot');
+      const ring = document.getElementById('c-ring');
+      let mx = 0, my = 0, rx = 0, ry = 0;
+      let cursorFrame = 0;
+      ring.style.transform = 'translate(0px,0px) translate(-50%,-50%)';
+
+      function animRing() {
+        cursorFrame = 0;
+        const prevRx = rx, prevRy = ry;
+        rx += (mx - rx) * 0.12;
+        ry += (my - ry) * 0.12;
+        const vx = rx - prevRx, vy = ry - prevRy;
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        const stretch = Math.min(1 + speed * 0.028, 1.38);
+        const angle = speed > 0.5 ? Math.atan2(vy, vx) * 180 / Math.PI : 0;
+        ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%) rotate(${angle}deg) scaleX(${stretch}) scaleY(${1 / Math.sqrt(stretch)})`;
+
+        const distance = Math.hypot(mx - rx, my - ry);
+        if (distance > 0.05 || speed > 0.05) {
+          cursorFrame = requestAnimationFrame(animRing);
+        } else {
+          rx = mx;
+          ry = my;
+          ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+        }
+      }
+
+      function requestCursorFrame() {
+        if (!cursorFrame) cursorFrame = requestAnimationFrame(animRing);
+      }
+
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+        requestCursorFrame();
+      });
+
+      document.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          ring.style.width = '46px'; ring.style.height = '46px';
+          ring.style.borderColor = 'rgba(61,122,82,0.55)';
+        });
+        el.addEventListener('mouseleave', () => {
+          ring.style.width = '26px'; ring.style.height = '26px';
+          ring.style.borderColor = 'rgba(61,122,82,0.35)';
+        });
+      });
     })();
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        ring.style.width = '46px'; ring.style.height = '46px';
-        ring.style.borderColor = 'rgba(61,122,82,0.55)';
-      });
-      el.addEventListener('mouseleave', () => {
-        ring.style.width = '26px'; ring.style.height = '26px';
-        ring.style.borderColor = 'rgba(61,122,82,0.35)';
-      });
-    });
 
     /* ─── Nav scroll ───────────────────────── */
     const nav = document.getElementById('nav');
@@ -3620,12 +4041,10 @@
         { id: 'contact', ambient: ':scope > .container' }
       ];
 
-      const motionSections = [];
       const scenes = definitions.map((definition, index) => {
         const element = document.getElementById(definition.id);
         if (!element) return null;
 
-        motionSections.push(element);
         element.style.setProperty('--scene-drift-duration', `${9 + (index % 4) * 1.35}s`);
         element.style.setProperty('--scene-drift-delay', `${index * -1.15}s`);
 
@@ -3660,13 +4079,6 @@
       const easeInOut = value => value * value * (3 - 2 * value);
       let frame = 0;
       let needsMeasure = true;
-
-      const nearObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          entry.target.classList.toggle('is-scene-near', entry.isIntersecting);
-        });
-      }, { rootMargin: '35% 0px' });
-      motionSections.forEach(section => nearObserver.observe(section));
 
       function measureScenes() {
         const viewportHeight = Math.max(window.innerHeight, 1);
@@ -3902,6 +4314,8 @@
       let fireflies = [];
       let animId = null;
       let isPlaying = false;
+      let sectionActive = renderSectionActivity.isActive(section);
+      let resumeWhenActive = false;
 
       function resize() {
         const rect = section.getBoundingClientRect();
@@ -3978,6 +4392,10 @@
       }
 
       function animate() {
+        if (!sectionActive) {
+          animId = null;
+          return;
+        }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         let allGone = true;
         fireflies.forEach(f => {
@@ -3998,7 +4416,7 @@
         section.classList.add('forest-mode');
         if (!fireflies.length) initFireflies();
         fireflies.forEach(f => f.fadeIn());
-        if (!animId) animate();
+        if (sectionActive && !animId) animate();
       }
 
       function stopForest() {
@@ -4008,9 +4426,37 @@
         // Animation continues until fireflies fade out
       }
 
-      vid.addEventListener('play', startForest);
-      vid.addEventListener('pause', stopForest);
+      vid.addEventListener('play', () => {
+        if (sectionActive) resumeWhenActive = false;
+        startForest();
+      });
+      vid.addEventListener('pause', () => {
+        if (sectionActive) resumeWhenActive = false;
+        stopForest();
+      });
       vid.addEventListener('ended', stopForest);
+
+      renderSectionActivity.onChange(activeSection => {
+        const nextActive = activeSection === section;
+        if (nextActive === sectionActive) return;
+        sectionActive = nextActive;
+
+        if (!sectionActive) {
+          if (!vid.paused && !vid.ended) {
+            resumeWhenActive = true;
+            vid.pause();
+          }
+          if (animId) {
+            cancelAnimationFrame(animId);
+            animId = null;
+          }
+        } else if (resumeWhenActive) {
+          resumeWhenActive = false;
+          vid.play().catch(() => {});
+        } else if (isPlaying && !animId) {
+          animate();
+        }
+      });
 
       window.addEventListener('resize', () => {
         if (fireflies.length) {
@@ -4027,7 +4473,9 @@
       if (!section || !canvas) return;
 
       const ctx = canvas.getContext('2d');
-      let flies = [], animId = null, started = false, sectionVisible = false;
+      let flies = [], animId = null, started = false;
+      let sectionIntersecting = false;
+      let sectionVisible = false;
 
       const ffColors = [
         { r: 184, g: 210, b: 160 },
@@ -4106,20 +4554,35 @@
         animId = sectionVisible ? requestAnimationFrame(animate) : null;
       }
 
+      function syncSectionActivity(activeSection = renderSectionActivity.active) {
+        const nextVisible = sectionIntersecting && activeSection === section;
+        if (nextVisible === sectionVisible) return;
+        sectionVisible = nextVisible;
+
+        if (!sectionVisible && animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+          return;
+        }
+
+        if (sectionVisible && !started) {
+          started = true;
+          section.classList.add('erf-alive');
+          initFlies();
+          flies.forEach(f => { f.targetAlpha = f.baseAlpha; });
+        }
+        if (sectionVisible && !animId && started) animate();
+      }
+
       const obs = new IntersectionObserver(entries => {
         entries.forEach(e => {
-          sectionVisible = e.isIntersecting;
-          if (e.isIntersecting && !started) {
-            started = true;
-            section.classList.add('erf-alive');
-            initFlies();
-            flies.forEach(f => { f.targetAlpha = f.baseAlpha; });
-          }
-          if (sectionVisible && !animId && started) animate();
+          sectionIntersecting = e.isIntersecting;
+          syncSectionActivity();
         });
       }, { threshold: 0.08 });
 
       obs.observe(section);
+      renderSectionActivity.onChange(syncSectionActivity);
 
       window.addEventListener('resize', () => {
         if (flies.length) {
@@ -4304,6 +4767,7 @@
     /* ─── Interactive side leaves ──────────── */
     (function buildSideLeaves() {
       const container = document.getElementById('side-leaves');
+      if (!window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
 
       /* Leaf shape templates — drawn from left-centre origin so rotation looks natural */
       const shapes = [
@@ -4408,15 +4872,17 @@
       /* Mouse parallax — leaves breathe slightly toward cursor */
       let targetX = 0, targetY = 0, curX = 0, curY = 0;
       let leafSettled = true;
+      let leafFrame = 0;
 
       document.addEventListener('mousemove', e => {
         targetX = (e.clientX / window.innerWidth - 0.5);
         targetY = (e.clientY / window.innerHeight - 0.5);
         leafSettled = false;
+        if (!leafFrame) leafFrame = requestAnimationFrame(animLeaves);
       });
 
-      (function animLeaves() {
-        requestAnimationFrame(animLeaves);
+      function animLeaves() {
+        leafFrame = 0;
         if (leafSettled) return;
 
         curX += (targetX - curX) * 0.04;
@@ -4439,7 +4905,9 @@
             : `translateX(calc(55% + ${shiftX}px))`;
           el.style.transform = `rotate(${cfg.rot + rotDelta}deg) ${peekPct} translateY(${shiftY}px)`;
         });
-      })();
+
+        if (!leafSettled) leafFrame = requestAnimationFrame(animLeaves);
+      }
 
     })();
 
