@@ -568,8 +568,6 @@
     .nav__links li:nth-child(3) { animation-delay: 0.62s; }
     .nav__links li:nth-child(4) { animation-delay: 0.72s; }
     .nav__links li:nth-child(5) { animation-delay: 0.82s; }
-    .nav__links li:nth-child(6) { animation-delay: 0.92s; }
-
     @media (prefers-reduced-motion: reduce) {
       .nav__logo,
       .nav__links li { opacity: 1; animation: none; }
@@ -750,24 +748,7 @@
        gives the section the artboard's own aspect at full width — the
        scene reaches both edges, and nothing is cropped to get there. The
        trade is height: on most screens the section is taller than the
-       viewport and scrolls through rather than fitting in one screen.
-
-       Its heading sits right against the top of the artboard and would
-       land under the fixed nav, so data-scene-reserve adds a clear strip
-       above it and this offset re-centres the scene below that strip.
-       Alder needs no such strip — its top edge is just cornice.
-
-       That reserved strip is pure black, so the artwork's top edge lands
-       partway down the section, where the section blend cannot reach it —
-       it needs feathering on the stage itself. Kept short: the heading
-       begins 3.4% down the artboard, so the fade finishes before it. */
-    #ferdigheter .us-scene__stage {
-      top: calc(50% + 48px);
-      -webkit-mask-image: linear-gradient(to bottom,
-          transparent 0%, rgba(0, 0, 0, 0.5) 1.3%, #000 2.6%);
-      mask-image: linear-gradient(to bottom,
-          transparent 0%, rgba(0, 0, 0, 0.5) 1.3%, #000 2.6%);
-    }
+       viewport and scrolls through rather than fitting in one screen. */
 
     /* ── Alder side notes ───────────────────────
        Two short blocks flanking the columns, set in the same Inter Tight
@@ -2724,7 +2705,6 @@
         </a>
         <ul class="nav__links" role="list">
           <li><a href="#alder">Om meg</a></li>
-          <li><a href="#ferdigheter">Ferdigheter</a></li>
           <li><a href="#erfaring">Erfaring</a></li>
           <li><a href="#projects">Prosjekter</a></li>
           <li><a href="#video">Video</a></li>
@@ -2741,7 +2721,6 @@
   <div class="nav-overlay" id="navOverlay" role="dialog" aria-modal="true">
     <button class="nav-overlay__x" id="navClose" aria-label="Lukk meny">×</button>
     <a href="#alder" onclick="closeNav()">Om meg</a>
-    <a href="#ferdigheter" onclick="closeNav()">Ferdigheter</a>
     <a href="#erfaring" onclick="closeNav()">Erfaring</a>
     <a href="#projects" onclick="closeNav()">Prosjekter</a>
     <a href="#video" onclick="closeNav()">Video</a>
@@ -2791,28 +2770,15 @@
       </p>
     </section>
 
-    <!-- ══ FERDIGHETER ═══════════════════════════
-         Carries the skills on its own now — the card grid that used to
-         follow it has been removed. Same black ground as the two scenes
-         above it. -->
-    <section class="us-scene" id="ferdigheter" data-nav-dark aria-label="Ferdigheter">
-      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-reserve="96" data-us-project="h1QfJCx9UZWIygGIzksa"
-        data-us-arialabel="Animert tittelkort med teksten Ferdigheter"></div>
-      <div class="us-scene__blend" aria-hidden="true"></div>
-    </section>
-
     <script>
       // The opening scenes have fixed 1440x900 artboards, so scale each to
       // contain its section rather than letting the canvas restretch it —
       // fixed-pixel type would otherwise overflow narrow viewports.
-      // data-scene-reserve holds back a strip of height for a scene whose
-      // own layout has to clear the fixed nav.
       (function () {
         var stages = document.querySelectorAll('[data-scene-fit]');
         function fit() {
           stages.forEach(function (stage) {
             var box = stage.parentNode;
-            var reserve = +stage.dataset.sceneReserve || 0;
             // A fill scene takes the artboard's aspect at the section's own
             // width, so it runs edge to edge instead of being letterboxed.
             // Measured rather than done in CSS with 100vw, which would
@@ -2822,12 +2788,20 @@
             if ('sceneFill' in stage.dataset) {
               var fills = window.innerWidth >= (+stage.dataset.sceneFillMin || 0);
               box.style.height = fills
-                ? Math.round(reserve + box.clientWidth * 900 / 1440) + 'px'
+                ? Math.round(box.clientWidth * 900 / 1440) + 'px'
                 : '';
               box.style.minHeight = fills ? '0px' : '';
             }
-            var scale = Math.min(box.clientWidth / 1440, (box.clientHeight - reserve) / 900);
+            var scale = Math.max(0, Math.min(box.clientWidth / 1440, box.clientHeight / 900));
+            // The stage keeps its 1440x900 layout and is visually scaled with
+            // CSS. Match its backing canvas to the physical pixels it actually
+            // occupies, retaining Unicorn's existing 1.5x quality ceiling.
+            var dpi = Math.min(1.5, (window.devicePixelRatio || 1) * scale);
             stage.style.setProperty('--scene-fit', scale);
+            stage.dataset.usDpi = String(dpi);
+            if (window.__syncUnicornStageDpi) {
+              window.__syncUnicornStageDpi(stage, dpi);
+            }
           });
         }
         fit();
@@ -3786,6 +3760,7 @@
       if (!entries.length) return;
 
       const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
+      const entryByHost = new Map(entries.map(entry => [entry.host, entry]));
       const DESTROY_DELAY = 650;
       let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
       let activeSection = renderSectionActivity.active;
@@ -3822,6 +3797,26 @@
         });
         return options;
       }
+
+      function syncStageDpi(host, dpi) {
+        const entry = entryByHost.get(host);
+        if (!entry || !host.hasAttribute('data-scene-fit') || !Number.isFinite(dpi) || dpi <= 0) return;
+        const scene = entry.scene;
+        if (!scene) return;
+
+        const curtainDpi = Number(scene.curtain?.pixelRatio);
+        if (Math.abs(Number(scene.dpi) - dpi) < 0.0001 &&
+            (!Number.isFinite(curtainDpi) || Math.abs(curtainDpi - dpi) < 0.0001)) return;
+
+        scene.dpi = dpi;
+        if (scene.curtain) scene.curtain.pixelRatio = dpi;
+        scene.resize?.();
+        scene.requestSceneRender?.();
+      }
+
+      // The fit pass runs in the shared resize frame. Keeping this hook local
+      // to the lifecycle lets an already-loaded scene update without teardown.
+      window.__syncUnicornStageDpi = syncStageDpi;
 
       function destroyEntry(entry) {
         clearTimeout(entry.destroyTimer);
@@ -3888,6 +3883,7 @@
           .then(scene => {
             entry.promise = null;
             entry.scene = scene;
+            syncStageDpi(entry.host, Number(entry.host.dataset.usDpi));
             updateSceneCount();
             applyEntryState(entry);
           })
@@ -4174,13 +4170,10 @@
       if (!main) return;
 
       const definitions = [
-        // No zoom between the three opening scenes: the shrink-away
-        // handoff would frame each as its own card, and they are meant to
-        // read as one continuous field. The zoom picks back up on the way
-        // out of 'ferdigheter' into the rest of the page.
+        // Landing and Alder read as one continuous field. The depth handoff
+        // starts as Alder gives way to the content-led Experience section.
         { id: 'landing' },
-        { id: 'alder', ambient: '.us-scene__blend' },
-        { id: 'ferdigheter', ambient: '.us-scene__blend', zoom: 'out' },
+        { id: 'alder', ambient: '.us-scene__blend', zoom: 'out' },
         { id: 'erfaring', ambient: ':scope > .container' },
         { id: 'projects', ambient: '.projects__intro-inner' },
         { id: 'video', ambient: ':scope > .container' },
