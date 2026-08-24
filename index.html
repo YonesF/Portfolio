@@ -2792,16 +2792,8 @@
                 : '';
               box.style.minHeight = fills ? '0px' : '';
             }
-            var scale = Math.max(0, Math.min(box.clientWidth / 1440, box.clientHeight / 900));
-            // The stage keeps its 1440x900 layout and is visually scaled with
-            // CSS. Match its backing canvas to the physical pixels it actually
-            // occupies, retaining Unicorn's existing 1.5x quality ceiling.
-            var dpi = Math.min(1.5, (window.devicePixelRatio || 1) * scale);
+            var scale = Math.min(box.clientWidth / 1440, box.clientHeight / 900);
             stage.style.setProperty('--scene-fit', scale);
-            stage.dataset.usDpi = String(dpi);
-            if (window.__syncUnicornStageDpi) {
-              window.__syncUnicornStageDpi(stage, dpi);
-            }
           });
         }
         fit();
@@ -3760,7 +3752,6 @@
       if (!entries.length) return;
 
       const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
-      const entryByHost = new Map(entries.map(entry => [entry.host, entry]));
       const DESTROY_DELAY = 650;
       let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
       let activeSection = renderSectionActivity.active;
@@ -3797,26 +3788,6 @@
         });
         return options;
       }
-
-      function syncStageDpi(host, dpi) {
-        const entry = entryByHost.get(host);
-        if (!entry || !host.hasAttribute('data-scene-fit') || !Number.isFinite(dpi) || dpi <= 0) return;
-        const scene = entry.scene;
-        if (!scene) return;
-
-        const curtainDpi = Number(scene.curtain?.pixelRatio);
-        if (Math.abs(Number(scene.dpi) - dpi) < 0.0001 &&
-            (!Number.isFinite(curtainDpi) || Math.abs(curtainDpi - dpi) < 0.0001)) return;
-
-        scene.dpi = dpi;
-        if (scene.curtain) scene.curtain.pixelRatio = dpi;
-        scene.resize?.();
-        scene.requestSceneRender?.();
-      }
-
-      // The fit pass runs in the shared resize frame. Keeping this hook local
-      // to the lifecycle lets an already-loaded scene update without teardown.
-      window.__syncUnicornStageDpi = syncStageDpi;
 
       function destroyEntry(entry) {
         clearTimeout(entry.destroyTimer);
@@ -3883,7 +3854,6 @@
           .then(scene => {
             entry.promise = null;
             entry.scene = scene;
-            syncStageDpi(entry.host, Number(entry.host.dataset.usDpi));
             updateSceneCount();
             applyEntryState(entry);
           })
