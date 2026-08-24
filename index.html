@@ -121,7 +121,8 @@
       transform: skewY(var(--scroll-skew, 0deg));
     }
 
-    [data-scroll-skew].is-render-active {
+    [data-scroll-skew].is-render-active,
+    [data-scroll-skew].is-render-warm {
       will-change: transform;
     }
 
@@ -241,7 +242,9 @@
       backface-visibility: hidden;
     }
 
-    .scene-section.is-frame-animating {
+    .scene-section.is-frame-animating,
+    .scene-section.is-render-active,
+    .scene-section.is-render-warm {
       will-change: transform, opacity;
     }
 
@@ -258,7 +261,9 @@
       background: rgba(4, 11, 9, 0.34);
     }
 
-    .scene-section.is-frame-animating > .scene-transition-shade {
+    .scene-section.is-frame-animating > .scene-transition-shade,
+    .scene-section.is-render-active > .scene-transition-shade,
+    .scene-section.is-render-warm > .scene-transition-shade {
       will-change: opacity;
     }
 
@@ -273,6 +278,10 @@
 
     .is-render-active .scene-ambient {
       animation-play-state: running;
+    }
+
+    .is-render-active .scene-ambient,
+    .is-render-warm .scene-ambient {
       will-change: transform;
     }
 
@@ -1055,7 +1064,8 @@
       transition: opacity 4s ease;
     }
 
-    .erfaring.is-render-active .erfaring__leaf {
+    .erfaring.is-render-active .erfaring__leaf,
+    .erfaring.is-render-warm .erfaring__leaf {
       will-change: transform;
     }
 
@@ -1567,7 +1577,8 @@
       transform: translate3d(0, var(--chapter-content-y), 0);
     }
 
-    .projects.is-render-active .project-chapter__inner {
+    .projects.is-render-active .project-chapter__inner,
+    .projects.is-render-warm .project-chapter__inner {
       will-change: transform, opacity;
     }
 
@@ -1665,7 +1676,8 @@
       transform: translate3d(0, var(--chapter-visual-y), 0);
     }
 
-    .projects.is-render-active .project-visual {
+    .projects.is-render-active .project-visual,
+    .projects.is-render-warm .project-visual {
       will-change: transform;
     }
 
@@ -2567,7 +2579,9 @@
       transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
     }
 
-    .video-container.is-leaf-transitioning .video-leaf {
+    .video-container.is-leaf-transitioning .video-leaf,
+    #video.is-render-active .video-leaf,
+    #video.is-render-warm .video-leaf {
       will-change: transform, opacity;
     }
 
@@ -3646,8 +3660,12 @@
       const main = document.querySelector('main');
       const sections = [...main.querySelectorAll(':scope > section')];
       const listeners = new Set();
+      const warmRemovalTimers = new Map();
+      const WARM_COOLDOWN = 1400;
       let activeSection = null;
       let effectiveSection = null;
+      let direction = 1;
+      let lastScrollY = window.scrollY;
 
       function sectionAtViewportCenter() {
         const centerX = Math.max(0, Math.min(window.innerWidth - 1, window.innerWidth / 2));
@@ -3671,20 +3689,64 @@
         return bestSection;
       }
 
+      function setSectionWarm(section, shouldWarm, immediate = false) {
+        const removalTimer = warmRemovalTimers.get(section);
+        if (shouldWarm) {
+          if (removalTimer) clearTimeout(removalTimer);
+          warmRemovalTimers.delete(section);
+          section.classList.add('is-render-warm');
+          return;
+        }
+
+        if (!section.classList.contains('is-render-warm')) return;
+        if (immediate) {
+          if (removalTimer) clearTimeout(removalTimer);
+          warmRemovalTimers.delete(section);
+          section.classList.remove('is-render-warm');
+          return;
+        }
+        if (removalTimer) return;
+
+        warmRemovalTimers.set(section, window.setTimeout(() => {
+          warmRemovalTimers.delete(section);
+          section.classList.remove('is-render-warm');
+        }, WARM_COOLDOWN));
+      }
+
+      function syncWarmSections(immediate = false) {
+        const wanted = new Set();
+        if (effectiveSection) {
+          const activeIndex = sections.indexOf(effectiveSection);
+          wanted.add(effectiveSection);
+          const nextSection = sections[activeIndex + direction];
+          if (nextSection) wanted.add(nextSection);
+        }
+
+        sections.forEach(section => setSectionWarm(section, wanted.has(section), immediate));
+      }
+
       function publish(nextSection, force = false) {
         activeSection = nextSection;
         const nextEffective = document.hidden ? null : activeSection;
-        if (!force && nextEffective === effectiveSection) return;
+        const changed = nextEffective !== effectiveSection;
 
         effectiveSection = nextEffective;
-        sections.forEach(section => {
-          section.classList.toggle('is-render-active', section === effectiveSection);
-        });
-        document.documentElement.dataset.activeRenderSection = effectiveSection?.id || '';
-        listeners.forEach(listener => listener(effectiveSection));
+        if (changed || force) {
+          sections.forEach(section => {
+            section.classList.toggle('is-render-active', section === effectiveSection);
+          });
+          document.documentElement.dataset.activeRenderSection = effectiveSection?.id || '';
+          listeners.forEach(listener => listener(effectiveSection));
+        }
+        syncWarmSections(!effectiveSection);
       }
 
-      function update() {
+      function update(frameState) {
+        if (frameState?.scrolled) {
+          const delta = frameState.scrollY - lastScrollY;
+          lastScrollY = frameState.scrollY;
+          if (Math.abs(delta) >= 2) direction = delta > 0 ? 1 : -1;
+        }
         publish(sectionAtViewportCenter());
       }
 
@@ -4241,7 +4303,11 @@
 
       function requestSceneUpdate(runInSharedFrame = false) {
         needsMeasure = true;
-        scenes.forEach(scene => scene.element.classList.add('is-frame-animating'));
+        scenes.forEach(scene => {
+          const nearViewport = scene.element.classList.contains('is-render-active') ||
+            scene.element.classList.contains('is-render-warm');
+          scene.element.classList.toggle('is-frame-animating', nearViewport);
+        });
         if (frame) return;
         if (runInSharedFrame) animateScenes();
         else frame = requestAnimationFrame(animateScenes);
@@ -4252,151 +4318,135 @@
       requestSceneUpdate();
     })();
 
-    /* Prepare section-specific effects shortly before they can be seen. */
-    const sectionPreparation = (() => {
-      const callbacks = new Map();
-      const prepared = new WeakSet();
-      const observer = 'IntersectionObserver' in window
-        ? new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) prepare(entry.target);
-            });
-          }, { rootMargin: '125% 0px 125% 0px', threshold: 0 })
-        : null;
+    /* Build expensive scroll effects only while the browser has idle time. */
+    const idleWork = (() => {
+      const tasks = [];
+      let handle = 0;
 
-      function prepare(section) {
-        if (prepared.has(section)) return;
-        prepared.add(section);
-        observer?.unobserve(section);
-
-        const sectionCallbacks = callbacks.get(section);
-        callbacks.delete(section);
-        sectionCallbacks?.forEach(callback => callback());
+      function flush(deadline) {
+        handle = 0;
+        do {
+          const task = tasks.shift();
+          task?.();
+        } while (tasks.length && deadline.timeRemaining() > 6);
+        schedule();
       }
 
-      function whenNear(section, callback) {
-        if (!section) return;
-        if (!observer || prepared.has(section)) {
-          callback();
-          return;
+      function schedule() {
+        if (handle || !tasks.length) return;
+        if ('requestIdleCallback' in window) {
+          handle = window.requestIdleCallback(flush, { timeout: 700 });
+        } else {
+          handle = window.setTimeout(() => flush({ timeRemaining: () => 12 }), 48);
         }
-
-        let sectionCallbacks = callbacks.get(section);
-        if (!sectionCallbacks) {
-          sectionCallbacks = new Set();
-          callbacks.set(section, sectionCallbacks);
-          observer.observe(section);
-        }
-        sectionCallbacks.add(callback);
       }
 
-      return { whenNear };
+      function add(task) {
+        tasks.push(task);
+        schedule();
+      }
+
+      return { add };
     })();
 
-    /* Keep the large video network-idle until its section is approaching. */
+    let scrollTriggerRefreshFrame = 0;
+    function requestScrollTriggerRefresh() {
+      if (scrollTriggerRefreshFrame) return;
+      scrollTriggerRefreshFrame = requestAnimationFrame(() => {
+        scrollTriggerRefreshFrame = 0;
+        ScrollTrigger.refresh();
+      });
+    }
+
+    /* Attach video metadata only once the Video section is genuinely close. */
     (function preparePortfolioVideo() {
       const video = document.getElementById('portfolioVideo');
       const source = video?.querySelector('source[data-src]');
       const section = video?.closest('section');
       if (!video || !source || !section) return;
 
-      sectionPreparation.whenNear(section, () => {
+      function attachSource() {
+        if (!source.dataset.src) return;
         source.src = source.dataset.src;
         source.removeAttribute('data-src');
         video.load();
-      });
+      }
+
+      if (!('IntersectionObserver' in window)) {
+        attachSource();
+        return;
+      }
+
+      const leadDistance = Math.round(Math.min(720, Math.max(360, window.innerHeight * 0.65)));
+      const observer = new IntersectionObserver(entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        observer.disconnect();
+        attachSource();
+      }, { rootMargin: `${leadDistance}px 0px`, threshold: 0 });
+      observer.observe(section);
     })();
 
     /* ─── Scroll reveal + headline split ───── */
     (function initScrollReveals() {
       if (prefersReducedMotion.matches) return;
 
-      let refreshFrame = 0;
-      function requestRefresh() {
-        if (refreshFrame) return;
-        refreshFrame = requestAnimationFrame(() => {
-          refreshFrame = 0;
-          ScrollTrigger.refresh();
+      idleWork.add(() => {
+        // Batch groups everything entering on the same frame, preserving the
+        // original reveal timing while doing the setup before interaction.
+        ScrollTrigger.batch('.reveal', {
+          start: 'top 88%',
+          once: true,
+          onEnter: batch => {
+            batch.forEach(el => el.classList.add('visible'));
+            gsap.to(batch, {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.95,
+              ease: 'power3.out',
+              stagger: 0.08,
+              overwrite: true
+            });
+          }
         });
-      }
 
-      function prepareSection(section) {
-        const reveals = gsap.utils.toArray(section.querySelectorAll('.reveal'));
-
-        // Batch groups everything entering on the same frame, so its stagger
-        // does the job the hand-tuned d1–d5 delay classes used to. The
-        // `visible` class is still set: .section__label::before hangs its
-        // draw-in off it, and that is not something GSAP is animating here.
-        if (reveals.length) {
-          ScrollTrigger.batch(reveals, {
-            start: 'top 88%',
-            once: true,
-            onEnter: batch => {
-              batch.forEach(el => el.classList.add('visible'));
-              gsap.to(batch, {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 0.95,
-                ease: 'power3.out',
-                stagger: 0.08,
-                overwrite: true
-              });
+        // Decorative leaf parallax keeps the exact same scrubbed motion.
+        gsap.utils.toArray('.erfaring__leaf').forEach((leaf, i) => {
+          gsap.to(leaf, {
+            yPercent: i % 2 ? 24 : -32,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '#erfaring',
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true
             }
           });
-        }
+        });
+        requestScrollTriggerRefresh();
+      });
 
-        // Headlines rise in character by character behind a per-line mask.
-        // Split still waits for fonts: measuring the fallback face breaks the
-        // lines in the wrong places, and the mask then crops the wrong rows.
-        // autoSplit re-runs it on resize, with onSplit rebuilding the tween.
-        const titles = gsap.utils.toArray(section.querySelectorAll('.section__title'));
-        if (titles.length) {
-          document.fonts.ready.then(() => {
-            titles.forEach(title => {
-              SplitText.create(title, {
-                type: 'lines,chars',
-                mask: 'lines',
-                autoSplit: true,
-                onSplit: self => gsap.from(self.chars, {
-                  yPercent: 110,
-                  opacity: 0,
-                  duration: 0.85,
-                  ease: 'power3.out',
-                  stagger: 0.018,
-                  scrollTrigger: { trigger: title, start: 'top 85%', once: true }
-                })
-              });
-            });
-            requestRefresh();
-          });
-        }
-
-        // Parallax on the decorative leaves — scrubbed, so it tracks the
-        // scrollbar rather than playing on its own clock. Only the wrapper is
-        // touched; the SVG inside keeps its own idle drift animation.
-        if (section.id === 'erfaring') {
-          gsap.utils.toArray(section.querySelectorAll('.erfaring__leaf')).forEach((leaf, i) => {
-            gsap.to(leaf, {
-              yPercent: i % 2 ? 24 : -32,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: section,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: true
-              }
+      // SplitText still waits for the real fonts, then builds during idle
+      // rather than while the visitor is entering each section.
+      document.fonts.ready.then(() => {
+        idleWork.add(() => {
+          gsap.utils.toArray('.section__title').forEach(title => {
+            SplitText.create(title, {
+              type: 'lines,chars',
+              mask: 'lines',
+              autoSplit: true,
+              onSplit: self => gsap.from(self.chars, {
+                yPercent: 110,
+                opacity: 0,
+                duration: 0.85,
+                ease: 'power3.out',
+                stagger: 0.018,
+                scrollTrigger: { trigger: title, start: 'top 85%', once: true }
+              })
             });
           });
-        }
-
-        requestRefresh();
-      }
-
-      document.querySelectorAll('main > section').forEach(section => {
-        if (section.querySelector('.reveal, .section__title, .erfaring__leaf')) {
-          sectionPreparation.whenNear(section, () => prepareSection(section));
-        }
+          requestScrollTriggerRefresh();
+        });
       });
     })();
 
@@ -4913,7 +4963,10 @@
       // it steps chapter to chapter, and it is tuned for chapters that run
       // taller than the viewport, which a naive snap would fight.
       window.addEventListener('wheel', handleProjectWheel, { passive: false });
-      sectionPreparation.whenNear(section, buildChapterMotion);
+      idleWork.add(() => {
+        buildChapterMotion();
+        requestScrollTriggerRefresh();
+      });
     })();
 
     /* ─── Magnetic links ──────────────────── */
