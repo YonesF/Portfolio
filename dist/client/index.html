@@ -111,30 +111,6 @@
       font-size: 16px;
     }
 
-    /* Velocity skew: sections lean with scroll speed and settle at rest,
-       the angle fed in from lenis.velocity. Opted in per section with the
-       attribute rather than applied broadly — it is deliberately kept off
-       the WebGL scenes, where skewing a live canvas looks wrong and costs
-       frames, and off #projects, whose chapter logic reads bounding rects
-       that a skew would quietly shift. */
-    [data-scroll-skew] {
-      transform: skewY(var(--scroll-skew, 0deg));
-    }
-
-    [data-scroll-skew].is-render-active,
-    [data-scroll-skew].is-render-warm {
-      will-change: transform;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      [data-scroll-skew] {
-        transform: none;
-        will-change: auto;
-      }
-    }
-
-    html.is-project-gliding { scroll-snap-type: none; }
-
     @media (pointer: coarse) {
       html { scroll-snap-type: y proximity; }
     }
@@ -750,62 +726,214 @@
        trade is height: on most screens the section is taller than the
        viewport and scrolls through rather than fitting in one screen. */
 
-    /* ── Alder side notes ───────────────────────
-       Two short blocks flanking the columns, set in the same Inter Tight
-       as the type inside the scene so the HTML layer and the WebGL layer
-       read as one composition. */
-    .alder__note {
+    /* ── About text layer ───────────────────────
+       The Unicorn artwork stays untouched beneath a structured text layer.
+       On wide screens the two detail groups remain in its darker flanks. */
+    .alder__content {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
+      inset: 0;
       z-index: 3;
-      max-width: min(26ch, 30vw);
-      margin: 0;
+      width: min(1180px, 100%);
+      margin-inline: auto;
+      padding: clamp(5.5rem, 8vw, 7rem) clamp(2rem, 5vw, 4rem) clamp(3rem, 5vw, 4.5rem);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: clamp(2rem, 4vw, 3.75rem);
+      color: rgba(236, 243, 238, 0.9);
       font-family: var(--ff-scene);
+      pointer-events: none;
+    }
+
+    .alder__intro {
+      max-width: 100%;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.96), 0 1px 3px #000;
+    }
+
+    .alder__title {
+      width: fit-content;
+      margin: 0;
+      color: rgba(243, 247, 244, 0.94);
+      font-family: var(--ff-display);
+      font-size: clamp(2.6rem, 5vw, 4.75rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.035em;
+    }
+
+    .alder__title::after {
+      content: '';
+      display: block;
+      width: 4.5rem;
+      height: 1px;
+      margin-top: 0.7rem;
+      background: rgba(200, 230, 208, 0.52);
+    }
+
+    .alder__summary {
+      max-width: 78ch;
+      margin: 1.1rem auto 0;
+      color: rgba(236, 243, 238, 0.79);
+      font-size: clamp(0.9rem, 1.15vw, 1.05rem);
       font-weight: 300;
-      font-size: clamp(0.9rem, 1.15vw, 1.15rem);
-      line-height: 1.55;
-      letter-spacing: 0.01em;
-      color: rgba(232, 243, 235, 0.82);
+      line-height: 1.65;
+      text-align: center;
       text-wrap: balance;
     }
 
-    .alder__note--left {
-      left: clamp(2rem, 13vw, 15rem);
-      text-align: left;
+    .alder__details {
+      align-self: end;
+      display: grid;
+      grid-template-columns: minmax(280px, 380px) minmax(280px, 380px);
+      justify-content: space-between;
+      gap: clamp(4rem, 12vw, 12rem);
     }
 
-    .alder__note--right {
-      right: clamp(2rem, 13vw, 15rem);
-      text-align: right;
+    .alder__group {
+      min-width: 0;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.96), 0 1px 3px #000;
     }
 
-    /* On a phone the scene collapses to a letterboxed band across the
-       middle, so there are no flanks left to write in. The notes move
-       into the black above and below it instead. --half-band mirrors the
-       JS fit (900 x min(vw/1440, vh/900), halved), so they clear the
-       artwork exactly rather than by guesswork. */
+    .alder__group-title {
+      width: fit-content;
+      margin: 0 0 1.25rem;
+      padding-bottom: 0.55rem;
+      color: rgba(218, 235, 223, 0.88);
+      border-bottom: 1px solid rgba(200, 230, 208, 0.44);
+      font-family: var(--ff-display);
+      font-size: clamp(1.25rem, 2vw, 1.65rem);
+      font-weight: 500;
+      line-height: 1.1;
+    }
+
+    .alder__timeline {
+      display: grid;
+      gap: 0.9rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .alder__timeline li {
+      display: grid;
+      grid-template-columns: 6.4rem minmax(0, 1fr);
+      gap: 0.9rem;
+      align-items: start;
+    }
+
+    .alder__timeline time {
+      padding-top: 0.12rem;
+      color: rgba(200, 230, 208, 0.6);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .alder__timeline strong,
+    .alder__timeline span {
+      display: block;
+    }
+
+    .alder__timeline strong {
+      color: rgba(244, 247, 245, 0.9);
+      font-size: 0.86rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .alder__timeline span {
+      margin-top: 0.16rem;
+      color: rgba(227, 237, 230, 0.62);
+      font-size: 0.75rem;
+      font-weight: 300;
+      line-height: 1.4;
+    }
+
+    .alder__skills {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem 1.25rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .alder__skills li {
+      position: relative;
+      padding-left: 0.85rem;
+      color: rgba(239, 245, 241, 0.76);
+      font-size: 0.78rem;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .alder__skills li::before {
+      content: '';
+      position: absolute;
+      top: 0.58em;
+      left: 0;
+      width: 4px;
+      height: 4px;
+      background: rgba(132, 196, 154, 0.72);
+      border-radius: 50%;
+    }
+
     @media (max-width: 860px) and (orientation: portrait) {
-      .alder__note {
-        --half-band: min(31.25vw, 46vh);
-        top: auto;
-        bottom: auto;
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        max-width: min(38ch, 82vw);
-        text-align: center;
+      #alder {
+        min-height: 1180px;
       }
 
-      .alder__note--left {
-        bottom: calc(50% + var(--half-band) + 1.25rem);
+      .alder__content {
+        padding: 4.25rem 1.35rem 4rem;
+        display: block;
       }
 
-      .alder__note--right {
-        top: calc(50% + var(--half-band) + 1.25rem);
+      .alder__title {
+        font-size: clamp(2.65rem, 13vw, 4rem);
       }
 
-      /* Nothing sits in the flanks now, so let the columns keep them. */
+      .alder__summary {
+        max-width: 42ch;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        text-align: left;
+        text-wrap: pretty;
+      }
+
+      .alder__details {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 17rem;
+        margin-top: 1.25rem;
+      }
+
+      .alder__group {
+        width: min(100%, 28rem);
+      }
+
+      .alder__group:last-child {
+        justify-self: end;
+      }
+
+      .alder__group-title {
+        margin-bottom: 0.8rem;
+      }
+
+      .alder__timeline {
+        gap: 0.55rem;
+      }
+
+      .alder__timeline li {
+        grid-template-columns: 5.8rem minmax(0, 1fr);
+        gap: 0.7rem;
+      }
+
+      .alder__skills {
+        gap: 0.7rem 1rem;
+      }
+
+      /* Keep the complete artboard visible between the text groups. */
       #alder .us-scene__blend {
         background:
           linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
@@ -1102,12 +1230,10 @@
       z-index: 1;
     }
 
-    /* Dark glass keeps the scene visible without asking body copy to compete
-       with its moving detail. */
+    /* An opaque translucent surface keeps the moving scene sharp while
+       preserving text contrast without a costly backdrop blur. */
     .erf-card {
-      background: rgba(0, 3, 2, 0.16);
-      backdrop-filter: blur(4px) saturate(1.02) brightness(0.62);
-      -webkit-backdrop-filter: blur(4px) saturate(1.02) brightness(0.62);
+      background: rgba(0, 3, 2, 0.68);
       border: 1px solid rgba(0, 0, 0, 0.58);
       border-radius: var(--r-lg);
       padding: 1.125rem 1.25rem 1.25rem;
@@ -1248,418 +1374,12 @@
       border-radius: 0;
     }
 
-    /* ── Projects ───────────────────────────── */
-    .projects {
-      background: var(--bg-2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Vine decorations */
-    .vine-wrap {
-      position: absolute;
-      top: 0;
-      width: 120px;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.5;
-    }
-
-    .vine-wrap--left {
-      left: 0;
-    }
-
-    .vine-wrap--right {
-      right: 0;
-      transform: scaleX(-1);
-    }
-
-    .vine-stem {
-      stroke-dasharray: var(--vine-len, 800);
-      stroke-dashoffset: var(--vine-len, 800);
-      transition: none;
-    }
-
-    .projects.vines-active .vine-stem {
-      animation: vineGrow 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
-
-    .vine-leaf {
-      opacity: 0;
-      transform: scale(0.5) rotate(-20deg);
-      transform-origin: 50% 50%;
-      transform-box: fill-box;
-      transition: none;
-    }
-
-    .projects.vines-active .vine-leaf {
-      animation: vineLeafIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-delay: var(--leaf-delay, 0s);
-    }
-
-    @keyframes vineGrow {
-      to {
-        stroke-dashoffset: 0;
-      }
-    }
-
-    @keyframes vineLeafIn {
-      to {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-      }
-    }
-
-    @keyframes vineLeafWaver {
-      0%, 100% { transform: scale(1) rotate(0deg); }
-      35%       { transform: scale(1) rotate(3deg); }
-      70%       { transform: scale(1) rotate(-2deg); }
-    }
-
-    .projects__head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: var(--sp-4);
-      margin-bottom: var(--sp-7);
-      flex-wrap: wrap;
-    }
-
-    .projects__grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--sp-3);
-    }
-
-    .proj-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-xl);
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      transition: border-color var(--tr-base), transform var(--tr-slow), box-shadow var(--tr-base);
-    }
-
-    .proj-card:hover {
-      border-color: rgba(61, 122, 82, 0.3);
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-hover);
-    }
-
-    .proj-card__thumb {
-      position: relative;
-      aspect-ratio: 16/10;
-      background: var(--bg-2);
-      overflow: hidden;
-    }
-
-    .proj-card__thumb::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -75%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
-      transform: skewX(-12deg);
-      transition: left 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .proj-card:hover .proj-card__thumb::before {
-      left: 140%;
-    }
-
-    .proj-card__emoji {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.8rem;
-      opacity: 0.3;
-      transition: opacity var(--tr-base), transform var(--tr-slow);
-    }
-
-    .proj-card:hover .proj-card__emoji {
-      opacity: 0.5;
-      transform: scale(1.08);
-    }
-
-    .proj-card__thumb::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, var(--bg-card));
-    }
-
-    .proj-card__body {
-      padding: var(--sp-3) var(--sp-4) var(--sp-4);
-    }
-
-    .proj-card__cats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: var(--sp-2);
-    }
-
-    .proj-cat {
-      font-size: 0.68rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--green);
-      background: var(--green-wash);
-      border: 1px solid rgba(61, 122, 82, 0.15);
-      padding: 0.2rem 0.6rem;
-      border-radius: var(--r-full);
-    }
-
-    .proj-card__title {
-      font-family: var(--ff-display);
-      font-size: var(--fs-2xl);
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.2;
-      margin-bottom: var(--sp-1);
-    }
-
-    .proj-card__desc {
-      font-size: var(--fs-sm);
-      color: var(--text-faint);
-      line-height: 1.7;
-      margin-bottom: var(--sp-3);
-    }
-
-    .proj-card__link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: var(--fs-sm);
-      font-weight: 500;
-      color: var(--green);
-      transition: gap var(--tr-base), color var(--tr-base);
-    }
-
-    .proj-card__link:hover {
-      gap: 10px;
-      color: var(--green-mid);
-    }
-
-    /* Scroll-led project showcase */
-    .projects.section {
-      --project-accent: #89d2a2;
-      padding-block: 0;
-      color: #edf5ef;
-      background: #07130f;
-      border-color: rgba(137, 210, 162, 0.14);
-      overflow: clip;
-      isolation: isolate;
-    }
-
-    .projects > .vine-wrap { display: none; }
-
-    .projects::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.45;
-      background-image:
-        linear-gradient(rgba(137, 210, 162, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(137, 210, 162, 0.035) 1px, transparent 1px);
-      background-size: 72px 72px;
-    }
-
-    .projects__intro {
-      padding: clamp(4.5rem, 7vw, 6.5rem) 0 clamp(3rem, 4.5vw, 4.25rem);
-      border-bottom: 1px solid rgba(237, 245, 239, 0.1);
-    }
-
-    .projects__intro-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.7fr);
-      align-items: end;
-      gap: clamp(3rem, 8vw, 8rem);
-    }
-
-    .projects .section__label { color: var(--project-accent); }
-    .projects .section__title {
-      max-width: none;
-      margin-bottom: 0;
-      color: #edf5ef;
-      font-size: clamp(2.65rem, 4.6vw, 4.75rem);
-      line-height: 1;
-    }
-    .projects .section__title em { color: var(--project-accent); }
-
-    .projects__intro-copy {
-      max-width: 43ch;
-      margin: 0 0 0.35rem;
-      color: rgba(237, 245, 239, 0.6);
-      font-size: clamp(0.95rem, 1.25vw, 1.08rem);
-      line-height: 1.65;
-    }
-
-    .project-showcase {
-      display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.8fr);
-      position: relative;
-    }
-
-    .project-story {
-      min-width: 0;
-      border-right: 1px solid rgba(237, 245, 239, 0.1);
-    }
-
-    .project-chapter {
-      --chapter-accent: #89d2a2;
-      --chapter-opacity: 1;
-      --chapter-content-y: 0px;
-      --chapter-visual-y: 0px;
-      --chapter-line-scale: 1;
-      min-height: 100svh;
-      display: flex;
-      align-items: center;
-      position: relative;
-      padding: clamp(6rem, 10vh, 8rem) clamp(1.5rem, 5vw, 5rem);
-      border-bottom: 1px solid rgba(237, 245, 239, 0.1);
-      scroll-margin-top: 4rem;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-
-    .project-chapter:last-child { border-bottom: 0; }
-
-    .project-chapter::before {
-      content: attr(data-number);
-      position: absolute;
-      top: clamp(5rem, 9vh, 7rem);
-      right: clamp(1.25rem, 4vw, 4rem);
-      color: rgba(237, 245, 239, 0.035);
-      font-family: var(--ff-display);
-      font-size: clamp(7rem, 17vw, 17rem);
-      line-height: 0.7;
-      pointer-events: none;
-    }
-
-    .project-chapter__inner {
-      width: min(100%, 900px);
-      margin-inline: auto;
-      position: relative;
-      z-index: 1;
-      opacity: var(--chapter-opacity);
-      transform: translate3d(0, var(--chapter-content-y), 0);
-    }
-
-    .projects.is-render-active .project-chapter__inner,
-    .projects.is-render-warm .project-chapter__inner {
-      will-change: transform, opacity;
-    }
-
-    .project-chapter__eyebrow {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: var(--chapter-accent);
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-bottom: 0.85rem;
-    }
-
-    .project-chapter__eyebrow::before {
-      content: '';
-      width: 2.4rem;
-      height: 1px;
-      background: currentColor;
-      transform: scaleX(var(--chapter-line-scale));
-      transform-origin: left;
-    }
-
-    .project-chapter__title {
-      color: #f6f7f1;
-      font-family: var(--ff-display);
-      font-size: clamp(2.7rem, 5vw, 5.4rem);
-      font-weight: 400;
-      line-height: 0.95;
-      margin-bottom: 1.25rem;
-    }
-
-    .project-chapter__desc {
-      max-width: 64ch;
-      color: rgba(237, 245, 239, 0.64);
-      font-size: clamp(0.95rem, 1.25vw, 1.08rem);
-      line-height: 1.75;
-      margin-bottom: 1.4rem;
-    }
-
-    .project-chapter__tags,
-    .project-chapter__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-    }
-
-    .project-chapter__tags { margin-bottom: 1.4rem; }
-    .project-chapter__actions { gap: 0.7rem; margin-bottom: clamp(2rem, 5vh, 3.5rem); }
-
-    .project-tag {
-      padding: 0.28rem 0.68rem;
-      color: rgba(237, 245, 239, 0.78);
-      background: rgba(237, 245, 239, 0.07);
-      border: 1px solid rgba(237, 245, 239, 0.12);
-      border-radius: var(--r-full);
-      font-size: 0.68rem;
-      font-weight: 500;
-      line-height: 1.2;
-    }
-
-    .project-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      min-height: 42px;
-      padding: 0.65rem 0.95rem;
-      color: #f6f7f1;
-      background: rgba(237, 245, 239, 0.08);
-      border: 1px solid rgba(237, 245, 239, 0.16);
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      transition: background var(--tr-base), border-color var(--tr-base), transform var(--tr-base);
-    }
-
-    .project-link:hover {
-      background: color-mix(in srgb, var(--chapter-accent) 18%, transparent);
-      border-color: color-mix(in srgb, var(--chapter-accent) 55%, transparent);
-      transform: translateY(-2px);
-    }
-
-    .project-link svg { width: 16px; height: 16px; flex: 0 0 auto; }
-
+    /* Project preview artwork */
     .project-visual {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 8.6;
-      min-height: 310px;
+      height: 100%;
       overflow: hidden;
-      border: 1px solid rgba(237, 245, 239, 0.15);
-      border-radius: 6px;
-      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
-      transform: translate3d(0, var(--chapter-visual-y), 0);
-    }
-
-    .projects.is-render-active .project-visual,
-    .projects.is-render-warm .project-visual {
-      will-change: transform;
     }
 
     .project-visual__bar {
@@ -1848,375 +1568,305 @@
 
     .kart-metric strong { color: #f2f5f4; font-size: 0.8rem; }
 
-    .project-index {
-      height: calc(100svh - 64px);
-      position: sticky;
-      top: 64px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: clamp(2rem, 4vw, 4rem);
-      background: rgba(5, 13, 11, 0.82);
-      backdrop-filter: blur(18px);
+    /* Horizontal project gallery — static depth with pointer-driven tilt */
+    .projects-gallery.section {
+      --project-accent: #89d2a2;
+      min-height: 100svh;
+      display: grid;
+      align-content: center;
+      position: relative;
+      padding: clamp(5.5rem, 8vw, 8rem) 0 clamp(5rem, 8vw, 7.5rem);
+      color: #edf5ef;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(45, 103, 74, 0.17), transparent 42%),
+        linear-gradient(180deg, #050a08 0%, #07110d 48%, #040806 100%);
+      border-color: rgba(137, 210, 162, 0.13);
+      isolation: isolate;
+      overflow: clip;
     }
 
-    .project-index__eyebrow {
-      color: rgba(237, 245, 239, 0.42);
-      font-size: 0.68rem;
+    .projects-gallery::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.38;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(232, 244, 235, 0.75) 0 0.65px, transparent 0.85px),
+        radial-gradient(circle, rgba(137, 210, 162, 0.48) 0 0.55px, transparent 0.8px),
+        radial-gradient(circle, rgba(232, 244, 235, 0.34) 0 0.45px, transparent 0.7px);
+      background-position: 0 0, 17px 29px, 39px 11px;
+      background-size: 53px 53px, 71px 71px, 37px 37px;
+    }
+
+    .projects-gallery::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(4, 8, 6, 0.82), transparent 14% 86%, rgba(4, 8, 6, 0.82)),
+        linear-gradient(180deg, rgba(4, 8, 6, 0.3), transparent 22% 78%, rgba(4, 8, 6, 0.45));
+    }
+
+    .projects-gallery__intro,
+    .projects-gallery__viewport {
+      position: relative;
+      z-index: 2;
+    }
+
+    .projects-gallery__intro {
+      width: min(880px, calc(100% - 3rem));
+      margin: 0 auto clamp(3rem, 5vw, 5rem);
+      text-align: center;
+    }
+
+    .projects-gallery__kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.75rem;
+      color: rgba(137, 210, 162, 0.72);
+      font-size: 0.65rem;
       font-weight: 600;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      margin-bottom: 0.6rem;
     }
 
-    .project-index__title {
-      color: #f6f7f1;
+    .projects-gallery__kicker::before,
+    .projects-gallery__kicker::after {
+      content: '';
+      width: clamp(2rem, 5vw, 4.5rem);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, currentColor);
+    }
+
+    .projects-gallery__kicker::after { transform: scaleX(-1); }
+
+    .projects-gallery .projects-gallery__title {
+      max-width: none;
+      margin: 0;
+      color: #f3f5ef;
       font-family: var(--ff-display);
-      font-size: clamp(2.2rem, 4vw, 4.2rem);
+      font-size: clamp(2.75rem, 5.5vw, 5.35rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.035em;
+      text-wrap: balance;
+    }
+
+    .projects-gallery__rule {
+      width: min(260px, 42vw);
+      height: 1px;
+      margin: 1rem auto 1.2rem;
+      background: linear-gradient(90deg, transparent, rgba(137, 210, 162, 0.58), transparent);
+    }
+
+    .projects-gallery__copy {
+      max-width: 70ch;
+      margin-inline: auto;
+      color: rgba(237, 245, 239, 0.56);
+      font-family: var(--ff-display);
+      font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+      line-height: 1.65;
+    }
+
+    .projects-gallery__viewport {
+      width: 100%;
+      overflow: hidden;
+      padding-bottom: 1.5rem;
+    }
+
+    .projects-gallery__track {
+      --carousel-gap: clamp(1.5rem, 4vw, 4.5rem);
+      width: max-content;
+      display: flex;
+      align-items: start;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .projects-gallery__track.is-carousel-ready {
+      transform: translate3d(-50%, 0, 0);
+    }
+
+    .projects-gallery.is-render-active .projects-gallery__track.is-carousel-ready {
+      animation: projectsCarouselRight 50s linear infinite;
+    }
+
+    .projects-gallery__group {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: start;
+      gap: var(--carousel-gap);
+      padding-inline: calc(var(--carousel-gap) / 2);
+    }
+
+    @keyframes projectsCarouselRight {
+      from { transform: translate3d(-50%, 0, 0); }
+      to { transform: translate3d(0, 0, 0); }
+    }
+
+    .project-card {
+      --project-tone: #89d2a2;
+      width: clamp(300px, 29vw, 390px);
+      flex: 0 0 auto;
+      perspective: 1100px;
+    }
+
+    .project-card__tilt {
+      position: relative;
+    }
+
+    .project-card__tilt::before {
+      content: '';
+      position: absolute;
+      inset: 7px -9px -10px 8px;
+      z-index: -1;
+      background: rgba(4, 9, 7, 0.92);
+      border: 1px solid rgba(211, 238, 219, 0.22);
+      transform: translate(8px, 8px);
+      box-shadow: 15px 22px 42px rgba(0, 0, 0, 0.34);
+    }
+
+    .project-card__screen {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #0a130f;
+      border: 1px solid rgba(224, 240, 228, 0.56);
+      box-shadow:
+        inset 0 0 0 1px rgba(4, 10, 8, 0.8),
+        0 28px 55px rgba(0, 0, 0, 0.28);
+      contain: layout paint;
+      transform: none;
+    }
+
+    .projects-gallery .project-visual {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      aspect-ratio: auto;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      opacity: 1 !important;
+      transform: none !important;
+      will-change: auto !important;
+    }
+
+    .project-card__body {
+      padding: 2rem 0.25rem 0;
+      text-align: center;
+    }
+
+    .project-card__type {
+      color: color-mix(in srgb, var(--project-tone) 78%, white);
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .project-card__title {
+      margin: 0.55rem 0 0.7rem;
+      color: #f1f4ed;
+      font-family: var(--ff-display);
+      font-size: clamp(1.6rem, 2.4vw, 2.25rem);
       font-weight: 400;
       line-height: 1;
-      margin-bottom: 1.1rem;
     }
 
-    .project-index__progress {
-      width: 100%;
-      height: 2px;
-      background: rgba(237, 245, 239, 0.12);
-      margin-bottom: clamp(1.5rem, 4vh, 3rem);
-      overflow: hidden;
-    }
-
-    .project-index__progress span {
-      display: block;
-      width: var(--project-progress, 33.333%);
-      height: 100%;
-      background: var(--project-accent);
-      transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .project-index__list { display: grid; gap: 0.4rem; }
-
-    .project-index__link {
-      display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
-      align-items: center;
-      gap: 1rem;
-      min-height: 76px;
-      padding: 0.65rem 0;
-      color: rgba(237, 245, 239, 0.28);
-      border-bottom: 1px solid rgba(237, 245, 239, 0.07);
-      transition: color 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .project-index__link:hover,
-    .project-index__link.is-active { color: #f6f7f1; transform: translateX(4px); }
-
-    .project-index__number {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      color: inherit;
-      border: 1px solid currentColor;
-      border-radius: 50%;
-      font-size: 0.7rem;
-      font-weight: 600;
-      transition: color 0.65s ease, background 0.65s ease, border-color 0.65s ease, box-shadow 0.65s ease;
-    }
-
-    .project-index__link.is-active .project-index__number {
-      color: #07130f;
-      background: var(--project-accent);
-      border-color: var(--project-accent);
-      box-shadow: 0 0 0 7px rgba(137, 210, 162, 0.1);
-    }
-
-    .project-index__name {
-      display: block;
-      min-width: 0;
+    .project-card__desc {
+      max-width: 38ch;
+      min-height: 4.8em;
+      margin: 0 auto 1rem;
+      color: rgba(237, 245, 239, 0.52);
       font-family: var(--ff-display);
-      font-size: clamp(1.05rem, 1.8vw, 1.45rem);
-      line-height: 1.1;
+      font-size: 0.9rem;
+      font-style: italic;
+      line-height: 1.6;
     }
 
-    .project-index__type {
-      display: block;
-      color: rgba(237, 245, 239, 0.28);
-      font-size: 0.66rem;
-      margin-top: 0.3rem;
-    }
-
-    .project-index__footer {
+    .project-card__tags {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      color: rgba(237, 245, 239, 0.36);
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem 0.7rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .project-card__tag {
+      color: color-mix(in srgb, var(--project-tone) 74%, #edf5ef);
       font-size: 0.66rem;
-      margin-top: clamp(1.5rem, 4vh, 3rem);
+      font-weight: 500;
     }
 
-    .project-index__scroll { display: flex; align-items: center; gap: 0.55rem; }
+    .project-card__tag:nth-child(3n + 2) { color: #d9b27f; }
+    .project-card__tag:nth-child(3n + 3) { color: #79b8c7; }
 
-    .project-index__scroll::after {
-      content: '';
-      width: 1px;
-      height: 30px;
-      background: linear-gradient(to bottom, var(--project-accent), transparent);
-      animation: scrollBob 2.4s ease-in-out infinite;
-      animation-play-state: paused;
+    .project-card__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(237, 245, 239, 0.68);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: color var(--tr-base), transform var(--tr-base);
     }
 
-    .projects.is-render-active .project-index__scroll::after {
-      animation-play-state: running;
+    .project-card__link:hover,
+    .project-card__link:focus-visible {
+      color: color-mix(in srgb, var(--project-tone) 78%, white);
+      transform: translateY(-2px);
     }
 
-    @media (max-width: 960px) {
-      .projects__intro { padding-block: 4.5rem 3.25rem; }
-      .projects__intro-inner { display: block; }
-      .projects .section__title { max-width: 11ch; }
-      .projects__intro-copy { margin-top: 1.35rem; }
-      .project-showcase { display: flex; flex-direction: column; }
-      .project-story { order: 2; border-right: 0; }
+    .project-card__link svg { width: 15px; height: 15px; }
 
-      .project-index {
-        order: 1;
-        top: 64px;
-        z-index: 20;
-        width: 100%;
-        height: auto;
-        padding: 0.8rem 1.25rem;
-        border-bottom: 1px solid rgba(237, 245, 239, 0.12);
-      }
-
-      .project-index__eyebrow,
-      .project-index__title,
-      .project-index__progress,
-      .project-index__footer,
-      .project-index__type { display: none; }
-
-      .project-index__list {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.35rem;
-      }
-
-      .project-index__link {
-        display: flex;
-        justify-content: center;
-        gap: 0.45rem;
-        min-height: 42px;
-        padding: 0.25rem;
-        border: 0;
-        border-radius: 4px;
-      }
-
-      .project-index__link:hover,
-      .project-index__link.is-active { background: rgba(137, 210, 162, 0.08); transform: none; }
-
-      .project-index__number { width: 28px; height: 28px; flex: 0 0 auto; font-size: 0.62rem; }
-
-      .project-index__name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-family: var(--ff-body);
-        font-size: 0.7rem;
-        font-weight: 600;
-      }
-
-      .project-chapter {
-        min-height: auto;
-        padding-block: clamp(5.5rem, 12vw, 7rem);
-        scroll-margin-top: 7rem;
-      }
+    .projects-gallery__wire {
+      position: absolute;
+      z-index: 1;
+      width: clamp(120px, 15vw, 225px);
+      height: auto;
+      color: rgba(137, 210, 162, 0.16);
+      pointer-events: none;
     }
 
-    @media (max-width: 540px) {
-      .projects::before { background-size: 44px 44px; }
-      .projects__intro { padding-block: 4rem 2.75rem; }
-      .projects .section__title { font-size: clamp(2.35rem, 12vw, 3.2rem); }
-      .projects__intro-copy { font-size: 0.95rem; }
-      .project-index { padding-inline: 0.65rem; }
-      .project-index__name { display: none; }
-      .project-index__link { min-width: 0; }
-      .project-chapter { padding-inline: 1.25rem; }
-      .project-chapter::before { top: 5rem; right: 0.75rem; font-size: 7rem; }
-      .project-chapter__title { font-size: clamp(2.5rem, 13vw, 4rem); }
-      .project-visual { min-height: 230px; aspect-ratio: 4 / 3; }
+    .projects-gallery__wire--one { top: 14%; left: 5%; transform: rotate(-13deg); }
+    .projects-gallery__wire--two { right: 4%; bottom: 10%; transform: rotate(19deg) scale(0.82); }
+
+    @media (max-width: 720px) {
+      .projects-gallery.section { min-height: auto; padding-block: 5rem 4.5rem; }
+      .projects-gallery__intro { width: min(100% - 2.5rem, 620px); margin-bottom: 2.75rem; }
+      .projects-gallery__copy { font-size: 0.92rem; }
+      .projects-gallery__track { --carousel-gap: 1.4rem; }
+      .project-card { width: min(84vw, 360px); }
+      .project-card__body { padding-top: 1.65rem; }
+      .project-card__desc { min-height: 0; }
       .estate-room::before { border-width: 6px; }
       .atlas-status { width: 52%; }
       .kart-radar { left: 3%; width: 50%; }
       .kart-metrics { right: 3%; width: 43%; }
       .kart-metric { padding: 0.48rem; font-size: 0.56rem; }
+      .projects-gallery__wire { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-snap-type: none; }
-      .project-chapter__inner,
-      .project-visual { opacity: 1 !important; transform: none !important; }
-      .project-index__progress span { transition: none; }
-      .project-index__scroll::after { animation: none; }
-    }
-
-    /* ── Video ──────────────────────────────── */
-    .video-section {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-      transition: background 1.5s ease;
-    }
-
-    .video-section.forest-mode {
-      background: #0f1e14;
-    }
-
-    /* Dark forest overlay */
-    .forest-overlay {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 40%, #142a1a 0%, #0a1a0f 60%, #071209 100%);
-      opacity: 0;
-      transition: opacity 1.5s ease;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .video-section.forest-mode .forest-overlay {
-      opacity: 1;
-    }
-
-    /* Firefly canvas */
-    .firefly-canvas {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 1.5s ease 0.3s;
-    }
-
-    .video-section.forest-mode .firefly-canvas {
-      opacity: 1;
-    }
-
-    /* Text color transitions in forest mode */
-    .video-section .section__label,
-    .video-section .section__title,
-    .video-section .video__desc {
-      position: relative;
-      z-index: 2;
-      transition: color 1.5s ease;
-    }
-
-    .video-section.forest-mode .section__label {
-      color: rgba(132, 196, 154, 0.7);
-    }
-
-    .video-section.forest-mode .section__title {
-      color: rgba(200, 230, 208, 0.9);
-    }
-
-    .video-section.forest-mode .section__title em {
-      color: rgba(132, 196, 154, 0.85);
-      text-shadow: 0 0 20px rgba(132, 196, 154, 0.2);
-    }
-
-    .video-section.forest-mode .video__desc {
-      color: rgba(200, 230, 208, 0.5);
-    }
-
-    .video-section .video-container,
-    .video-section .video-wrap {
-      position: relative;
-      z-index: 2;
-    }
-
-    .video-wrap {
-      max-width: 900px;
-      margin-inline: auto;
-      text-align: center;
-    }
-
-    .video-wrap .section__label {
-      justify-content: center;
-    }
-
-    .video-wrap .section__label::before {
-      display: none;
-    }
-
-    .video__desc {
-      font-size: var(--fs-lg);
-      color: var(--text-muted);
-      max-width: 50ch;
-      margin-inline: auto;
-      line-height: 1.8;
-      margin-top: var(--sp-2);
-      margin-bottom: var(--sp-6);
-    }
-
-    .video-frame {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: var(--bg-card);
-      border-radius: var(--r-xl);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .video-frame iframe,
-    .video-frame video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .video-ph {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--sp-3);
-      background: linear-gradient(145deg, var(--bg-card), var(--bg-2));
-    }
-
-    .video-play {
-      width: 76px;
-      height: 76px;
-      background: var(--green-wash);
-      border: 2px solid rgba(61, 122, 82, 0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 20px rgba(61, 122, 82, 0.15);
-      transition: background var(--tr-base), border-color var(--tr-base), transform var(--tr-base), box-shadow var(--tr-base);
-    }
-
-    .video-play:hover {
-      background: var(--green-pale);
-      border-color: var(--green);
-      transform: scale(1.1);
-      box-shadow: 0 8px 30px rgba(61, 122, 82, 0.25);
-    }
-
-    .video-play svg {
-      width: 24px;
-      height: 24px;
-      fill: var(--green);
-      margin-left: 4px;
-    }
-
-    .video-ph p {
-      font-size: var(--fs-sm);
-      color: var(--text-faint);
-      letter-spacing: 0.1em;
+      .projects-gallery__viewport {
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+      }
+      .projects-gallery__viewport::-webkit-scrollbar { display: none; }
+      .projects-gallery__track.is-carousel-ready,
+      .projects-gallery.is-render-active .projects-gallery__track.is-carousel-ready {
+        animation: none;
+        transform: none;
+      }
+      .projects-gallery__group[aria-hidden="true"] { display: none; }
     }
 
     /* ── Contact ────────────────────────────── */
@@ -2475,10 +2125,6 @@
         grid-template-columns: 1fr;
       }
 
-      .projects__grid {
-        grid-template-columns: 1fr;
-      }
-
       .contact__grid {
         grid-template-columns: 1fr;
       }
@@ -2491,10 +2137,6 @@
         grid-template-columns: 1fr;
       }
 
-      .projects__head {
-        flex-direction: column;
-        align-items: flex-start;
-      }
     }
 
     @media (max-width: 540px) {
@@ -2526,102 +2168,6 @@
         font-size: 1.1rem;
       }
 
-      .proj-card__body {
-        padding: var(--sp-3);
-      }
-
-      .video-play {
-        width: 60px;
-        height: 60px;
-      }
-    }
-
-    /* ── Video Leaves Animation ──────────────── */
-    .video-container {
-      position: relative;
-    }
-
-    .video-leaves {
-      position: absolute;
-      inset: -60px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .video-frame {
-      z-index: 1;
-      /* Make sure video is above leaves */
-    }
-
-    .video-leaf {
-      position: absolute;
-      opacity: 0;
-      transform: scale(0.5) rotate(0deg) translate(0, 0);
-      transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
-    }
-
-    .video-container.is-leaf-transitioning .video-leaf,
-    #video.is-render-active .video-leaf,
-    #video.is-render-warm .video-leaf {
-      will-change: transform, opacity;
-    }
-
-    .video-container.is-playing .video-leaf {
-      opacity: 1;
-    }
-
-    .video-leaf-1 {
-      top: 10%;
-      left: 10%;
-    }
-
-    .video-container.is-playing .video-leaf-1 {
-      transform: scale(1) rotate(-25deg) translate(-100px, -60px);
-    }
-
-    .video-leaf-2 {
-      top: 5%;
-      right: 15%;
-    }
-
-    .video-container.is-playing .video-leaf-2 {
-      transform: scale(0.9) rotate(35deg) translate(80px, -50px);
-    }
-
-    .video-leaf-3 {
-      bottom: 20%;
-      left: 5%;
-    }
-
-    .video-container.is-playing .video-leaf-3 {
-      transform: scale(1.1) rotate(-40deg) translate(-90px, 40px);
-    }
-
-    .video-leaf-4 {
-      bottom: 10%;
-      right: 10%;
-    }
-
-    .video-container.is-playing .video-leaf-4 {
-      transform: scale(1) rotate(20deg) translate(100px, 60px);
-    }
-
-    .video-leaf-5 {
-      top: 50%;
-      right: 5%;
-    }
-
-    .video-container.is-playing .video-leaf-5 {
-      transform: scale(0.8) rotate(60deg) translate(110px, 0px);
-    }
-
-    .video-leaf-6 {
-      top: 60%;
-      left: 10%;
-    }
-
-    .video-container.is-playing .video-leaf-6 {
-      transform: scale(0.9) rotate(-60deg) translate(-110px, 20px);
     }
 
     /* ── Touch Devices ──────────────────────── */
@@ -2707,7 +2253,6 @@
           <li><a href="#alder">Om meg</a></li>
           <li><a href="#erfaring">Erfaring</a></li>
           <li><a href="#projects">Prosjekter</a></li>
-          <li><a href="#video">Video</a></li>
           <li><a href="#contact">Kontakt</a></li>
         </ul>
         <button class="nav__burger" id="navBurger" aria-label="Åpne meny" aria-expanded="false">
@@ -2723,7 +2268,6 @@
     <a href="#alder" onclick="closeNav()">Om meg</a>
     <a href="#erfaring" onclick="closeNav()">Erfaring</a>
     <a href="#projects" onclick="closeNav()">Prosjekter</a>
-    <a href="#video" onclick="closeNav()">Video</a>
     <a href="#contact" onclick="closeNav()">Kontakt</a>
   </div>
 
@@ -2758,17 +2302,65 @@
          Second half of the opening. Shares the black ground and the
          edge blend with the landing above, so the two run together as
          one field instead of reading as a section break. -->
-    <section class="us-scene" id="alder" data-nav-dark aria-label="21 år gammel">
+    <section class="us-scene" id="alder" data-nav-dark aria-labelledby="alder-h">
       <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-fill-min="861"
         data-us-project-src="assets/about-me-unicorn.json"
         data-us-arialabel="Animert scene med portrett og bevegelige lyseffekter"></div>
       <div class="us-scene__blend" aria-hidden="true"></div>
-      <p class="alder__note alder__note--left">
-        Studerer IT og informasjonssystemer ved Universitetet i Agder.
-      </p>
-      <p class="alder__note alder__note--right">
-        Drevet med design og kreativitet siden ung &amp; elsker kunst i samspill med kreativitet.
-      </p>
+      <div class="alder__content">
+        <header class="alder__intro">
+          <h2 class="alder__title" id="alder-h">Om meg</h2>
+          <p class="alder__summary">
+            Jeg er Yones Feili, en IT-student og kreativ utvikler med interesse for design, teknologi og
+            gjennomarbeidede digitale løsninger. Ved Universitetet i Agder studerer jeg IT og
+            informasjonssystemer. Gjennom egne prosjekter og praksis hos Kartverket kombinerer jeg
+            problemløsning med et sterkt visuelt blikk.
+          </p>
+        </header>
+
+        <div class="alder__details">
+          <section class="alder__group" aria-labelledby="alder-education-h">
+            <h3 class="alder__group-title" id="alder-education-h">Utdanning &amp; praksis</h3>
+            <ol class="alder__timeline">
+              <li>
+                <time datetime="2021">2021–2024</time>
+                <div>
+                  <strong>Tangen videregående skole</strong>
+                  <span>Studiespesialisering</span>
+                </div>
+              </li>
+              <li>
+                <time datetime="2024">2024–nå</time>
+                <div>
+                  <strong>Universitetet i Agder</strong>
+                  <span>IT og informasjonssystemer</span>
+                </div>
+              </li>
+              <li>
+                <time datetime="2026">2026–nå</time>
+                <div>
+                  <strong>Kartverket</strong>
+                  <span>Praksis / internship</span>
+                </div>
+              </li>
+            </ol>
+          </section>
+
+          <section class="alder__group" aria-labelledby="alder-skills-h">
+            <h3 class="alder__group-title" id="alder-skills-h">Ferdigheter</h3>
+            <ul class="alder__skills">
+              <li>JavaScript</li>
+              <li>HTML &amp; CSS</li>
+              <li>C#</li>
+              <li>SQL &amp; MariaDB</li>
+              <li>PostGIS</li>
+              <li>MapLibre</li>
+              <li>UI/UX-design</li>
+              <li>Responsivt design</li>
+            </ul>
+          </section>
+        </div>
+      </div>
     </section>
 
     <script>
@@ -2910,14 +2502,14 @@
 
       <div class="container">
         <div class="erfaring__head">
-          <p class="section__label reveal">Erfaring</p>
+          <p class="section__label">Erfaring</p>
           <h2 class="section__title" id="erfaring-h">Hva jeg har<br><em>opplevd</em></h2>
         </div>
 
         <div class="erfaring__grid" role="list">
 
           <!-- Card 1: LuksusEiendom -->
-          <article class="erf-card reveal" role="listitem">
+          <article class="erf-card" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2943,7 +2535,7 @@
           </article>
 
           <!-- Card 2: Kartverket NRL System -->
-          <article class="erf-card reveal" role="listitem">
+          <article class="erf-card" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2970,7 +2562,7 @@
           </article>
 
           <!-- Card 3: Atlas -->
-          <article class="erf-card reveal" role="listitem">
+          <article class="erf-card" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -2997,7 +2589,7 @@
           </article>
 
           <!-- Card 4: AI Lab Projects -->
-          <article class="erf-card reveal" role="listitem">
+          <article class="erf-card" role="listitem">
             <div class="erf-card__ico" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                 stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
@@ -3027,353 +2619,121 @@
 
 
     <!-- ══ PROJECTS ══════════════════════════════ -->
-    <section class="section projects" id="projects" aria-labelledby="projects-h">
-      <header class="projects__intro">
-        <div class="container projects__intro-inner">
-          <div>
-            <p class="section__label reveal">Utvalgte arbeider</p>
-            <h2 class="section__title" id="projects-h">Prosjekter i <em>dybden</em></h2>
-          </div>
-          <p class="projects__intro-copy reveal">
-            Tre forskjellige problemrom, presentert som en sammenhengende reise fra visuell KI til kart og kritiske data.
-          </p>
-        </div>
+    <section class="section projects projects-gallery" id="projects" aria-labelledby="projects-h">
+      <svg class="projects-gallery__wire projects-gallery__wire--one" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+        <path d="M8 112 47 22l89 11 68 74-86 32L8 112Zm39-90 38 94 51-83-18 106m-71-24 157-8M47 22l157 85" stroke="currentColor" stroke-width="1"/>
+      </svg>
+      <svg class="projects-gallery__wire projects-gallery__wire--two" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+        <path d="m13 38 74-26 113 44-22 76-116 5L13 38Zm74-26-25 125L200 56 13 38m165 94L87 12" stroke="currentColor" stroke-width="1"/>
+      </svg>
+
+      <header class="projects-gallery__intro">
+        <p class="projects-gallery__kicker reveal">Utvalgte arbeider</p>
+        <h2 class="section__title projects-gallery__title" id="projects-h">Prosjekter</h2>
+        <div class="projects-gallery__rule" aria-hidden="true"></div>
+        <p class="projects-gallery__copy reveal">
+          Tre ulike problemrom — fra visuell KI til kart og kritiske data. Hvert prosjekt kombinerer tydelig design med teknologi bygget rundt menneskene som skal bruke den.
+        </p>
       </header>
 
-      <div class="project-showcase">
-        <div class="project-story" role="list" aria-label="Prosjektoversikt">
-          <article class="project-chapter" id="project-luksus" data-project="luksus" data-number="01"
-            style="--chapter-accent:#d9b27f" role="listitem" aria-labelledby="project-luksus-title">
-            <div class="project-chapter__inner">
-              <p class="project-chapter__eyebrow">01 / KI og eiendom</p>
-              <h3 class="project-chapter__title" id="project-luksus-title">LuksusEiendom</h3>
-              <p class="project-chapter__desc">
-                Et visuelt eiendomskonsept som bruker KI til å forbedre, rydde og presentere boligbilder med et mer eksklusivt uttrykk. Nettsiden gjør før-og-etter-resultatet til selve produktopplevelsen.
-              </p>
-              <div class="project-chapter__tags" aria-label="Teknologier">
-                <span class="project-tag">HTML/CSS</span><span class="project-tag">JavaScript</span>
-                <span class="project-tag">KI-bilder</span><span class="project-tag">Responsivt design</span>
+      <div class="projects-gallery__viewport" aria-label="Prosjektgalleri" aria-roledescription="karusell">
+        <div class="projects-gallery__track">
+          <div class="projects-gallery__group" role="list">
+          <article class="project-card reveal" id="project-luksus" style="--project-tone:#d9b27f" role="listitem" aria-labelledby="project-luksus-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--estate" role="img" aria-label="Før- og ettervisning av et KI-forbedret interiør">
+                  <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>KI-visualisering</span></div>
+                  <div class="estate-room"></div><div class="estate-divider"></div>
+                  <span class="estate-label estate-label--before">Før</span><span class="estate-label estate-label--after">Etter</span>
+                </div>
               </div>
-              <div class="project-chapter__actions">
-                <a class="project-link" href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer">Se nettsiden <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">KI og eiendom</p>
+              <h3 class="project-card__title" id="project-luksus-title">LuksusEiendom</h3>
+              <p class="project-card__desc">Et visuelt eiendomskonsept som bruker KI til å forbedre boligbilder og gjør før-og-etter-resultatet til selve opplevelsen.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">HTML/CSS</span><span class="project-card__tag">JavaScript</span>
+                <span class="project-card__tag">KI-bilder</span><span class="project-card__tag">Responsivt design</span>
               </div>
-              <div class="project-visual project-visual--estate" role="img" aria-label="Før- og ettervisning av et KI-forbedret interiør">
-                <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>KI-visualisering</span></div>
-                <div class="estate-room"></div><div class="estate-divider"></div>
-                <span class="estate-label estate-label--before">Før</span><span class="estate-label estate-label--after">Etter</span>
-              </div>
+              <a class="project-card__link" href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer">
+                Se nettsiden
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
+              </a>
             </div>
           </article>
 
-          <article class="project-chapter" id="project-atlas" data-project="atlas" data-number="02"
-            style="--chapter-accent:#80cf9d" role="listitem" aria-labelledby="project-atlas-title">
-            <div class="project-chapter__inner">
-              <p class="project-chapter__eyebrow">02 / Beredskapskart</p>
-              <h3 class="project-chapter__title" id="project-atlas-title">Atlas</h3>
-              <p class="project-chapter__desc">
-                Et responsivt webkart som hjelper innbyggere i Norge med å finne nærmeste beredskapsressurs når tid er kritisk. Løsningen kombinerer romlige data med et grensesnitt bygget for raske valg.
-              </p>
-              <div class="project-chapter__tags" aria-label="Teknologier">
-                <span class="project-tag">PostGIS</span><span class="project-tag">MapLibre</span>
-                <span class="project-tag">JavaScript</span><span class="project-tag">Geodata</span>
+          <article class="project-card reveal" id="project-atlas" style="--project-tone:#80cf9d" role="listitem" aria-labelledby="project-atlas-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--atlas" role="img" aria-label="Kartgrensesnitt med markører for beredskapsressurser">
+                  <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Nærmeste beredskap</span></div>
+                  <svg class="atlas-map" viewBox="0 0 900 460" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="atlas-map__land" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18 V460 H0Z" />
+                    <path class="atlas-map__coast" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18" />
+                    <path class="atlas-map__road" d="M-10 350 C170 302 240 382 395 286 S700 213 925 252" />
+                    <path class="atlas-map__road" d="M150 25 C177 151 290 192 369 463" />
+                    <path class="atlas-map__minor" d="M40 175 C210 121 346 181 489 132 S714 105 862 142" />
+                    <path class="atlas-map__minor" d="M520 25 C555 165 610 296 754 456" />
+                  </svg>
+                  <span class="atlas-marker atlas-marker--one"></span><span class="atlas-marker atlas-marker--two"></span><span class="atlas-marker atlas-marker--three"></span>
+                  <div class="atlas-status"><strong>3 ressurser funnet</strong>Nærmeste enhet er beregnet fra din valgte posisjon.</div>
+                </div>
               </div>
-              <div class="project-chapter__actions">
-                <a class="project-link" href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer">
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" /></svg>
-                  Se på GitHub
-                </a>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Beredskapskart</p>
+              <h3 class="project-card__title" id="project-atlas-title">Atlas</h3>
+              <p class="project-card__desc">Et responsivt webkart som hjelper innbyggere med å finne nærmeste beredskapsressurs når tiden er kritisk.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">PostGIS</span><span class="project-card__tag">MapLibre</span>
+                <span class="project-card__tag">JavaScript</span><span class="project-card__tag">Geodata</span>
               </div>
-              <div class="project-visual project-visual--atlas" role="img" aria-label="Kartgrensesnitt med markører for beredskapsressurser">
-                <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Nærmeste beredskap</span></div>
-                <svg class="atlas-map" viewBox="0 0 900 460" preserveAspectRatio="none" aria-hidden="true">
-                  <path class="atlas-map__land" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18 V460 H0Z" />
-                  <path class="atlas-map__coast" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18" />
-                  <path class="atlas-map__road" d="M-10 350 C170 302 240 382 395 286 S700 213 925 252" />
-                  <path class="atlas-map__road" d="M150 25 C177 151 290 192 369 463" />
-                  <path class="atlas-map__minor" d="M40 175 C210 121 346 181 489 132 S714 105 862 142" />
-                  <path class="atlas-map__minor" d="M520 25 C555 165 610 296 754 456" />
-                </svg>
-                <span class="atlas-marker atlas-marker--one"></span><span class="atlas-marker atlas-marker--two"></span><span class="atlas-marker atlas-marker--three"></span>
-                <div class="atlas-status"><strong>3 ressurser funnet</strong>Nærmeste enhet er beregnet fra din valgte posisjon.</div>
-              </div>
+              <a class="project-card__link" href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
             </div>
           </article>
 
-          <article class="project-chapter" id="project-kartverket" data-project="kartverket" data-number="03"
-            style="--chapter-accent:#7dc9ca" role="listitem" aria-labelledby="project-kartverket-title">
-            <div class="project-chapter__inner">
-              <p class="project-chapter__eyebrow">03 / Kritisk infrastruktur</p>
-              <h3 class="project-chapter__title" id="project-kartverket-title">Kartverket</h3>
-              <p class="project-chapter__desc">
-                Et databasesystem for registrering, validering og håndtering av luftfartshindre. Prosjektet støtter sikker rapportering for blant andre Kartverket, Luftambulansen, Forsvaret og Politiet.
-              </p>
-              <div class="project-chapter__tags" aria-label="Teknologier">
-                <span class="project-tag">MariaDB</span><span class="project-tag">SQL</span>
-                <span class="project-tag">C#</span><span class="project-tag">Datavalidering</span>
-              </div>
-              <div class="project-chapter__actions">
-                <a class="project-link" href="https://github.com/IsakJG/IT-2025-Kartverket.git" target="_blank" rel="noopener noreferrer">
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" /></svg>
-                  Se på GitHub
-                </a>
-              </div>
-              <div class="project-visual project-visual--kartverket" role="img" aria-label="Kontrollpanel for validering av luftfartshindre">
-                <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Hinderregister / validering</span></div>
-                <div class="kart-grid">
-                  <div class="kart-radar"><i class="kart-point kart-point--one"></i><i class="kart-point kart-point--two"></i><i class="kart-point kart-point--three"></i></div>
-                  <div class="kart-metrics">
-                    <div class="kart-metric"><span>Registrert høyde</span><strong>128 m</strong></div>
-                    <div class="kart-metric"><span>Koordinatstatus</span><strong>Gyldig</strong></div>
-                    <div class="kart-metric"><span>Risikoklasse</span><strong>B2</strong></div>
+          <article class="project-card reveal" id="project-kartverket" style="--project-tone:#7dc9ca" role="listitem" aria-labelledby="project-kartverket-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--kartverket" role="img" aria-label="Kontrollpanel for validering av luftfartshindre">
+                  <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Hinderregister / validering</span></div>
+                  <div class="kart-grid">
+                    <div class="kart-radar"><i class="kart-point kart-point--one"></i><i class="kart-point kart-point--two"></i><i class="kart-point kart-point--three"></i></div>
+                    <div class="kart-metrics">
+                      <div class="kart-metric"><span>Registrert høyde</span><strong>128 m</strong></div>
+                      <div class="kart-metric"><span>Koordinatstatus</span><strong>Gyldig</strong></div>
+                      <div class="kart-metric"><span>Risikoklasse</span><strong>B2</strong></div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </article>
-        </div>
-
-        <aside class="project-index" aria-label="Velg prosjekt">
-          <p class="project-index__eyebrow">Utvalgt arbeid</p>
-          <h3 class="project-index__title">Prosjekter</h3>
-          <div class="project-index__progress" aria-hidden="true"><span></span></div>
-          <nav class="project-index__list">
-            <a class="project-index__link is-active" href="#project-luksus" data-project-link="luksus" aria-current="true">
-              <span class="project-index__number">01</span><span><span class="project-index__name">LuksusEiendom</span><span class="project-index__type">KI og eiendom</span></span>
-            </a>
-            <a class="project-index__link" href="#project-atlas" data-project-link="atlas">
-              <span class="project-index__number">02</span><span><span class="project-index__name">Atlas</span><span class="project-index__type">Beredskapskart</span></span>
-            </a>
-            <a class="project-index__link" href="#project-kartverket" data-project-link="kartverket">
-              <span class="project-index__number">03</span><span><span class="project-index__name">Kartverket</span><span class="project-index__type">Kritisk infrastruktur</span></span>
-            </a>
-          </nav>
-          <div class="project-index__footer">
-            <span class="project-index__count" aria-live="polite">01 / 03</span>
-            <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">Alle på GitHub ↗</a>
-          </div>
-        </aside>
-      </div>
-
-      <!-- Left vine -->
-      <div class="vine-wrap vine-wrap--left" aria-hidden="true">
-        <svg width="120" height="100%" viewBox="0 0 120 900" preserveAspectRatio="xMinYMin slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path class="vine-stem" d="M60 0 C60 60, 40 100, 50 160 C60 220, 75 260, 65 340 C55 420, 35 460, 45 540 C55 620, 70 660, 60 740 C50 820, 55 860, 55 900"
-            stroke="rgba(90, 158, 111, 0.35)" stroke-width="1.5" stroke-linecap="round" style="--vine-len: 1050" />
-          <!-- Leaves along the vine -->
-          <g class="vine-leaf" style="--leaf-delay: 0.5s; transform-origin: 100% 50%">
-            <path d="M50 120 C38 108, 25 112, 22 125 C19 138, 30 142, 50 130Z" fill="rgba(132, 196, 154, 0.4)" />
-            <line x1="50" y1="120" x2="28" y2="130" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 0.9s; transform-origin: 0% 50%">
-            <path d="M65 250 C78 238, 92 242, 94 255 C96 268, 84 272, 65 260Z" fill="rgba(200, 230, 208, 0.45)" />
-            <line x1="65" y1="250" x2="88" y2="260" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 1.3s; transform-origin: 100% 50%">
-            <path d="M45 400 C30 390, 18 396, 18 408 C18 420, 28 424, 45 412Z" fill="rgba(90, 158, 111, 0.35)" />
-            <line x1="45" y1="400" x2="24" y2="410" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 1.7s; transform-origin: 0% 50%">
-            <path d="M55 550 C68 538, 82 542, 83 555 C84 568, 72 570, 55 560Z" fill="rgba(184, 154, 88, 0.25)" />
-            <line x1="55" y1="550" x2="76" y2="558" stroke="rgba(92, 74, 40, 0.15)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 2.1s; transform-origin: 100% 50%">
-            <path d="M60 700 C48 688, 34 692, 33 705 C32 718, 44 720, 60 710Z" fill="rgba(132, 196, 154, 0.3)" />
-            <line x1="60" y1="700" x2="40" y2="710" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-        </svg>
-      </div>
-      <!-- Right vine -->
-      <div class="vine-wrap vine-wrap--right" aria-hidden="true">
-        <svg width="120" height="100%" viewBox="0 0 120 900" preserveAspectRatio="xMinYMin slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path class="vine-stem" d="M55 0 C55 50, 70 90, 60 150 C50 210, 38 260, 48 340 C58 420, 72 470, 62 550 C52 630, 42 680, 52 760 C62 840, 58 870, 58 900"
-            stroke="rgba(61, 122, 82, 0.3)" stroke-width="1.2" stroke-linecap="round" style="--vine-len: 1040" />
-          <g class="vine-leaf" style="--leaf-delay: 0.7s; transform-origin: 0% 50%">
-            <path d="M60 130 C72 118, 86 122, 87 135 C88 148, 76 150, 60 140Z" fill="rgba(90, 158, 111, 0.35)" />
-            <line x1="60" y1="130" x2="80" y2="140" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 1.1s; transform-origin: 100% 50%">
-            <path d="M48 300 C34 290, 22 296, 22 308 C22 320, 32 322, 48 312Z" fill="rgba(200, 230, 208, 0.4)" />
-            <line x1="48" y1="300" x2="28" y2="310" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 1.6s; transform-origin: 0% 50%">
-            <path d="M62 480 C76 468, 88 472, 88 485 C88 498, 76 500, 62 490Z" fill="rgba(132, 196, 154, 0.35)" />
-            <line x1="62" y1="480" x2="82" y2="490" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 2.0s; transform-origin: 100% 50%">
-            <path d="M52 650 C38 640, 26 644, 26 658 C26 672, 38 674, 52 662Z" fill="rgba(184, 154, 88, 0.2)" />
-            <line x1="52" y1="650" x2="32" y2="662" stroke="rgba(92, 74, 40, 0.15)" stroke-width="0.5" />
-          </g>
-          <g class="vine-leaf" style="--leaf-delay: 2.4s; transform-origin: 0% 50%">
-            <path d="M58 810 C70 798, 84 802, 85 815 C86 828, 74 830, 58 820Z" fill="rgba(200, 230, 208, 0.3)" />
-            <line x1="58" y1="810" x2="78" y2="820" stroke="rgba(61, 122, 82, 0.2)" stroke-width="0.5" />
-          </g>
-        </svg>
-      </div>
-      <div class="container projects__legacy" hidden>
-        <div class="projects__head">
-          <div>
-            <p class="section__label reveal">Prosjekter</p>
-            <h2 class="section__title" id="projects-h-legacy">Ting jeg har<br><em>laget</em></h2>
-          </div>
-          <a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer"
-            class="btn btn--outline reveal">Alle
-            prosjekter på GitHub →</a>
-        </div>
-
-        <div class="projects__grid" role="list">
-          <article class="proj-card reveal" role="listitem">
-            <div class="proj-card__thumb">
-              <div class="proj-card__emoji" aria-hidden="true">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
-                  stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path
-                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
+            <div class="project-card__body">
+              <p class="project-card__type">Kritisk infrastruktur</p>
+              <h3 class="project-card__title" id="project-kartverket-title">Kartverket</h3>
+              <p class="project-card__desc">Et databasesystem for sikker registrering, validering og håndtering av luftfartshindre for samfunnskritiske aktører.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">MariaDB</span><span class="project-card__tag">SQL</span>
+                <span class="project-card__tag">C#</span><span class="project-card__tag">Datavalidering</span>
               </div>
-            </div>
-            <div class="proj-card__body">
-              <div class="proj-card__cats">
-                <span class="proj-cat">HTML/CSS</span>
-                <span class="proj-cat">JavaScript</span>
-              </div>
-              <h3 class="proj-card__title">LuksusEiendom</h3>
-              <p class="proj-card__desc">Luksuseiendom er et konsept som benytter KI til å redigere og optimalisere
-                bilder av eiendommer.</p>
-              <a href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer"
-                class="proj-card__link">Se prosjekt →</a>
+              <a class="project-card__link" href="https://github.com/IsakJG/IT-2025-Kartverket.git" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
             </div>
           </article>
-
-          <article class="proj-card reveal" role="listitem">
-            <div class="proj-card__thumb">
-              <div class="proj-card__emoji" aria-hidden="true">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
-                  stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
-                  <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
-                  <rect x="9" y="9" width="6" height="6" />
-                  <line x1="9" y1="1" x2="9" y2="4" />
-                  <line x1="15" y1="1" x2="15" y2="4" />
-                  <line x1="9" y1="20" x2="9" y2="23" />
-                  <line x1="15" y1="20" x2="15" y2="23" />
-                  <line x1="20" y1="9" x2="23" y2="9" />
-                  <line x1="20" y1="14" x2="23" y2="14" />
-                  <line x1="1" y1="9" x2="4" y2="9" />
-                  <line x1="1" y1="14" x2="4" y2="14" />
-                </svg>
-              </div>
-            </div>
-            <div class="proj-card__body">
-              <div class="proj-card__cats">
-                <span class="proj-cat">PostGIS</span>
-                <span class="proj-cat">Maplibre</span>
-                <span class="proj-cat">JavaScript</span>
-              </div>
-              <h3 class="proj-card__title">Atlas</h3>
-              <p class="proj-card__desc">Et responsivt webkart (SPA) som hjelper innbyggere i Norge med å
-                finne nærmeste beredskapsressurs når tid er kritisk.</p>
-              <a href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer"
-                class="proj-card__link">Se prosjekt →</a>
-            </div>
-          </article>
-
-          <article class="proj-card reveal" role="listitem">
-            <div class="proj-card__thumb">
-              <div class="proj-card__emoji" aria-hidden="true">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.6"
-                  style="color:var(--green)">
-                  <path
-                    d="M6.05 8.26C4.09 9.15 3 11.25 3 13c0 4 2.97 7 7 7 .37 0 .74-.03 1.1-.09C12.81 19.54 15 17 15 14c0-2-1.03-3.79-2.6-4.83L6.05 8.26z" />
-                  <path d="M21 3c0 0-7 1-10 5.26C9.15 10.22 9 12.11 9 14c0 .34.02.67.05 1L21 3z" />
-                </svg>
-              </div>
-            </div>
-            <div class="proj-card__body">
-              <div class="proj-card__cats">
-                <span class="proj-cat">MariaDB</span>
-                <span class="proj-cat">SQL</span>
-                <span class="proj-cat">C#</span>
-                <span class="proj-cat">HTML</span>
-              </div>
-              <h3 class="proj-card__title">Kartverket</h3>
-              <p class="proj-card__desc">Et databasesystem for registrering, validering og håndtering av
-                luftfartshindre, utviklet for å støtte aktører som NLA, Kartverket, Luftambulansen, Forsvaret og
-                Politiet i sikker og effektiv rapportering.</p>
-              <a href="https://github.com/IsakJG/IT-2025-Kartverket.git" target="_blank" rel="noopener noreferrer"
-                class="proj-card__link">Se prosjekt →</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-
-    <!-- ══ VIDEO ═════════════════════════════════ -->
-    <section class="section video-section" id="video" data-scroll-skew aria-labelledby="video-h">
-      <div class="forest-overlay" id="forestOverlay"></div>
-      <canvas class="firefly-canvas" id="fireflyCanvas"></canvas>
-      <div class="container">
-        <div class="video-wrap">
-          <p class="section__label reveal">Introduksjon</p>
-          <h2 class="section__title" id="video-h">Se meg i <em>aksjon</em></h2>
-          <p class="video__desc reveal">
-            En 2-minutters introduksjon der jeg forteller hvem jeg er, hva jeg brenner for og hva jeg kan bidra med.
-          </p>
-          <div class="video-container" id="videoContainer">
-            <div class="video-leaves" aria-hidden="true">
-              <svg class="video-leaf video-leaf-1" width="60" height="90" viewBox="0 0 40 64" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 60 C8 48, 4 32, 10 18 C13 10, 20 4, 20 4 C20 4, 27 10, 30 18 C36 32, 32 48, 20 60Z"
-                  fill="rgba(132, 196, 154, 0.4)" />
-                <line x1="20" y1="4" x2="20" y2="60" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8" />
-              </svg>
-              <svg class="video-leaf video-leaf-2" width="50" height="120" viewBox="0 0 22 72" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 68 C5 52, 3 36, 7 20 C8 14, 11 4, 11 4 C11 4, 14 14, 15 20 C19 36, 17 52, 11 68Z"
-                  fill="rgba(90, 158, 111, 0.4)" />
-                <line x1="11" y1="4" x2="11" y2="68" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.6" />
-              </svg>
-              <svg class="video-leaf video-leaf-3" width="70" height="90" viewBox="0 0 48 62" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M24 58 C12 46, 6 36, 8 26 C9 20, 6 14, 10 10 C14 6, 18 10, 22 8 C22 8, 24 4, 24 4 C24 4, 26 8, 26 8 C30 10, 34 6, 38 10 C42 14, 39 20, 40 26 C42 36, 36 46, 24 58Z"
-                  fill="rgba(61, 122, 82, 0.2)" />
-                <line x1="24" y1="4" x2="24" y2="58" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8" />
-              </svg>
-              <svg class="video-leaf video-leaf-4" width="60" height="95" viewBox="0 0 40 64" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 60 C8 48, 4 32, 10 18 C13 10, 20 4, 20 4 C20 4, 27 10, 30 18 C36 32, 32 48, 20 60Z"
-                  fill="rgba(90, 158, 111, 0.3)" />
-                <line x1="20" y1="4" x2="20" y2="60" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.8" />
-              </svg>
-              <svg class="video-leaf video-leaf-5" width="45" height="100" viewBox="0 0 22 72" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 68 C5 52, 3 36, 7 20 C8 14, 11 4, 11 4 C11 4, 14 14, 15 20 C19 36, 17 52, 11 68Z"
-                  fill="rgba(132, 196, 154, 0.5)" />
-                <line x1="11" y1="4" x2="11" y2="68" stroke="rgba(61, 122, 82, 0.3)" stroke-width="0.6" />
-              </svg>
-              <svg class="video-leaf video-leaf-6" width="75" height="95" viewBox="0 0 48 62" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M24 58 C12 46, 6 36, 8 26 C9 20, 6 14, 10 10 C14 6, 18 10, 22 8 C22 8, 24 4, 24 4 C24 4, 26 8, 26 8 C30 10, 34 6, 38 10 C42 14, 39 20, 40 26 C42 36, 36 46, 24 58Z"
-                  fill="rgba(138, 114, 64, 0.15)" />
-                <line x1="24" y1="4" x2="24" y2="58" stroke="rgba(92, 74, 40, 0.2)" stroke-width="0.8" />
-              </svg>
-            </div>
-            <div class="video-frame reveal">
-              <video controls id="portfolioVideo" preload="metadata" poster="assets/portfolio-video-poster.webp">
-                <source data-src="https://raw.githubusercontent.com/YonesF/Portfolio/main/copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4" type="video/mp4">
-              </video>
-            </div>
           </div>
         </div>
       </div>
     </section>
-
 
     <!-- ══ CONTACT ═══════════════════════════════ -->
-    <section class="section contact" id="contact" data-scroll-skew aria-labelledby="contact-h">
+    <section class="section contact" id="contact" aria-labelledby="contact-h">
       <div class="container">
         <div class="contact__grid">
           <div class="contact__info">
@@ -3552,7 +2912,7 @@
       });
       lenis.on('virtual-scroll', wake);
 
-      // Programmatic anchor and project glides must wake from a fully idle page.
+      // Programmatic anchor navigation must wake from a fully idle page.
       const scrollTo = lenis.scrollTo.bind(lenis);
       lenis.scrollTo = (...args) => {
         wake();
@@ -3971,11 +3331,8 @@
       scheduleSync();
     })();
 
-    // In-page links, handled here rather than with Lenis's own `anchors`
-    // option: the project index links run their own click handler and
-    // scroll themselves, and this way defaultPrevented reliably opts them
-    // out instead of both animators firing at the same target. The offset
-    // is what scroll-padding-top used to give us — clearance for the nav.
+    // In-page links are handled here so anchor movement wakes the idle Lenis
+    // ticker. The offset gives every section clearance beneath the nav.
     document.addEventListener('click', event => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
       const link = event.target.closest('a[href^="#"]');
@@ -4093,29 +3450,6 @@
     closeBtn.addEventListener('click', closeNav);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeNav(); });
 
-    /* ─── Scroll-velocity skew ──────────────── */
-    // Leans the opted-in sections with scroll speed. Lenis emits velocity
-    // every frame it animates, and it decays to ~0 as the glide settles,
-    // so the sections straighten up on their own without a reset timer.
-    (function initVelocitySkew() {
-      const targets = document.querySelectorAll('[data-scroll-skew]');
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      if (!targets.length || reduceMotion.matches) return;
-
-      const MAX_DEG = 2.2;      // past roughly this it stops reading as motion
-      const PER_VELOCITY = 0.05;
-      let applied = null;
-
-      lenis.on('scroll', ({ velocity }) => {
-        let deg = velocity * PER_VELOCITY;
-        deg = Math.max(-MAX_DEG, Math.min(MAX_DEG, deg));
-        if (Math.abs(deg) < 0.02) deg = 0;
-        if (deg === applied) return;
-        applied = deg;
-        targets.forEach(el => el.style.setProperty('--scroll-skew', deg.toFixed(3) + 'deg'));
-      });
-    })();
-
     /* ─── Direction-aware nav ───────────────── */
     // Reads the scroll position rather than lenis.direction so the sign is
     // unambiguous. Stays put near the top and while the mobile menu is
@@ -4148,8 +3482,7 @@
         { id: 'landing' },
         { id: 'alder', ambient: '.us-scene__blend', zoom: 'out' },
         { id: 'erfaring', ambient: ':scope > .container' },
-        { id: 'projects', ambient: '.projects__intro-inner' },
-        { id: 'video', ambient: ':scope > .container' },
+        { id: 'projects', ambient: '.projects-gallery__intro' },
         { id: 'contact', ambient: ':scope > .container' }
       ];
 
@@ -4324,34 +3657,6 @@
       });
     }
 
-    /* Attach video metadata only once the Video section is genuinely close. */
-    (function preparePortfolioVideo() {
-      const video = document.getElementById('portfolioVideo');
-      const source = video?.querySelector('source[data-src]');
-      const section = video?.closest('section');
-      if (!video || !source || !section) return;
-
-      function attachSource() {
-        if (!source.dataset.src) return;
-        source.src = source.dataset.src;
-        source.removeAttribute('data-src');
-        video.load();
-      }
-
-      if (!('IntersectionObserver' in window)) {
-        attachSource();
-        return;
-      }
-
-      const leadDistance = Math.round(Math.min(720, Math.max(360, window.innerHeight * 0.65)));
-      const observer = new IntersectionObserver(entries => {
-        if (!entries.some(entry => entry.isIntersecting)) return;
-        observer.disconnect();
-        attachSource();
-      }, { rootMargin: `${leadDistance}px 0px`, threshold: 0 });
-      observer.observe(section);
-    })();
-
     /* ─── Scroll reveal + headline split ───── */
     (function initScrollReveals() {
       if (prefersReducedMotion.matches) return;
@@ -4376,19 +3681,6 @@
           }
         });
 
-        // Decorative leaf parallax keeps the exact same scrubbed motion.
-        gsap.utils.toArray('.erfaring__leaf').forEach((leaf, i) => {
-          gsap.to(leaf, {
-            yPercent: i % 2 ? 24 : -32,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: '#erfaring',
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: true
-            }
-          });
-        });
         requestScrollTriggerRefresh();
       });
 
@@ -4396,7 +3688,7 @@
       // rather than while the visitor is entering each section.
       document.fonts.ready.then(() => {
         idleWork.add(() => {
-          gsap.utils.toArray('.section__title').forEach(title => {
+          gsap.utils.toArray('.section__title:not(#erfaring-h)').forEach(title => {
             SplitText.create(title, {
               type: 'lines,chars',
               mask: 'lines',
@@ -4493,168 +3785,6 @@
       return entry;
     }
 
-    /* ─── Forest mode + fireflies on video ─── */
-    (function initForestMode() {
-      const vid = document.getElementById('portfolioVideo');
-      const section = document.getElementById('video');
-      const canvas = document.getElementById('fireflyCanvas');
-      if (!vid || !section || !canvas) return;
-
-      const ctx = canvas.getContext('2d');
-      let fireflies = [];
-      let animId = null;
-      let isPlaying = false;
-      let sectionActive = renderSectionActivity.isActive(section);
-      let resumeWhenActive = false;
-
-      function resize() {
-        const rect = section.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-      }
-
-      // Firefly colors — warm greens & gold
-      const ffColors = [
-        { r: 184, g: 210, b: 160 },  // pale green
-        { r: 132, g: 196, b: 154 },  // green-light
-        { r: 200, g: 230, b: 208 },  // green-pale
-        { r: 220, g: 200, b: 140 },  // warm gold
-        { r: 160, g: 210, b: 170 },  // soft mint
-      ];
-
-      class Firefly {
-        constructor(w, h) {
-          this.x = Math.random() * w;
-          this.y = Math.random() * h;
-          this.size = Math.random() * 2.5 + 1;
-          this.baseAlpha = Math.random() * 0.4 + 0.3;
-          this.alpha = 0;
-          this.targetAlpha = this.baseAlpha;
-          this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
-          this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
-          this.vx = (Math.random() - 0.5) * 0.3;
-          this.vy = (Math.random() - 0.5) * 0.2;
-          this.phase = Math.random() * Math.PI * 2;
-          this.pulseSpeed = Math.random() * 0.02 + 0.008;
-          this.glowSize = this.size * (Math.random() * 6 + 8);
-          this.w = w;
-          this.h = h;
-        }
-
-        update() {
-          this.phase += this.pulseSpeed;
-          this.alpha += (this.targetAlpha - this.alpha) * 0.05;
-          const pulse = Math.sin(this.phase) * 0.5 + 0.5;
-          this.x += Math.sin(this.phase * 0.7) * 0.4 + this.vx;
-          this.y += Math.cos(this.phase * 0.5) * 0.3 + this.vy;
-          if (this.x < -20) this.x = this.w + 20;
-          if (this.x > this.w + 20) this.x = -20;
-          if (this.y < -20) this.y = this.h + 20;
-          if (this.y > this.h + 20) this.y = -20;
-          return pulse;
-        }
-
-        draw(pulse) {
-          const a = this.alpha * (0.4 + pulse * 0.6);
-          if (a < 0.01) return;
-          const g = this.glowSize;
-          ctx.globalAlpha = a;
-          ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
-          ctx.globalAlpha = 1;
-          const { r, g: cg, b } = this.color;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
-          ctx.fill();
-        }
-
-        fadeIn()  { this.targetAlpha = this.baseAlpha; }
-        fadeOut() { this.targetAlpha = 0; }
-      }
-
-      function initFireflies() {
-        resize();
-        fireflies = [];
-        const count = Math.min(Math.floor(canvas.width / 30), 35);
-        for (let i = 0; i < count; i++) {
-          fireflies.push(new Firefly(canvas.width, canvas.height));
-        }
-      }
-
-      function animate() {
-        if (!sectionActive) {
-          animId = null;
-          return;
-        }
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let allGone = true;
-        fireflies.forEach(f => {
-          const pulse = f.update();
-          f.draw(pulse);
-          if (f.alpha > 0.01) allGone = false;
-        });
-        // Stop animation when fully faded out and not playing
-        if (!isPlaying && allGone) {
-          animId = null;
-          return;
-        }
-        animId = requestAnimationFrame(animate);
-      }
-
-      function startForest() {
-        isPlaying = true;
-        section.classList.add('forest-mode');
-        if (!fireflies.length) initFireflies();
-        fireflies.forEach(f => f.fadeIn());
-        if (sectionActive && !animId) animate();
-      }
-
-      function stopForest() {
-        isPlaying = false;
-        section.classList.remove('forest-mode');
-        fireflies.forEach(f => f.fadeOut());
-        // Animation continues until fireflies fade out
-      }
-
-      vid.addEventListener('play', () => {
-        if (sectionActive) resumeWhenActive = false;
-        startForest();
-      });
-      vid.addEventListener('pause', () => {
-        if (sectionActive) resumeWhenActive = false;
-        stopForest();
-      });
-      vid.addEventListener('ended', stopForest);
-
-      renderSectionActivity.onChange(activeSection => {
-        const nextActive = activeSection === section;
-        if (nextActive === sectionActive) return;
-        sectionActive = nextActive;
-
-        if (!sectionActive) {
-          if (!vid.paused && !vid.ended) {
-            resumeWhenActive = true;
-            vid.pause();
-          }
-          if (animId) {
-            cancelAnimationFrame(animId);
-            animId = null;
-          }
-        } else if (resumeWhenActive) {
-          resumeWhenActive = false;
-          vid.play().catch(() => {});
-        } else if (isPlaying && !animId) {
-          animate();
-        }
-      });
-
-      viewportFrame.subscribe(() => {
-        if (fireflies.length) {
-          resize();
-          fireflies.forEach(f => { f.w = canvas.width; f.h = canvas.height; });
-        }
-      }, { resize: true });
-    })();
 
     /* ─── Erfaring ambient fireflies ──────── */
     (function initErfaringFireflies() {
@@ -4782,156 +3912,116 @@
       }, { resize: true });
     })();
 
-    /* ─── Active project while scrolling ───────── */
-    (function initProjectShowcase() {
-      const section = document.getElementById('projects');
-      if (!section) return;
+    /* ─── Compositor-only project carousel ────── */
+    (function initProjectCarousel() {
+      const track = document.querySelector('#projects .projects-gallery__track');
+      const sourceGroup = track?.querySelector('.projects-gallery__group');
+      if (!track || !sourceGroup || track.classList.contains('is-carousel-ready')) return;
 
-      const chapters = [...section.querySelectorAll('.project-chapter')];
-      const links = [...section.querySelectorAll('[data-project-link]')];
-      const counter = section.querySelector('.project-index__count');
-      const index = section.querySelector('.project-index');
-      if (!chapters.length || !links.length || !index) return;
-
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      let activeProject = '';
-      let scrollAnimation = 0;
-
-      function setActive(project, chapterIndex) {
-        if (project === activeProject) return;
-        activeProject = project;
-
-        chapters.forEach(chapter => {
-          chapter.classList.toggle('is-active', chapter.dataset.project === project);
-        });
-
-        links.forEach(link => {
-          const isActive = link.dataset.projectLink === project;
-          link.classList.toggle('is-active', isActive);
-          if (isActive) link.setAttribute('aria-current', 'true');
-          else link.removeAttribute('aria-current');
-        });
-
-        index.style.setProperty('--project-progress', `${((chapterIndex + 1) / chapters.length) * 100}%`);
-        if (counter) counter.textContent = `${String(chapterIndex + 1).padStart(2, '0')} / ${String(chapters.length).padStart(2, '0')}`;
-      }
-
-      // Chapter motion, scrubbed. This was a hand-rolled rAF lerp that ran a
-      // spring toward focus targets every frame; ScrollTrigger expresses the
-      // same shape declaratively and stops running when nothing is on screen.
-      // Each chapter fades and lifts in as it enters, peaks mid-pass, and
-      // settles back out — driving the same CSS custom properties the
-      // stylesheet already reads.
-      function buildChapterMotion() {
-        chapters.forEach((chapter, chapterIndex) => {
-          // Active chapter for the index/counter: fires while the chapter
-          // spans the same 48%-from-top line the old focus maths used.
-          ScrollTrigger.create({
-            trigger: chapter,
-            start: 'top 52%',
-            end: 'bottom 52%',
-            onToggle: self => {
-              if (self.isActive) setActive(chapter.dataset.project, chapterIndex);
-            }
-          });
-
-          if (reduceMotion.matches) return;
-
-          gsap.timeline({
-            defaults: { ease: 'none', duration: 1 },
-            scrollTrigger: {
-              trigger: chapter,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 0.5
-            }
-          })
-            .fromTo(chapter, {
-              '--chapter-opacity': 0.48,
-              '--chapter-content-y': '34px',
-              '--chapter-visual-y': '15px',
-              '--chapter-line-scale': 0.22
-            }, {
-              '--chapter-opacity': 1,
-              '--chapter-content-y': '0px',
-              '--chapter-visual-y': '0px',
-              '--chapter-line-scale': 1
-            })
-            .to(chapter, {
-              '--chapter-opacity': 0.48,
-              '--chapter-content-y': '-34px',
-              '--chapter-visual-y': '-15px',
-              '--chapter-line-scale': 0.22
-            });
-        });
-      }
-
-      // Hand the chapter glide to Lenis instead of driving window.scrollTo
-      // from our own rAF loop — two animators writing scroll position fight
-      // each other. lock replaces what the wheel handler's preventDefault
-      // used to do: hold the user off until the target is reached.
-      function animateToChapter(chapter) {
-        scrollAnimation = 1;
-        document.documentElement.classList.add('is-project-gliding');
-        lenis.scrollTo(chapter, {
-          offset: -64,
-          duration: (window.innerWidth <= 700 ? 900 : 1250) / 1000,
-          lock: true,
-          onComplete: () => {
-            scrollAnimation = 0;
-            document.documentElement.classList.remove('is-project-gliding');
-          }
-        });
-      }
-
-      function handleProjectWheel(event) {
-        if (!renderSectionActivity.isActive(section) || reduceMotion.matches ||
-            !window.matchMedia('(pointer: fine)').matches || !event.deltaY) return;
-
-        const firstRect = chapters[0].getBoundingClientRect();
-        const lastRect = chapters[chapters.length - 1].getBoundingClientRect();
-        const insideShowcase = firstRect.top <= 72 && lastRect.bottom >= window.innerHeight - 8;
-        if (!insideShowcase) return;
-
-        if (scrollAnimation) {
-          event.preventDefault();
-          return;
-        }
-
-        const activeIndex = Math.max(0, chapters.findIndex(chapter => chapter.dataset.project === activeProject));
-        const activeRect = chapters[activeIndex].getBoundingClientRect();
-        const movingForward = event.deltaY > 0;
-
-        if (movingForward) {
-          if (activeIndex === chapters.length - 1 || activeRect.bottom > window.innerHeight + 12) return;
-          event.preventDefault();
-          animateToChapter(chapters[activeIndex + 1]);
-        } else {
-          if (activeIndex === 0 || activeRect.top < 52) return;
-          event.preventDefault();
-          animateToChapter(chapters[activeIndex - 1]);
-        }
-      }
-
-      links.forEach(link => {
-        link.addEventListener('click', event => {
-          if (reduceMotion.matches) return;
-          const chapter = chapters.find(item => item.dataset.project === link.dataset.projectLink);
-          if (!chapter) return;
-          event.preventDefault();
-          history.replaceState(null, '', `#${chapter.id}`);
-          animateToChapter(chapter);
-        });
+      const duplicateGroup = sourceGroup.cloneNode(true);
+      duplicateGroup.setAttribute('aria-hidden', 'true');
+      duplicateGroup.removeAttribute('role');
+      duplicateGroup.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+      duplicateGroup.querySelectorAll('[aria-labelledby]').forEach(element => element.removeAttribute('aria-labelledby'));
+      duplicateGroup.querySelectorAll('a').forEach(link => link.setAttribute('tabindex', '-1'));
+      duplicateGroup.querySelectorAll('.reveal').forEach(element => {
+        element.classList.remove('reveal');
+        element.style.removeProperty('opacity');
+        element.style.removeProperty('visibility');
+        element.style.removeProperty('transform');
       });
 
-      // No scroll/resize listeners of our own any more: ScrollTrigger owns
-      // when this recomputes, including on resize. The wheel handler stays —
-      // it steps chapter to chapter, and it is tuned for chapters that run
-      // taller than the viewport, which a naive snap would fight.
-      window.addEventListener('wheel', handleProjectWheel, { passive: false });
-      idleWork.add(() => {
-        buildChapterMotion();
-        requestScrollTriggerRefresh();
+      track.prepend(duplicateGroup);
+      track.classList.add('is-carousel-ready');
+    })();
+
+    /* ─── Smooth carousel braking ─────────────── */
+    (function initProjectCarouselBraking() {
+      const section = document.getElementById('projects');
+      const track = section?.querySelector('.projects-gallery__track');
+      if (!section || !track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      let rampFrame = 0;
+      let releaseTimer = 0;
+
+      function getCarouselAnimation() {
+        return track.getAnimations().find(animation => animation.animationName === 'projectsCarouselRight');
+      }
+
+      function rampPlayback(targetRate, duration) {
+        if (rampFrame) cancelAnimationFrame(rampFrame);
+        rampFrame = 0;
+
+        const animation = getCarouselAnimation();
+        if (!animation) return;
+
+        const fromRate = Number.isFinite(animation.playbackRate) ? animation.playbackRate : 1;
+        if (targetRate > 0 && animation.playState === 'paused') {
+          animation.playbackRate = Math.max(0.001, fromRate);
+          animation.play();
+        }
+
+        const startedAt = performance.now();
+
+        function step(now) {
+          if (!section.classList.contains('is-render-active') || animation.playState === 'idle') {
+            rampFrame = 0;
+            return;
+          }
+
+          const progress = Math.min(1, (now - startedAt) / duration);
+          const eased = progress * progress * (3 - 2 * progress);
+          const nextRate = fromRate + (targetRate - fromRate) * eased;
+          animation.playbackRate = Math.max(0.001, nextRate);
+
+          if (progress < 1) {
+            rampFrame = requestAnimationFrame(step);
+            return;
+          }
+
+          rampFrame = 0;
+          if (targetRate === 0) {
+            animation.pause();
+            animation.playbackRate = 0;
+          } else {
+            animation.playbackRate = 1;
+          }
+        }
+
+        rampFrame = requestAnimationFrame(step);
+      }
+
+      function slowStop() {
+        clearTimeout(releaseTimer);
+        rampPlayback(0, 1100);
+      }
+
+      function slowResume() {
+        clearTimeout(releaseTimer);
+        rampPlayback(1, 850);
+      }
+
+      function resumeAfterTouch() {
+        clearTimeout(releaseTimer);
+        releaseTimer = window.setTimeout(slowResume, 1200);
+      }
+
+      section.querySelectorAll('.project-card__tilt').forEach(surface => {
+        surface.addEventListener('pointerenter', event => {
+          if (event.pointerType !== 'touch') slowStop();
+        }, { passive: true });
+        surface.addEventListener('pointerleave', event => {
+          if (event.pointerType !== 'touch') slowResume();
+        }, { passive: true });
+        surface.addEventListener('pointerdown', event => {
+          if (event.pointerType === 'touch') slowStop();
+        }, { passive: true });
+        surface.addEventListener('pointerup', event => {
+          if (event.pointerType === 'touch') resumeAfterTouch();
+        }, { passive: true });
+        surface.addEventListener('pointercancel', event => {
+          if (event.pointerType === 'touch') resumeAfterTouch();
+        }, { passive: true });
       });
     })();
 
@@ -5122,23 +4212,6 @@
 
     })();
 
-    /* ─── Video Animation ──────────────────── */
-    const portfolioVideo = document.getElementById('portfolioVideo');
-    const videoContainer = document.getElementById('videoContainer');
-    if (portfolioVideo && videoContainer) {
-      let leafTransitionTimer = 0;
-      function setVideoLeafState(playing) {
-        videoContainer.classList.toggle('is-playing', playing);
-        videoContainer.classList.add('is-leaf-transitioning');
-        clearTimeout(leafTransitionTimer);
-        leafTransitionTimer = window.setTimeout(() => {
-          videoContainer.classList.remove('is-leaf-transitioning');
-        }, 1600);
-      }
-      portfolioVideo.addEventListener('play', () => setVideoLeafState(true));
-      portfolioVideo.addEventListener('pause', () => setVideoLeafState(false));
-      portfolioVideo.addEventListener('ended', () => setVideoLeafState(false));
-    }
   </script>
 </body>
 
