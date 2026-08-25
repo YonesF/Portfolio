@@ -22,11 +22,7 @@ await Promise.all([
       resolve(root, 'assets/portfolio-video-poster.webp'),
       resolve(client, 'assets/portfolio-video-poster.webp')
     )
-  ])),
-  cp(
-    resolve(root, 'copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4'),
-    resolve(client, 'copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4')
-  )
+  ]))
 ]);
 
 const worker = `export default {
