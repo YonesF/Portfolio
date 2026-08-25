@@ -2759,8 +2759,9 @@
          edge blend with the landing above, so the two run together as
          one field instead of reading as a section break. -->
     <section class="us-scene" id="alder" data-nav-dark aria-label="21 år gammel">
-      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-fill-min="861" data-us-project="RAyPIbd2ejj6vhK4n049"
-        data-us-arialabel="Animert scene med marmorsøyler og teksten 21 år gammel"></div>
+      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-fill-min="861"
+        data-us-project-src="assets/about-me-unicorn.json"
+        data-us-arialabel="Animert scene med portrett og bevegelige lyseffekter"></div>
       <div class="us-scene__blend" aria-hidden="true"></div>
       <p class="alder__note alder__note--left">
         Studerer IT og informasjonssystemer ved Universitetet i Agder.
@@ -3362,7 +3363,7 @@
             </div>
             <div class="video-frame reveal">
               <video controls id="portfolioVideo" preload="metadata" poster="assets/portfolio-video-poster.webp">
-                <source data-src="copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4" type="video/mp4">
+                <source data-src="https://raw.githubusercontent.com/YonesF/Portfolio/main/copy_DAD01596-5DF3-4460-B66B-E05B3F1A8ACC.mp4" type="video/mp4">
               </video>
             </div>
           </div>
@@ -3737,18 +3738,19 @@
     /* Keep only the active Unicorn scene and its directional neighbour warm. */
     (function initUnicornSceneLifecycle() {
       const sections = [...document.querySelectorAll('main > section')];
-      const entries = [...document.querySelectorAll('[data-us-project]')]
+      const entries = [...document.querySelectorAll('[data-us-project], [data-us-project-src]')]
         .map(host => ({
           host,
           section: host.closest('section'),
           projectId: host.getAttribute('data-us-project'),
+          filePath: host.getAttribute('data-us-project-src'),
           scene: null,
           promise: null,
           destroyTimer: 0,
           visible: false,
           wanted: false
         }))
-        .filter(entry => entry.section && entry.projectId);
+        .filter(entry => entry.section && (entry.projectId || entry.filePath));
       if (!entries.length) return;
 
       const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
@@ -3774,9 +3776,10 @@
 
       function sceneOptions(entry) {
         const options = {
-          element: entry.host,
-          projectId: entry.projectId
+          element: entry.host
         };
+        if (entry.filePath) options.filePath = entry.filePath;
+        else options.projectId = entry.projectId;
         const ariaLabel = entry.host.getAttribute('data-us-arialabel');
         const altText = entry.host.getAttribute('data-us-alttext');
         if (ariaLabel) options.ariaLabel = ariaLabel;
