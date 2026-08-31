@@ -771,6 +771,36 @@ if (cForm && cBtn) cForm.addEventListener('submit', e => {
   });
 });
 
+/* ─── Kontakt backdrop video ───────────── */
+// The clip is preload="none", so nothing is fetched until the reader is
+// nearly at the section, and it stops again the moment they scroll past or
+// leave the tab — a background should never cost anything while unwatched.
+(function initContactBackdrop() {
+  const video = document.querySelector('.contact__video');
+  if (!video) return;
+
+  // Reduced motion keeps the poster frame and never starts the clip at all,
+  // and so does a metered connection — 830 kB of decoration is not worth
+  // spending on someone's data plan.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (navigator.connection?.saveData) return;
+
+  let onScreen = false;
+
+  function sync() {
+    // play() rejects if the browser declines autoplay; the poster stands in.
+    if (onScreen && !document.hidden) video.play().catch(() => {});
+    else video.pause();
+  }
+
+  new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    sync();
+  }, { rootMargin: '300px 0px' }).observe(video);
+
+  document.addEventListener('visibilitychange', sync);
+})();
+
 /* ─── Shared firefly glow sprite cache ─── */
 const _glowSpriteCache = new Map();
 function makeGlowSprite(r, g, b) {

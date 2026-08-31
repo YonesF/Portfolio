@@ -1631,9 +1631,100 @@ main > section:nth-of-type(even) .scene-ambient {
 }
 
 /* ── Contact ────────────────────────────── */
+/* ── Kontakt ────────────────────────────────
+   The section runs on a looping shot of a marble Hermes instead of the
+   cream ground it used to have, which puts it in the same key as the
+   opening scenes and the Erfaring page.
+
+   No overflow clipping here on purpose: the backdrop is absolutely
+   positioned and object-fit keeps it inside its box anyway, and hiding
+   overflow would make this a scroll container and kill the sticky info
+   column beside the form. */
 .contact {
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
+  position: relative;
+  isolation: isolate;
+  background: #050807;
+  border-top: 1px solid rgba(159, 216, 182, 0.12);
+}
+
+.contact__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Mirrored so the statue stands on the right, behind the form's own solid
+   fields, and the near-black wall falls on the left where the address and
+   the copy have to stay readable. */
+.contact__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+/* Settles the footage into the site's palette: darkest down the left
+   flank under the copy, lighter over the statue, and closing to solid at
+   both ends so the section meets its neighbours cleanly. */
+.contact__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      #050807 0%,
+      rgba(5, 8, 7, 0.74) 7%,
+      rgba(5, 8, 7, 0.5) 26%,
+      rgba(5, 8, 7, 0.54) 74%,
+      rgba(5, 8, 7, 0.86) 93%,
+      #050807 100%),
+    linear-gradient(to right,
+      rgba(3, 6, 5, 0.86) 0%,
+      rgba(3, 6, 5, 0.7) 34%,
+      rgba(3, 6, 5, 0.36) 66%,
+      rgba(3, 6, 5, 0.52) 100%);
+}
+
+/* Once the grid stacks there are no quiet flanks left to hide in: a tall
+   narrow box crops the footage straight onto the statue, and every line of
+   copy ends up on lit marble. So pan away from it instead of drowning it —
+   object-position is read before the mirror, so 78% of the source frame is
+   the dark panelled wall on the far side of the statue. The side gradient
+   goes too; with no columns to separate there is nothing for it to do. */
+@media (max-width: 860px) {
+  .contact__video {
+    object-position: 78% center;
+  }
+
+  .contact__veil {
+    background: linear-gradient(to bottom,
+        #050807 0%,
+        rgba(5, 8, 7, 0.88) 5%,
+        rgba(5, 8, 7, 0.8) 28%,
+        rgba(5, 8, 7, 0.82) 74%,
+        rgba(5, 8, 7, 0.94) 95%,
+        #050807 100%);
+  }
+}
+
+.contact > .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Kontakt on the dark ground ──────────── */
+.contact .section__label {
+  color: var(--night-green);
+}
+
+.contact .section__title {
+  color: var(--night-text);
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.5);
+}
+
+.contact .section__title em {
+  color: #a7dfba;
 }
 
 .contact__grid {
@@ -1650,7 +1741,7 @@ main > section:nth-of-type(even) .scene-ambient {
 
 .contact__copy {
   font-size: var(--fs-lg);
-  color: var(--text-muted);
+  color: var(--night-text-muted);
   line-height: 1.8;
   margin-top: var(--sp-3);
   max-width: 38ch;
@@ -1661,19 +1752,21 @@ main > section:nth-of-type(even) .scene-ambient {
   align-items: flex-start;
   gap: var(--sp-2);
   padding-block: var(--sp-3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(159, 216, 182, 0.14);
 }
 
 .contact__item:first-of-type {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(159, 216, 182, 0.14);
   margin-top: var(--sp-5);
 }
 
 .contact__ico {
   width: 36px;
   height: 36px;
-  background: var(--green-wash);
-  border: 1px solid rgba(61, 122, 82, 0.15);
+  /* currentColor for the icon inside, which carries no colour of its own */
+  color: var(--night-green);
+  background: rgba(159, 216, 182, 0.08);
+  border: 1px solid rgba(159, 216, 182, 0.2);
   border-radius: var(--r-md);
   display: flex;
   align-items: center;
@@ -1686,13 +1779,13 @@ main > section:nth-of-type(even) .scene-ambient {
   font-size: var(--fs-xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: rgba(226, 235, 255, 0.58);
   margin-bottom: 2px;
 }
 
 .contact__item-val {
   font-size: var(--fs-base);
-  color: var(--text-muted);
+  color: var(--night-text);
 }
 
 .contact__form {
@@ -1761,55 +1854,36 @@ main > section:nth-of-type(even) .scene-ambient {
   transition: color 0.2s ease;
 }
 
-/* ── Footer ─────────────────────────────── */
-.footer {
-  background: var(--bg-2);
-  padding-block: var(--sp-5);
-  border-top: 1px solid var(--border);
+/* The form keeps its shape and only changes key: glass fields on the
+   footage rather than cream ones on paper. */
+.contact .form-label {
+  color: rgba(226, 235, 255, 0.6);
 }
 
-.footer__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
+.contact .form-input,
+.contact .form-ta {
+  background: rgba(9, 15, 12, 0.66);
+  border-color: rgba(159, 216, 182, 0.18);
+  color: var(--night-text);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
 }
 
-.footer__logo {
-  font-family: var(--ff-display);
-  font-size: var(--fs-xl);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.contact .form-input::placeholder,
+.contact .form-ta::placeholder {
+  color: rgba(226, 235, 255, 0.32);
 }
 
-.footer__logo svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--green-light);
+.contact .form-input:focus,
+.contact .form-ta:focus {
+  border-color: rgba(159, 216, 182, 0.5);
+  background: rgba(9, 15, 12, 0.82);
+  box-shadow: 0 0 0 3px rgba(159, 216, 182, 0.12);
 }
 
-.footer__copy {
-  font-size: var(--fs-sm);
-  color: var(--text-faint);
-  margin-top: 3px;
-}
-
-.footer__links {
-  display: flex;
-  gap: var(--sp-4);
-}
-
-.footer__links a {
-  font-size: var(--fs-sm);
-  color: var(--text-faint);
-  transition: color var(--tr-fast);
-}
-
-.footer__links a:hover {
-  color: var(--green);
+.contact .form-group:focus-within .form-label {
+  color: var(--night-green);
 }
 
 /* ── Keyframes ──────────────────────────── */
