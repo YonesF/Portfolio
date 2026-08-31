@@ -21,7 +21,13 @@
           : '';
         box.style.minHeight = fills ? '0px' : '';
       }
-      var scale = Math.min(box.clientWidth / 1440, box.clientHeight / 900);
+      // data-scene-cover fills the section and crops, rather than fitting
+      // inside it and letterboxing.
+      var fitW = box.clientWidth / 1440;
+      var fitH = box.clientHeight / 900;
+      var scale = 'sceneCover' in stage.dataset
+        ? Math.max(fitW, fitH)
+        : Math.min(fitW, fitH);
       stage.style.setProperty('--scene-fit', scale);
     });
   }

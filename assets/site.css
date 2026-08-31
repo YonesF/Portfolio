@@ -1143,6 +1143,72 @@ main > section:nth-of-type(even) .scene-ambient {
   overflow: hidden;
 }
 
+/* Two stills of the same map, cross-fading. The first one sits underneath
+   and stays put; only the second animates, so there is one property in
+   flight and the pair can never both be mid-fade. */
+.project-visual--globus { background: #0d1a24; }
+
+/* Below the title bar rather than behind it. The recordings on the other
+   two cards can afford to lose their top strip to the chrome, but this one
+   opens with its layer panel in that exact corner, and dimming it under a
+   translucent bar made the card look like a mistake. Reads as a window with
+   a viewport under its title bar, the same way the Kartverket panel does. */
+.project-visual__slides {
+  position: absolute;
+  inset: 42px 0 0;
+}
+
+.project-visual__slides img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The second still is wider than the 16:9 screen, so cover trims its sides.
+   Anchored left, because the layer panel it opens with sits against that
+   edge and the far side is only more cityscape. */
+.project-visual__slides img + img {
+  object-position: left top;
+  opacity: 0;
+  animation: projectSlideFade 8s ease-in-out infinite;
+}
+
+/* Eight seconds round: each still holds for about four, with the crossfade
+   split evenly either side so neither one ever snaps. */
+@keyframes projectSlideFade {
+  0%, 40% { opacity: 0; }
+  50%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-visual__slides img + img { animation: none; }
+}
+
+/* A line for the things that are not technologies — where a project runs,
+   and how it gets there. */
+.project-card__note {
+  max-width: 34ch;
+  margin: -0.4rem auto 1rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(232, 244, 235, 0.5);
+}
+
+/* Fills the screen behind the title bar. object-fit covers the last couple
+   of pixels of aspect difference between the two recordings. */
+.project-visual__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0a130f;
+}
+
 .project-visual__bar {
   position: absolute;
   inset: 0 0 auto;
@@ -1279,8 +1345,8 @@ main > section:nth-of-type(even) .scene-ambient {
 .kart-radar {
   position: absolute;
   left: 7%;
-  top: 22%;
-  width: 43%;
+  top: 14%;
+  width: 34%;
   aspect-ratio: 1;
   border: 1px solid rgba(111, 199, 203, 0.38);
   border-radius: 50%;
@@ -1309,18 +1375,18 @@ main > section:nth-of-type(even) .scene-ambient {
 
 .kart-metrics {
   position: absolute;
-  top: 22%;
+  top: 14%;
   right: 6%;
-  width: 39%;
+  width: 44%;
   display: grid;
-  gap: 0.65rem;
+  gap: 0.5rem;
 }
 
 .kart-metric {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.45rem;
-  padding: 0.72rem 0.8rem;
+  padding: 0.55rem 0.7rem;
   color: rgba(235, 243, 243, 0.66);
   background: rgba(6, 13, 16, 0.58);
   border-left: 2px solid #6fc7cb;
@@ -1328,6 +1394,17 @@ main > section:nth-of-type(even) .scene-ambient {
 }
 
 .kart-metric strong { color: #f2f5f4; font-size: 0.8rem; }
+
+/* The card is clamp(300px, 29vw, 390px), so it stops being wide enough for
+   the full-size metric stack around 1240px — long before the 720px layout
+   breakpoint. Between those two the screen is short and the stack has to be
+   tightened, or it runs off the bottom of the 16:9 box. */
+@media (max-width: 1240px) {
+  .kart-radar { top: 10%; }
+  .kart-metrics { top: 10%; gap: 0.36rem; }
+  .kart-metric { padding: 0.38rem 0.55rem; font-size: 0.58rem; }
+  .kart-metric strong { font-size: 0.7rem; }
+}
 
 /* Horizontal project gallery — static depth with pointer-driven tilt */
 .projects-gallery.section {
@@ -1540,9 +1617,13 @@ main > section:nth-of-type(even) .scene-ambient {
   box-shadow: 15px 22px 42px rgba(0, 0, 0, 0.34);
 }
 
+/* 16:9 rather than 4:3: two of the three cards now carry screen recordings
+   of the real apps, and cropping a quarter off the width would take the map
+   sidebar and the site's own navigation with it. The remaining mock-up card
+   is drawn from its container's edges, so it follows the new shape. */
 .project-card__screen {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #0a130f;
   border: 1px solid rgba(224, 240, 228, 0.56);
@@ -1657,9 +1738,9 @@ main > section:nth-of-type(even) .scene-ambient {
   .project-card__desc { min-height: 0; }
   .estate-room::before { border-width: 6px; }
   .atlas-status { width: 52%; }
-  .kart-radar { left: 3%; width: 50%; }
-  .kart-metrics { right: 3%; width: 43%; }
-  .kart-metric { padding: 0.48rem; font-size: 0.56rem; }
+  .kart-radar { left: 3%; width: 32%; }
+  .kart-metrics { right: 3%; width: 48%; }
+  .kart-metric { padding: 0.4rem 0.5rem; font-size: 0.56rem; }
   .projects-gallery__wire { display: none; }
 }
 
@@ -2067,37 +2148,84 @@ main > section:nth-of-type(even) .scene-ambient {
   border-top: 0;
 }
 
-/* The one piece of chrome left on the site: the way back to the landing,
-   at the foot of each page. Dark, because all four pages end on a dark
-   ground and a cream strip would read as a leftover footer. */
-.page-back {
-  display: flex;
-  justify-content: center;
-  padding-block: var(--sp-5);
-  background: #050807;
-  border-top: 1px solid rgba(159, 216, 182, 0.1);
+/* ── Page fit ───────────────────────────────
+   assets/page-fit.js lays these pages out at a larger notional window and
+   scales the result down, so a page is one screen with nothing to scroll —
+   the same contract the landing has always had. See that file for why it
+   is done by zooming rather than by shrinking a fixed layout.
+
+   Only the transform lives here; the width and the scale are measured. */
+main[data-page-fit] {
+  transform-origin: top left;
 }
 
+main[data-page-fit].is-fitted {
+  transform: scale(var(--page-fit, 1));
+}
+
+/* Sections sized against the window have to be sized against the notional
+   one instead, or they stop short of the bottom once the page is scaled. */
+main[data-page-fit] .us-scene,
+main[data-page-fit] .erfaring--page {
+  min-height: var(--fit-vh, 100vh);
+}
+
+/* The gallery has to fill the height like the others — sized to its content
+   it stopped short and left the page's own ground showing beneath it. It
+   keeps the full height and centres its content in it, so what slack there
+   is falls evenly above and below rather than piling up at the foot. */
+main[data-page-fit] .projects-gallery.section {
+  min-height: var(--fit-vh, 100vh);
+  padding-block: clamp(1.5rem, 2.5vw, 2.5rem);
+}
+
+/* Nothing should be visible outside the scaled page. Each of these pages
+   ends on its own dark ground, so the html element takes that ground and
+   any sliver left by a rounded scale disappears into it. */
+.page-om-meg { background: #000; }
+.page-erfaring { background: #020806; }
+.page-prosjekter { background: #040806; }
+.page-kontakt { background: #050807; }
+
+/* The one piece of chrome left on the site: the way back to the landing.
+   Parked in the top corner of each page rather than at the foot, so it is
+   there the moment the page opens instead of after a scroll. Plain text —
+   a button would read as a second piece of furniture on pages that have
+   deliberately been stripped of every other one.
+
+   Sits inside the section, so it takes the dark ground it is on, rides
+   above the scene layers, and clears the first line of content on all
+   four pages. */
+.page-back {
+  position: absolute;
+  top: clamp(1.4rem, 2.6vw, 2.2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+/* Centred at the top, the link crosses whatever the scene happens to be
+   doing up there — the lit architrave on Om meg, the smoke on Prosjekter.
+   A hard black outline with a soft halo behind it keeps the text readable
+   over any of them without giving it a box to sit in. */
 .page-back a {
   display: inline-flex;
   align-items: center;
-  gap: 0.55em;
+  gap: 0.5em;
   font-family: var(--ff-body);
   font-size: var(--fs-sm);
   letter-spacing: 0.04em;
   color: var(--night-text-muted);
-  padding: 0.8rem 1.9rem;
-  border: 1px solid rgba(159, 216, 182, 0.22);
-  border-radius: var(--r-full);
-  background: rgba(159, 216, 182, 0.05);
-  transition: color var(--tr-base), border-color var(--tr-base),
-              background var(--tr-base), transform var(--tr-base);
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.9),
+    1px -1px 0 rgba(0, 0, 0, 0.9),
+    -1px 1px 0 rgba(0, 0, 0, 0.9),
+    1px 1px 0 rgba(0, 0, 0, 0.9),
+    0 2px 10px rgba(0, 0, 0, 0.75);
+  transition: color var(--tr-base);
 }
 
 .page-back a:hover,
 .page-back a:focus-visible {
   color: var(--night-text);
-  border-color: rgba(159, 216, 182, 0.5);
-  background: rgba(159, 216, 182, 0.1);
-  transform: translateY(-2px);
 }

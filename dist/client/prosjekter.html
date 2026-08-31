@@ -31,10 +31,12 @@
   <!-- Side leaves layer -->
   <div id="side-leaves" aria-hidden="true"></div>
 
-  <main id="top">
+  <main id="top" data-page-fit>
 
     <!-- ══ PROJECTS ══════════════════════════════ -->
     <section class="section projects projects-gallery" id="projects" aria-labelledby="projects-h">
+      <p class="page-back"><a href="index.html">← Tilbake til forsiden</a></p>
+
       <div class="projects-gallery__scene" aria-hidden="true">
         <div class="projects-gallery__scene-stage" data-us-project="xU0jPyJ7k3ZOdKrMItkL"></div>
         <div class="projects-gallery__scene-veil"></div>
@@ -52,7 +54,7 @@
         <h2 class="section__title projects-gallery__title" id="projects-h">Prosjekter</h2>
         <div class="projects-gallery__rule" aria-hidden="true"></div>
         <p class="projects-gallery__copy reveal">
-          Tre ulike problemrom — fra visuell KI til kart og kritiske data. Hvert prosjekt kombinerer tydelig design med teknologi bygget rundt menneskene som skal bruke den.
+          Fire ulike problemrom — fra visuell KI til kart, geodata og kritiske systemer. Hvert prosjekt kombinerer tydelig design med teknologi bygget rundt menneskene som skal bruke den.
         </p>
       </header>
 
@@ -62,10 +64,12 @@
           <article class="project-card reveal" id="project-luksus" style="--project-tone:#d9b27f" role="listitem" aria-labelledby="project-luksus-title">
             <div class="project-card__tilt">
               <div class="project-card__screen">
-                <div class="project-visual project-visual--estate" role="img" aria-label="Før- og ettervisning av et KI-forbedret interiør">
+                <div class="project-visual project-visual--estate" role="img" aria-label="Opptak av LuksusEiendom: KI-forbedrede boligbilder og abonnementssider">
                   <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>KI-visualisering</span></div>
-                  <div class="estate-room"></div><div class="estate-divider"></div>
-                  <span class="estate-label estate-label--before">Før</span><span class="estate-label estate-label--after">Etter</span>
+                  <video class="project-visual__video" poster="assets/project-luksuseiendom.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-luksuseiendom.mp4" type="video/mp4">
+                  </video>
                 </div>
               </div>
             </div>
@@ -87,18 +91,12 @@
           <article class="project-card reveal" id="project-atlas" style="--project-tone:#80cf9d" role="listitem" aria-labelledby="project-atlas-title">
             <div class="project-card__tilt">
               <div class="project-card__screen">
-                <div class="project-visual project-visual--atlas" role="img" aria-label="Kartgrensesnitt med markører for beredskapsressurser">
+                <div class="project-visual project-visual--atlas" role="img" aria-label="Opptak av Atlas: kartsøk, 3D-terreng og ruteberegning">
                   <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Nærmeste beredskap</span></div>
-                  <svg class="atlas-map" viewBox="0 0 900 460" preserveAspectRatio="none" aria-hidden="true">
-                    <path class="atlas-map__land" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18 V460 H0Z" />
-                    <path class="atlas-map__coast" d="M0 82 C120 34 193 105 303 70 C430 29 532 108 638 58 C747 7 827 43 900 18" />
-                    <path class="atlas-map__road" d="M-10 350 C170 302 240 382 395 286 S700 213 925 252" />
-                    <path class="atlas-map__road" d="M150 25 C177 151 290 192 369 463" />
-                    <path class="atlas-map__minor" d="M40 175 C210 121 346 181 489 132 S714 105 862 142" />
-                    <path class="atlas-map__minor" d="M520 25 C555 165 610 296 754 456" />
-                  </svg>
-                  <span class="atlas-marker atlas-marker--one"></span><span class="atlas-marker atlas-marker--two"></span><span class="atlas-marker atlas-marker--three"></span>
-                  <div class="atlas-status"><strong>3 ressurser funnet</strong>Nærmeste enhet er beregnet fra din valgte posisjon.</div>
+                  <video class="project-visual__video" poster="assets/project-atlas.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-atlas.mp4" type="video/mp4">
+                  </video>
                 </div>
               </div>
             </div>
@@ -120,16 +118,12 @@
           <article class="project-card reveal" id="project-kartverket" style="--project-tone:#7dc9ca" role="listitem" aria-labelledby="project-kartverket-title">
             <div class="project-card__tilt">
               <div class="project-card__screen">
-                <div class="project-visual project-visual--kartverket" role="img" aria-label="Kontrollpanel for validering av luftfartshindre">
+                <div class="project-visual project-visual--kartverket" role="img" aria-label="Opptak av Kartverket-systemet: registrering og validering av luftfartshindre">
                   <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Hinderregister / validering</span></div>
-                  <div class="kart-grid">
-                    <div class="kart-radar"><i class="kart-point kart-point--one"></i><i class="kart-point kart-point--two"></i><i class="kart-point kart-point--three"></i></div>
-                    <div class="kart-metrics">
-                      <div class="kart-metric"><span>Registrert høyde</span><strong>128 m</strong></div>
-                      <div class="kart-metric"><span>Koordinatstatus</span><strong>Gyldig</strong></div>
-                      <div class="kart-metric"><span>Risikoklasse</span><strong>B2</strong></div>
-                    </div>
-                  </div>
+                  <video class="project-visual__video" poster="assets/project-kartverket.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-kartverket.mp4" type="video/mp4">
+                  </video>
                 </div>
               </div>
             </div>
@@ -147,20 +141,46 @@
               </a>
             </div>
           </article>
+
+          <!-- Card 4: Globuskart -->
+          <article class="project-card reveal" id="project-globus" style="--project-tone:#7fb8e8" role="listitem" aria-labelledby="project-globus-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--globus" role="img" aria-label="3D-kart over Kristiansand med terreng, bygninger og lagvalg">
+                  <div class="project-visual__bar"><span class="project-visual__dots" aria-hidden="true"><i></i><i></i><i></i></span><span>3D-terreng / lag</span></div>
+                  <div class="project-visual__slides">
+                    <img src="assets/globus-1.webp" alt="" width="920" height="562" decoding="async" fetchpriority="low">
+                    <img src="assets/globus-2.webp" alt="" width="920" height="434" decoding="async" fetchpriority="low">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Geospatial plattform</p>
+              <h3 class="project-card__title" id="project-globus-title">Globuskart prosjekt</h3>
+              <p class="project-card__desc">Et innovativt geospatialt prosjekt som utforsker moderne verktøy og biblioteker for å bygge en unik interaktiv plattform for visualisering av sanntidsdata, havnivåstigning og geografiske analyser i Norge.</p>
+              <p class="project-card__note">Driftet på Azure Static Web Apps med CI/CD via GitHub Actions.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">3D-kart</span><span class="project-card__tag">Sanntidsdata</span>
+                <span class="project-card__tag">Havnivåstigning</span><span class="project-card__tag">Geodata</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/YonesF/Et-Globus-kartprosjekt" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
           </div>
         </div>
       </div>
     </section>
-
-    <p class="page-back">
-      <a href="index.html" data-magnetic>← Tilbake til forsiden</a>
-    </p>
 
     <script src="assets/scenes.js"></script>
 
   </main>
 
   <script src="assets/site.js"></script>
+  <script src="assets/page-fit.js"></script>
 </body>
 
 </html>

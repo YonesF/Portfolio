@@ -972,6 +972,43 @@ function makeGlowSprite(r, g, b) {
   track.classList.add('is-carousel-ready');
 })();
 
+/* ─── Project card videos ─────────────────── */
+// Placed after the carousel has cloned its group, so the duplicate's copies
+// are wired up as well. Both copies of a clip share one URL, so the browser
+// downloads each file once however many elements point at it.
+//
+// Nothing is fetched until the gallery is near the viewport, and everything
+// stops again when it leaves or the tab is hidden — four small decodes are
+// cheap while they are being watched and pure waste when they are not.
+(function initProjectVideos() {
+  const section = document.getElementById('projects');
+  const videos = [...document.querySelectorAll('.project-visual__video')];
+  if (!section || !videos.length) return;
+
+  // Reduced motion and metered connections keep the poster frames.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (navigator.connection?.saveData) return;
+
+  let onScreen = false;
+
+  function sync() {
+    videos.forEach(video => {
+      // Cloned nodes carry the attribute but not always the property, and
+      // autoplay is refused without it.
+      video.muted = true;
+      if (onScreen && !document.hidden) video.play().catch(() => {});
+      else video.pause();
+    });
+  }
+
+  new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    sync();
+  }, { rootMargin: '300px 0px' }).observe(section);
+
+  document.addEventListener('visibilitychange', sync);
+})();
+
 /* ─── Smooth carousel braking ─────────────── */
 (function initProjectCarouselBraking() {
   const section = document.getElementById('projects');

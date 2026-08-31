@@ -31,14 +31,16 @@
   <!-- Side leaves layer -->
   <div id="side-leaves" aria-hidden="true"></div>
 
-  <main id="top">
+  <main id="top" data-page-fit>
 
     <!-- ══ ALDER ═════════════════════════════════
          Second half of the opening. Shares the black ground and the
          edge blend with the landing above, so the two run together as
          one field instead of reading as a section break. -->
     <section class="us-scene" id="alder" aria-labelledby="alder-h">
-      <div class="us-scene__stage" data-scene-fit data-scene-fill data-scene-fill-min="861"
+      <p class="page-back"><a href="index.html">← Tilbake til forsiden</a></p>
+
+      <div class="us-scene__stage" data-scene-fit data-scene-cover
         data-us-project-src="assets/about-me-unicorn.json"
         data-us-arialabel="Animert scene med portrett og bevegelige lyseffekter"></div>
       <div class="us-scene__blend" aria-hidden="true"></div>
@@ -98,15 +100,12 @@
       </div>
     </section>
 
-    <p class="page-back">
-      <a href="index.html" data-magnetic>← Tilbake til forsiden</a>
-    </p>
-
     <script src="assets/scenes.js"></script>
 
   </main>
 
   <script src="assets/site.js"></script>
+  <script src="assets/page-fit.js"></script>
 </body>
 
 </html>
