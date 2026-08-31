@@ -25,6 +25,12 @@
   display: block;
 }
 
+/* Below the preview threshold the words are still live links — only the
+   panels stand down, so nothing can be left hanging open. */
+.hero-nav:not(.has-previews) .hero-card {
+  display: none;
+}
+
 /* ── Hit areas ────────────────────────────
    Sized to the glyphs themselves rather than the layer's box, so the gaps
    between the words stay dead and the scene keeps its own hover. */

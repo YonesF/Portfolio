@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="no">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kontakt Yones Feili — IT- og informasjonssystemstudent ved UiA" />
+  <title>Kontakt — Yones Feili</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@300;400&display=swap"
+    rel="stylesheet" />
+
+  <!-- Lenis smooth scroll — https://github.com/darkroomengineering/lenis -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" />
+  <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+
+  <!-- GSAP — https://gsap.com (standard 'no charge' license) -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+
+  <link rel="stylesheet" href="assets/site.css" />
+</head>
+
+<body class="page-kontakt">
+
+  <!-- Side leaves layer -->
+  <div id="side-leaves" aria-hidden="true"></div>
+
+  <main id="top">
+
+    <!-- ══ CONTACT ═══════════════════════════════ -->
+    <section class="section contact" id="contact" aria-labelledby="contact-h">
+      <div class="contact__scene" aria-hidden="true">
+        <video class="contact__video" poster="assets/hermes-marble.webp"
+          muted loop playsinline preload="none">
+          <source src="assets/hermes-marble.mp4" type="video/mp4">
+        </video>
+        <div class="contact__veil"></div>
+      </div>
+
+      <div class="container">
+        <div class="contact__grid">
+          <div class="contact__info">
+            <p class="section__label reveal">Kontakt</p>
+            <h2 class="section__title" id="contact-h">La oss<br><em>snakke</em></h2>
+            <p class="contact__copy reveal">
+              Har du et prosjekt, spørsmål, eller vil bare ta en prat? Ikke nøl — skriv til meg.
+            </p>
+
+            <div class="contact__item reveal">
+              <div class="contact__ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
+              <div>
+                <p class="contact__item-label">E-post</p>
+                <p class="contact__item-val">Yonesmf@uia.no</p>
+              </div>
+            </div>
+            <div class="contact__item reveal">
+              <div class="contact__ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <div>
+                <p class="contact__item-label">Sted</p>
+                <p class="contact__item-val">Kristiansand, Norge</p>
+              </div>
+            </div>
+            <div class="contact__item reveal">
+              <div class="contact__ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+              </div>
+              <div>
+                <p class="contact__item-label">Utdanning</p>
+                <p class="contact__item-val">UiA — IT &amp; Informasjonssystem</p>
+              </div>
+            </div>
+          </div>
+
+          <form class="contact__form reveal" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
+            <!-- Formsubmit.co config -->
+            <input type="hidden" name="_subject" value="Ny melding fra Portfolio">
+            <input type="hidden" name="_template" value="table">
+            <input type="text" name="_honey" style="display:none">
+            <input type="hidden" name="_captcha" value="false">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-name">Navn</label>
+                <input class="form-input" type="text" id="f-name" name="name" placeholder="Ola Nordmann"
+                  autocomplete="name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-email">E-post</label>
+                <input class="form-input" type="email" id="f-email" name="email" placeholder="ola@example.com"
+                  autocomplete="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-subject">Emne</label>
+              <input class="form-input" type="text" id="f-subject" name="subject"
+                placeholder="Hva gjelder henvendelsen?">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-msg">Melding</label>
+              <textarea class="form-ta" id="f-msg" name="message" rows="6" placeholder="Skriv meldingen din her..."
+                required></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary" id="cFormBtn" style="align-self:flex-start">
+              Send melding
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <p class="page-back">
+      <a href="index.html" data-magnetic>← Tilbake til forsiden</a>
+    </p>
+
+    <script src="assets/scenes.js"></script>
+
+  </main>
+
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

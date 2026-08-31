@@ -12,8 +12,10 @@
    panel is parked in the empty band between the two columns, level with
    the word that opens it.
 
-   Pointer-only: hover previews have nothing to offer a touch screen, and
-   the panels need the middle of a wide window to sit in. */
+   The hit areas are placed on every device: with each section on its own
+   page now, these four words are the only way into the site, so a phone
+   has to be able to tap them. Only the preview panels are gated — they
+   need hover to open and the middle of a wide window to sit in. */
 
 (function initHeroWordNav() {
   const section = document.getElementById('landing');
@@ -38,7 +40,12 @@
   const pointer = window.matchMedia('(hover: hover) and (pointer: fine)');
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-  let openWord = null;
+  // The word the pointer or keyboard is on, tracked separately from whether
+  // the panels have been measured. The runtime rebuilds the scene's text
+  // nodes on resize, which retracts the layer mid-hover; keeping the state
+  // here means the next measure puts the right panel back instead of waiting
+  // for the pointer to leave and come again.
+  let hovered = null;
   let measureFrame = 0;
 
   /* The layer's own box is padded out to a round number in the scene, so
@@ -93,14 +100,18 @@
     return found;
   }
 
+  function renderPanels() {
+    const live = layer.classList.contains('is-ready') &&
+      layer.classList.contains('has-previews');
+    cards.forEach((card, word) => card.classList.toggle('is-open', live && word === hovered));
+  }
+
   function hide() {
     layer.classList.remove('is-ready');
-    if (openWord) close(openWord);
+    renderPanels();
   }
 
   function place() {
-    if (!pointer.matches || window.innerWidth < MIN_VIEWPORT) return hide();
-
     const words = sceneWords();
     // Partial scenes happen while the runtime is still building or tearing
     // one down; placing half the words would leave links over nothing.
@@ -116,6 +127,10 @@
     const rects = measureWords(words, box, scale);
     if (!rects) return hide();
     const middle = box.left + box.width / 2;
+
+    // Panels want hover and room; the links below want neither.
+    const previews = pointer.matches && window.innerWidth >= MIN_VIEWPORT;
+    layer.classList.toggle('has-previews', previews);
 
     // The panel lives in the gap between the left and right columns of
     // words, so it can never cover the word it belongs to or the ones
@@ -136,11 +151,19 @@
       const card = cards.get(word);
       if (!rect || !card) return;
 
-      hit.style.left = `${rect.left - base.left}px`;
-      hit.style.top = `${rect.top - base.top}px`;
-      hit.style.width = `${rect.width}px`;
-      hit.style.height = `${rect.height}px`;
+      // Where the panels are off there is no hover to aim with and the scene
+      // has scaled the lettering right down, so the tap target is grown
+      // around the glyphs. Kept just under the gap between the two rows of
+      // words, so neighbouring targets never overlap.
+      const padX = previews ? 0 : 12;
+      const padY = previews ? 0 : 8;
+
+      hit.style.left = `${rect.left - base.left - padX}px`;
+      hit.style.top = `${rect.top - base.top - padY}px`;
+      hit.style.width = `${rect.width + padX * 2}px`;
+      hit.style.height = `${rect.height + padY * 2}px`;
       hit.style.fontSize = `${rect.height}px`;   // the ::after rule scales in em
+      if (!previews) return;
 
       // Panels open inward, and take their edge from the column rather than
       // from the word: a tall panel beside a short word would otherwise
@@ -163,6 +186,7 @@
     });
 
     layer.classList.add('is-ready');
+    renderPanels();
   }
 
   function measure() {
@@ -170,24 +194,14 @@
     measureFrame = requestAnimationFrame(place);
   }
 
-  function open(word) {
-    if (!layer.classList.contains('is-ready') || openWord === word) return;
-    if (openWord) close(openWord);
-    cards.get(word)?.classList.add('is-open');
-    openWord = word;
-  }
-
-  function close(word) {
-    cards.get(word)?.classList.remove('is-open');
-    if (openWord === word) openWord = null;
-  }
-
   hits.forEach(hit => {
     const word = hit.dataset.heroWord;
-    hit.addEventListener('pointerenter', () => open(word));
-    hit.addEventListener('pointerleave', () => close(word));
-    hit.addEventListener('focus', () => open(word));
-    hit.addEventListener('blur', () => close(word));
+    const enter = () => { hovered = word; renderPanels(); };
+    const leave = () => { if (hovered === word) hovered = null; renderPanels(); };
+    hit.addEventListener('pointerenter', enter);
+    hit.addEventListener('pointerleave', leave);
+    hit.addEventListener('focus', enter);
+    hit.addEventListener('blur', leave);
   });
 
   // The scene's text nodes appear when the runtime builds it and are taken

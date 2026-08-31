@@ -1346,6 +1346,55 @@ main > section:nth-of-type(even) .scene-ambient {
   overflow: clip;
 }
 
+/* ── Projects backdrop scene ─────────────
+   A WebGL scene behind the whole gallery. Negative z-index puts it above
+   the section's own gradient but under its grain and its edge vignette,
+   so the texture the section already had keeps sitting on top rather than
+   being replaced.
+
+   Decorative, so unlike the opening scenes it is allowed to crop: the
+   stage is pinned wide enough that a tall section never squashes the
+   artboard's 1440x900 proportions into something stretched. */
+.projects-gallery__scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.projects-gallery__scene-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: calc(100vh * 1.6);
+  height: 100%;
+}
+
+.projects-gallery__scene-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Knocks the scene back so the cards keep their contrast. The section's
+   own ::after already darkens the flanks, so this only has to work down
+   the middle and close the top and bottom edges — heaviest across the top
+   third, where the title and standfirst are the one piece of copy with no
+   card behind it. */
+.projects-gallery__scene-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+      #040806 0%,
+      rgba(4, 8, 6, 0.9) 6%,
+      rgba(4, 8, 6, 0.86) 28%,
+      rgba(4, 8, 6, 0.7) 44%,
+      rgba(4, 8, 6, 0.62) 74%,
+      rgba(4, 8, 6, 0.88) 94%,
+      #040806 100%);
+}
+
 .projects-gallery::before {
   content: '';
   position: absolute;
@@ -2007,11 +2056,10 @@ main > section:nth-of-type(even) .scene-ambient {
   .section__label::before { transition: none; }
 }
 
-/* ── Erfaring as a standalone page ──────────
-   On the front page this section was sandwiched between two full-height
-   scenes and never had to open or close anything. Standing alone it does
-   both, so it takes a little more room at the head and hands the reader a
-   way back at the foot. */
+/* ── Standalone section pages ───────────────
+   Every section now has a page of its own. Erfaring is the only one that
+   needs its spacing adjusted: on the front page it sat between two
+   full-height scenes and never had to open the page itself. */
 .erfaring--page {
   padding-block: clamp(5rem, 8vw, 7rem) clamp(3rem, 6vw, 5rem);
   min-height: 100vh;
@@ -2019,9 +2067,37 @@ main > section:nth-of-type(even) .scene-ambient {
   border-top: 0;
 }
 
-.erfaring-back {
+/* The one piece of chrome left on the site: the way back to the landing,
+   at the foot of each page. Dark, because all four pages end on a dark
+   ground and a cream strip would read as a leftover footer. */
+.page-back {
   display: flex;
   justify-content: center;
   padding-block: var(--sp-5);
-  background: var(--bg);
+  background: #050807;
+  border-top: 1px solid rgba(159, 216, 182, 0.1);
+}
+
+.page-back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  font-family: var(--ff-body);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.04em;
+  color: var(--night-text-muted);
+  padding: 0.8rem 1.9rem;
+  border: 1px solid rgba(159, 216, 182, 0.22);
+  border-radius: var(--r-full);
+  background: rgba(159, 216, 182, 0.05);
+  transition: color var(--tr-base), border-color var(--tr-base),
+              background var(--tr-base), transform var(--tr-base);
+}
+
+.page-back a:hover,
+.page-back a:focus-visible {
+  color: var(--night-text);
+  border-color: rgba(159, 216, 182, 0.5);
+  background: rgba(159, 216, 182, 0.1);
+  transform: translateY(-2px);
 }
