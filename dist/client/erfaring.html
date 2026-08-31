@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="no">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Erfaring — arbeider og praksis av Yones Feili, IT- og informasjonssystemstudent ved UiA" />
+  <title>Erfaring — Yones Feili</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@300;400&display=swap"
+    rel="stylesheet" />
+
+  <!-- Lenis smooth scroll — https://github.com/darkroomengineering/lenis -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css" />
+  <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+
+  <!-- GSAP — https://gsap.com (standard 'no charge' license) -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+
+  <link rel="stylesheet" href="assets/site.css" />
+</head>
+
+<body class="page-erfaring">
+
+  <!-- Side leaves layer -->
+  <div id="side-leaves" aria-hidden="true"></div>
+
+  <main id="top">
+
+    <!-- ══ ERFARING ════════════════════════════════ -->
+    <section class="section erfaring erfaring--page" id="erfaring" aria-labelledby="erfaring-h">
+
+      <div class="erfaring__scene" aria-hidden="true">
+        <div class="erfaring__scene-stage" data-us-project="33QfVPytUlcTCM9e6Tu5"></div>
+        <div class="erfaring__scene-veil"></div>
+      </div>
+
+      <canvas class="erfaring__canvas" id="erfaringCanvas" aria-hidden="true"></canvas>
+      <div class="erfaring__forest-overlay" aria-hidden="true"></div>
+
+      <div class="erfaring__leaves" aria-hidden="true">
+        <!-- Top-left: rounded leaf -->
+        <div class="erfaring__leaf" style="top:6%;left:4%;--erf-anim:erfaringDrift1;--erf-dur:27s;--erf-delay:-4s">
+          <svg width="34" height="48" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 26 C4 20, 2 14, 5 7 C6.5 4, 10 1, 10 1 C10 1, 13.5 4, 15 7 C18 14, 16 20, 10 26Z" fill="rgba(132,196,154,0.22)"/>
+            <line x1="10" y1="1" x2="10" y2="26" stroke="rgba(61,122,82,0.15)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Top-right: narrow willow leaf -->
+        <div class="erfaring__leaf" style="top:3%;right:5%;--erf-anim:erfaringDrift2;--erf-dur:31s;--erf-delay:-9s">
+          <svg width="22" height="54" viewBox="0 0 10 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 30 C2 22, 1 14, 3 7 C3.5 5, 5 1, 5 1 C5 1, 6.5 5, 7 7 C9 14, 8 22, 5 30Z" fill="rgba(90,158,111,0.2)"/>
+            <line x1="5" y1="1" x2="5" y2="30" stroke="rgba(61,122,82,0.12)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Left middle: wide leaf -->
+        <div class="erfaring__leaf" style="top:40%;left:1.5%;--erf-anim:erfaringDrift3;--erf-dur:23s;--erf-delay:-6s">
+          <svg width="42" height="58" viewBox="0 0 22 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 28 C4 22, 2 15, 5 8 C6.5 5, 11 1, 11 1 C11 1, 15.5 5, 17 8 C20 15, 18 22, 11 28Z" fill="rgba(200,230,208,0.26)"/>
+            <line x1="11" y1="1" x2="11" y2="28" stroke="rgba(61,122,82,0.13)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Right middle: small gold leaf -->
+        <div class="erfaring__leaf" style="top:48%;right:2.5%;--erf-anim:erfaringDrift4;--erf-dur:29s;--erf-delay:-13s">
+          <svg width="28" height="40" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 20 C3 15, 1 10, 3 5 C4 3, 8 1, 8 1 C8 1, 12 3, 13 5 C15 10, 13 15, 8 20Z" fill="rgba(184,154,88,0.17)"/>
+            <line x1="8" y1="1" x2="8" y2="20" stroke="rgba(92,74,40,0.1)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Bottom-left: narrow leaf -->
+        <div class="erfaring__leaf" style="bottom:7%;left:5%;--erf-anim:erfaringDrift2;--erf-dur:26s;--erf-delay:-19s">
+          <svg width="26" height="60" viewBox="0 0 10 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 30 C2 22, 1 14, 3 7 C3.5 5, 5 1, 5 1 C5 1, 6.5 5, 7 7 C9 14, 8 22, 5 30Z" fill="rgba(90,158,111,0.18)"/>
+            <line x1="5" y1="1" x2="5" y2="30" stroke="rgba(61,122,82,0.11)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Bottom-right: rounded leaf -->
+        <div class="erfaring__leaf" style="bottom:5%;right:4%;--erf-anim:erfaringDrift1;--erf-dur:33s;--erf-delay:-22s">
+          <svg width="36" height="50" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 26 C4 20, 2 14, 5 7 C6.5 4, 10 1, 10 1 C10 1, 13.5 4, 15 7 C18 14, 16 20, 10 26Z" fill="rgba(132,196,154,0.19)"/>
+            <line x1="10" y1="1" x2="10" y2="26" stroke="rgba(61,122,82,0.12)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <!-- Top center-left: tiny leaf -->
+        <div class="erfaring__leaf" style="top:2%;left:30%;--erf-anim:erfaringDrift3;--erf-dur:36s;--erf-delay:-8s">
+          <svg width="18" height="26" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(200,230,208,0.24)"/>
+          </svg>
+        </div>
+        <!-- Bottom center-right: tiny gold leaf -->
+        <div class="erfaring__leaf" style="bottom:4%;right:27%;--erf-anim:erfaringDrift4;--erf-dur:21s;--erf-delay:-15s">
+          <svg width="24" height="34" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 18 C3 14, 1 9, 3 5 C4 3, 7 1, 7 1 C7 1, 10 3, 11 5 C13 9, 11 14, 7 18Z" fill="rgba(184,154,88,0.14)"/>
+            <line x1="7" y1="1" x2="7" y2="18" stroke="rgba(92,74,40,0.08)" stroke-width="0.4"/>
+          </svg>
+        </div>
+        <!-- Right top-mid: medium leaf -->
+        <div class="erfaring__leaf" style="top:18%;right:7%;--erf-anim:erfaringDrift1;--erf-dur:24s;--erf-delay:-17s">
+          <svg width="20" height="28" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(132,196,154,0.18)"/>
+          </svg>
+        </div>
+        <!-- Left bottom-mid: small gold -->
+        <div class="erfaring__leaf" style="bottom:25%;left:3%;--erf-anim:erfaringDrift3;--erf-dur:28s;--erf-delay:-11s">
+          <svg width="16" height="22" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13 C2 10, 1 7, 2 4 C2.5 2, 5 0.5, 5 0.5 C5 0.5, 7.5 2, 8 4 C9 7, 8 10, 5 13Z" fill="rgba(184,154,88,0.16)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="erfaring__head">
+          <p class="section__label">Erfaring</p>
+          <h2 class="section__title" id="erfaring-h">Hva jeg har<br><em>opplevd</em></h2>
+        </div>
+
+        <div class="erfaring__grid" role="list">
+
+          <!-- Card 1: LuksusEiendom -->
+          <article class="erf-card" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>Lansert 2026</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>Web Platform</span>
+            </div>
+            <h3 class="erf-card__title">LuksusEiendom</h3>
+            <p class="erf-card__desc">En digital annonsetjeneste for eiendomsmeglere som forbedrer boligannonser gjennom premium tekst, struktur og visuell optimalisering. Bygget for å effektivisere annonseproduksjon og løfte kvaliteten på boligpresentasjoner på FINN.no.<br><br>Meg og en venns ansvar for hele prosessen: konseptutvikling, forretningsmodell, UX/UI, innholdsstruktur, AI-integrasjon og kvalitetssikring. Utviklet med fokus på å spare meglere tid, standardisere annonsekvalitet og skape sterkere førsteinntrykk i markedet!</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">Oppstart</span>
+              <span class="erf-tag">Eiendomsteknologi</span>
+              <span class="erf-tag">KI</span>
+              <span class="erf-tag">Eiendom</span>
+              <span class="erf-tag">UX/UI</span>
+              <span class="erf-tag">Innholdsstrategi</span>
+            </div>
+          </article>
+
+          <!-- Card 2: Kartverket NRL System -->
+          <article class="erf-card" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>2025</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>Database Engineering</span>
+            </div>
+            <h3 class="erf-card__title">Kartverket NRL System</h3>
+            <p class="erf-card__desc">Utviklet et relasjonsdatabasesystem for Kartverket for håndtering av luftfartshindringer, med fokus på sikker rapportering, rollebasert tilgang og dataintegritet.<br><br>Bidro med hele databasedesignet fra konsept til implementasjon — UML/ER-modellering, normalisering, SQL-spørringer og fysisk implementasjon i MariaDB. Bygget for skalerbarhet, sporbarhet og effektiv datahåndtering i et kritisk rapporteringssystem.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">SQL</span>
+              <span class="erf-tag">MariaDB</span>
+              <span class="erf-tag">Databasedesign</span>
+              <span class="erf-tag">ER-diagram</span>
+              <span class="erf-tag">UML</span>
+              <span class="erf-tag">Normalisering</span>
+            </div>
+          </article>
+
+          <!-- Card 3: Atlas -->
+          <article class="erf-card" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>2026</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>GIS &amp; 3D Visualisering</span>
+            </div>
+            <h3 class="erf-card__title">Atlas</h3>
+            <p class="erf-card__desc">Utviklet en webbasert GIS-løsning for kriseberedskap med interaktive kart, nødressurser og navigasjon i sanntid.<br><br>Ansvarlig for UI/UX-design og utvikling av kartopplevelsen med MapLibre GL JS, inkludert implementering av 3D-bygninger, 3D-terrengvisualisering, filtrering, geosøk og rutevisning. Fokus på å skape en intuitiv, moderne og realistisk kartplattform med høy brukervennlighet og visuell klarhet.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">MapLibre GL JS</span>
+              <span class="erf-tag">GIS</span>
+              <span class="erf-tag">3D-kart</span>
+              <span class="erf-tag">UI/UX</span>
+              <span class="erf-tag">JavaScript</span>
+              <span class="erf-tag">Webkartlegging</span>
+            </div>
+          </article>
+
+          <!-- Card 4: AI Lab Projects -->
+          <article class="erf-card" role="listitem">
+            <div class="erf-card__ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--green)">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div class="erf-card__meta">
+              <span>Pågående</span>
+              <span class="erf-card__meta-dot"></span>
+              <span>KI-drevet utvikling</span>
+            </div>
+            <h3 class="erf-card__title">AI Lab Projects</h3>
+            <p class="erf-card__desc">En kontinuerlig serie eksperimentelle prosjekter hvor jeg utforsker hvordan kunstig intelligens kan brukes som utviklingspartner for å bygge, teste og validere nye digitale produkter raskere. Fokus på å kombinere idéutvikling, produkttenkning og teknisk implementasjon.<br><br>Bygger alt fra AI-assisterte nettbutikker til dataplattformer som Palantir Technologies-inspirerte analyseverktøy, som Parhesia — en data intelligence-plattform utviklet for norske bruksområder innen integrasjon, analyse og visualisering av beslutningsdata for offentlig og privat sektor. Arbeider med rask prototyping, systemdesign, UI/UX og AI-drevet utviklingsflyt.</p>
+            <div class="erf-card__tags">
+              <span class="erf-tag">KI-utvikling</span>
+              <span class="erf-tag">Rask prototyping</span>
+              <span class="erf-tag">Produktbygging</span>
+              <span class="erf-tag">Dataanalyse</span>
+              <span class="erf-tag">UI/UX</span>
+              <span class="erf-tag">Eksperimentelle prosjekter</span>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <p class="erfaring-back">
+      <a class="btn btn--outline" href="index.html#top" data-magnetic>← Tilbake til forsiden</a>
+    </p>
+
+    <script src="assets/scenes.js"></script>
+
+  </main>
+
+  <!-- ══ FOOTER ════════════════════════════════ -->
+  <footer class="footer" aria-label="Bunntekst">
+    <div class="container">
+      <div class="footer__inner">
+        <div>
+          <div class="footer__logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path
+                d="M6.05 8.26C4.09 9.15 3 11.25 3 13c0 4 2.97 7 7 7 .37 0 .74-.03 1.1-.09C12.81 19.54 15 17 15 14c0-2-1.03-3.79-2.6-4.83L6.05 8.26z" />
+              <path d="M21 3c0 0-7 1-10 5.26C9.15 10.22 9 12.11 9 14c0 .34.02.67.05 1L21 3z" />
+            </svg>
+            Yones Feili
+          </div>
+          <p class="footer__copy">© 2026 — Bygget med kreativitet og omtanke</p>
+        </div>
+        <nav class="footer__links" aria-label="Bunntekst-navigasjon">
+          <a href="index.html#alder">Om meg</a>
+          <a href="erfaring.html">Erfaring</a>
+          <a href="index.html#projects">Prosjekter</a>
+          <a href="index.html#contact">Kontakt</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1953 @@
+:root {
+  --bg: #f4f7f0;
+  --bg-2: #eef2ea;
+  --bg-card: #ffffff;
+  --bg-card-2: #f0f5ec;
+
+  --border: rgba(90, 140, 100, 0.15);
+  --border-hover: rgba(90, 140, 100, 0.35);
+
+  --text: #1c2e1e;
+  --text-muted: #4a6650;
+  --text-faint: #8aaa8e;
+
+  --green: #3d7a52;
+  --green-mid: #5a9e6f;
+  --green-light: #84c49a;
+  --green-pale: #c8e6d0;
+  --green-wash: #e8f3eb;
+
+  --gold: #8a7240;
+  --gold-light: #b89a58;
+  --cream: #fdfaf5;
+
+  /* Light-on-dark set, for the nav resting over the black landing */
+  --night-text: #eef2ec;
+  --night-text-muted: rgba(226, 235, 255, 0.76);
+  --night-green: #9fd8b6;
+
+  --ff-display: 'Cormorant Garamond', serif;
+  --ff-body: 'DM Sans', sans-serif;
+  /* Matches the type baked into the Unicorn scenes */
+  --ff-scene: 'Inter Tight', 'DM Sans', sans-serif;
+
+  --sp-1: 0.5rem;
+  --sp-2: 1rem;
+  --sp-3: 1.5rem;
+  --sp-4: 2rem;
+  --sp-5: 3rem;
+  --sp-6: 4rem;
+  --sp-7: 6rem;
+  --sp-8: 8rem;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.25rem;
+  --fs-2xl: 1.5rem;
+  --fs-3xl: 1.875rem;
+  --fs-4xl: 2.25rem;
+  --fs-5xl: 3rem;
+  --fs-6xl: 4rem;
+
+  --max-w: 1200px;
+
+  --tr-fast: 0.15s ease;
+  --tr-base: 0.3s ease;
+  --tr-slow: 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 9999px;
+
+  --shadow-sm: 0 1px 4px rgba(40, 80, 50, 0.07), 0 0 0 1px rgba(90, 140, 100, 0.06);
+  --shadow-md: 0 4px 20px rgba(40, 80, 50, 0.09), 0 0 0 1px rgba(90, 140, 100, 0.07);
+  --shadow-lg: 0 12px 40px rgba(40, 80, 50, 0.13), 0 0 0 1px rgba(90, 140, 100, 0.08);
+  --shadow-hover: 0 20px 60px rgba(40, 80, 50, 0.16), 0 0 0 1px rgba(90, 140, 100, 0.1);
+}
+
+/* ── Reset ─────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* No scroll-behavior: smooth — Lenis drives scrolling now and the
+   native smoothing fights it. The nav offset that scroll-padding-top
+   used to give anchors is passed to Lenis as its anchors offset. */
+html {
+  font-size: 16px;
+}
+
+@media (pointer: coarse) {
+  html { scroll-snap-type: y proximity; }
+}
+
+body {
+  font-family: var(--ff-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  border: none;
+  background: none;
+  font: inherit;
+}
+
+/* Subtle paper texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--green-light);
+  border-radius: var(--r-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green);
+}
+
+::selection {
+  background: var(--green-pale);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+/* ── Layout ────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+}
+
+.section {
+  padding-block: var(--sp-8);
+}
+
+/* Cinematic section-to-section depth transitions */
+main {
+  position: relative;
+  overflow: clip;
+  background: #07110d;
+  perspective: 1400px;
+}
+
+.scene-section {
+  --scene-scale: 1;
+  --scene-y: 0px;
+  --scene-opacity: 1;
+  --scene-shade: 0;
+  --scene-origin-y: 50%;
+  position: relative;
+  z-index: var(--scene-layer, 1);
+  opacity: var(--scene-opacity);
+  transform: translate3d(0, var(--scene-y), 0) scale(var(--scene-scale));
+  transform-origin: 50% var(--scene-origin-y);
+  backface-visibility: hidden;
+}
+
+.scene-section.is-frame-animating,
+.scene-section.is-render-active,
+.scene-section.is-render-warm {
+  will-change: transform, opacity;
+}
+
+.scene-section + .scene-section {
+  margin-top: clamp(-64px, -6vh, -36px);
+}
+
+.scene-section > .scene-transition-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  opacity: var(--scene-shade);
+  background: rgba(4, 11, 9, 0.34);
+}
+
+.scene-section.is-frame-animating > .scene-transition-shade,
+.scene-section.is-render-active > .scene-transition-shade,
+.scene-section.is-render-warm > .scene-transition-shade {
+  will-change: opacity;
+}
+
+.scene-ambient {
+  --scene-drift-x: 4px;
+  --scene-drift-y: -5px;
+  --scene-drift-back-x: -2px;
+  --scene-drift-back-y: 2px;
+  animation: sceneAmbient var(--scene-drift-duration, 10s) ease-in-out var(--scene-drift-delay, 0s) infinite;
+  animation-play-state: paused;
+}
+
+.is-render-active .scene-ambient {
+  animation-play-state: running;
+}
+
+.is-render-active .scene-ambient,
+.is-render-warm .scene-ambient {
+  will-change: transform;
+}
+
+.scene-ambient:focus-within {
+  animation-play-state: paused;
+  transform: none;
+}
+
+main > section:nth-of-type(even) .scene-ambient {
+  --scene-drift-x: -4px;
+  --scene-drift-y: 4px;
+  --scene-drift-back-x: 2px;
+  --scene-drift-back-y: -2px;
+}
+
+@keyframes sceneAmbient {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  45% { transform: translate3d(var(--scene-drift-x), var(--scene-drift-y), 0); }
+  72% { transform: translate3d(var(--scene-drift-back-x), var(--scene-drift-back-y), 0); }
+}
+
+@media (max-width: 700px) {
+  .scene-ambient {
+    --scene-drift-x: 2px;
+    --scene-drift-y: -3px;
+    --scene-drift-back-x: -1px;
+    --scene-drift-back-y: 1px;
+  }
+
+  main > section:nth-of-type(even) .scene-ambient {
+    --scene-drift-x: -2px;
+    --scene-drift-y: 3px;
+    --scene-drift-back-x: 1px;
+    --scene-drift-back-y: -1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-section {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .scene-ambient {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .scene-transition-shade {
+    display: none;
+  }
+}
+
+.section__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: var(--sp-2);
+}
+
+.section__label::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: linear-gradient(to right, var(--green), var(--green-mid));
+  flex-shrink: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section__label.visible::before {
+  transform: scaleX(1);
+}
+
+.section__title {
+  font-family: var(--ff-display);
+  font-size: clamp(2.2rem, 6vw, var(--fs-6xl));
+  font-weight: 400;
+  line-height: 1.08;
+  color: var(--text);
+  margin-bottom: var(--sp-3);
+}
+
+.section__title em {
+  font-style: italic;
+  color: var(--green-mid);
+}
+
+/* ── Scroll reveal ───────────────────────
+   Just the resting state now — ScrollTrigger.batch animates out of it,
+   and its stagger replaces the d1–d5 delay classes this used to carry.
+   No CSS transition here: GSAP tweens the same two properties, and a
+   transition on top of that fights the tween. */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px) scale(0.97);
+}
+
+/* Reduced motion never runs the batch, so nothing would clear the
+   resting state — show everything outright instead. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Side leaf layer ───────────────────── */
+#side-leaves {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.side-leaf {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+#side-leaves.is-moving .side-leaf {
+  will-change: transform;
+}
+
+.side-leaf.is-entering {
+  will-change: transform, opacity;
+}
+
+.side-leaf.visible {
+  opacity: 1;
+}
+
+/* ── Buttons ────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-body);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.875rem 2rem;
+  border-radius: var(--r-full);
+  transition: transform var(--tr-base), box-shadow var(--tr-base),
+    background var(--tr-base), color var(--tr-base), border-color var(--tr-base);
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, var(--green), var(--green-mid));
+  color: #fff;
+  box-shadow: 0 3px 16px rgba(61, 122, 82, 0.25);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(135deg, var(--green-mid), var(--green));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(61, 122, 82, 0.34);
+}
+
+.btn--outline {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--outline:hover {
+  color: var(--green);
+  border-color: rgba(61, 122, 82, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Unicorn Studio scenes ──────────────────
+   The opening pair of sections are WebGL scenes authored on fixed
+   1440×900 artboards with fixed-pixel type, so they render at that
+   size and get scaled to fit by --scene-fit (set in JS). They scale
+   to *contain*, never crop, so no lettering is ever cut off — the
+   letterboxing is invisible against the shared black ground, which
+   is also what lets the two sections run together seamlessly. */
+.us-scene {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+/* Out of flow so the 900px artboard never forces the section taller
+   than a short viewport. Centred with a translate rather than auto
+   margins, which do not centre a box wider than its container. */
+.us-scene__stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1440px;
+  height: 900px;
+  transform: translate(-50%, -50%) scale(var(--scene-fit, 1));
+  transform-origin: center center;
+}
+
+/* Dissolves each scene's own edges into the black ground so the
+   sections read as one continuous field rather than two stacked
+   pictures. Overhangs its box to absorb the ambient drift. */
+.us-scene__blend {
+  position: absolute;
+  inset: -16px;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.7) 9%, rgba(0, 0, 0, 0) 26%),
+    linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.7) 9%, rgba(0, 0, 0, 0) 26%);
+}
+
+/* Alder also darkens its flanks: the columns run bright marble right
+   out to the edges, and the side notes need a ground to sit on. */
+#alder .us-scene__blend {
+  background:
+    linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
+    linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.78) 18%, rgba(0, 0, 0, 0.5) 32%, rgba(0, 0, 0, 0) 48%),
+    linear-gradient(to left, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.78) 18%, rgba(0, 0, 0, 0.5) 32%, rgba(0, 0, 0, 0) 48%);
+}
+
+/* The wall behind the columns is mid-grey, so where the letterboxed
+   scene ends it cuts against the black ground as a hard vertical
+   line. Feathering the stage's own flanks lets the artwork dissolve
+   into the ground instead. Percentages are of the 1440px artboard,
+   so the mist scales with the scene; it stops short of the 21 ÅR
+   GAMMEL lettering, which reaches roughly 9%–92%. */
+#alder .us-scene__stage {
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0%, rgba(0, 0, 0, 0.45) 2%, #000 6%,
+      #000 94%, rgba(0, 0, 0, 0.45) 98%, transparent 100%);
+  mask-image: linear-gradient(to right,
+      transparent 0%, rgba(0, 0, 0, 0.45) 2%, #000 6%,
+      #000 94%, rgba(0, 0, 0, 0.45) 98%, transparent 100%);
+}
+
+/* Full-bleed rather than letterboxed. A viewport-height section can
+   only ever show this 3:2 artboard as a floating panel with black
+   down both sides, so data-scene-fill drops the viewport height and
+   gives the section the artboard's own aspect at full width — the
+   scene reaches both edges, and nothing is cropped to get there. The
+   trade is height: on most screens the section is taller than the
+   viewport and scrolls through rather than fitting in one screen. */
+
+/* ── About text layer ───────────────────────
+   The Unicorn artwork stays untouched beneath a structured text layer.
+   On wide screens the two detail groups remain in its darker flanks. */
+.alder__content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: min(1180px, 100%);
+  margin-inline: auto;
+  padding: clamp(5.5rem, 8vw, 7rem) clamp(2rem, 5vw, 4rem) clamp(3rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: clamp(2rem, 4vw, 3.75rem);
+  color: rgba(236, 243, 238, 0.9);
+  font-family: var(--ff-scene);
+  pointer-events: none;
+}
+
+.alder__intro {
+  max-width: 100%;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.96), 0 1px 3px #000;
+}
+
+.alder__title {
+  width: fit-content;
+  margin: 0;
+  color: rgba(243, 247, 244, 0.94);
+  font-family: var(--ff-display);
+  font-size: clamp(2.6rem, 5vw, 4.75rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.alder__title::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 1px;
+  margin-top: 0.7rem;
+  background: rgba(200, 230, 208, 0.52);
+}
+
+.alder__summary {
+  max-width: 78ch;
+  margin: 1.1rem auto 0;
+  color: rgba(236, 243, 238, 0.79);
+  font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+  font-weight: 300;
+  line-height: 1.65;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.alder__details {
+  align-self: end;
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(280px, 380px);
+  justify-content: space-between;
+  gap: clamp(4rem, 12vw, 12rem);
+}
+
+.alder__group {
+  min-width: 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.96), 0 1px 3px #000;
+}
+
+.alder__group-title {
+  width: fit-content;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.55rem;
+  color: rgba(218, 235, 223, 0.88);
+  border-bottom: 1px solid rgba(200, 230, 208, 0.44);
+  font-family: var(--ff-display);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.alder__timeline {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alder__timeline li {
+  display: grid;
+  grid-template-columns: 6.4rem minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.alder__timeline time {
+  padding-top: 0.12rem;
+  color: rgba(200, 230, 208, 0.6);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.alder__timeline strong,
+.alder__timeline span {
+  display: block;
+}
+
+.alder__timeline strong {
+  color: rgba(244, 247, 245, 0.9);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.alder__timeline span {
+  margin-top: 0.16rem;
+  color: rgba(227, 237, 230, 0.62);
+  font-size: 0.75rem;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.alder__skills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alder__skills li {
+  position: relative;
+  padding-left: 0.85rem;
+  color: rgba(239, 245, 241, 0.76);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.alder__skills li::before {
+  content: '';
+  position: absolute;
+  top: 0.58em;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  background: rgba(132, 196, 154, 0.72);
+  border-radius: 50%;
+}
+
+@media (max-width: 860px) and (orientation: portrait) {
+  #alder {
+    min-height: 1180px;
+  }
+
+  .alder__content {
+    padding: 4.25rem 1.35rem 4rem;
+    display: block;
+  }
+
+  .alder__title {
+    font-size: clamp(2.65rem, 13vw, 4rem);
+  }
+
+  .alder__summary {
+    max-width: 42ch;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: left;
+    text-wrap: pretty;
+  }
+
+  .alder__details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 17rem;
+    margin-top: 1.25rem;
+  }
+
+  .alder__group {
+    width: min(100%, 28rem);
+  }
+
+  .alder__group:last-child {
+    justify-self: end;
+  }
+
+  .alder__group-title {
+    margin-bottom: 0.8rem;
+  }
+
+  .alder__timeline {
+    gap: 0.55rem;
+  }
+
+  .alder__timeline li {
+    grid-template-columns: 5.8rem minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+
+  .alder__skills {
+    gap: 0.7rem 1rem;
+  }
+
+  /* Keep the complete artboard visible between the text groups. */
+  #alder .us-scene__blend {
+    background:
+      linear-gradient(to bottom, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%),
+      linear-gradient(to top, #000 0%, #000 3%, rgba(0, 0, 0, 0.62) 7%, rgba(0, 0, 0, 0) 16%);
+  }
+}
+
+/* Social links, parked in the landing's bottom-left. The top-left is
+   unavailable: the scene's own DESIGNER wordmark sits directly under
+   the nav. The left offset repeats .container's centring maths so
+   they line up with the nav logo instead of floating at an
+   unrelated inset. */
+.us-scene__links {
+  position: absolute;
+  z-index: 4;
+  bottom: var(--sp-5);
+  left: max(var(--sp-4), calc((100% - var(--max-w)) / 2 + var(--sp-4)));
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  width: max-content;
+  max-width: calc(100% - var(--sp-4) * 2);
+}
+
+.us-scene__links .us-scene__link {
+  color: rgba(232, 243, 235, 0.92);
+  border-color: rgba(232, 243, 235, 0.3);
+  background: rgba(8, 18, 12, 0.5);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.us-scene__links .us-scene__link:hover {
+  color: #fff;
+  border-color: rgba(232, 243, 235, 0.58);
+  background: rgba(20, 44, 28, 0.72);
+}
+
+.us-scene__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--green);
+  border-bottom: 1px solid rgba(61, 122, 82, 0.3);
+  padding: 0.4rem 0.7rem 0.35rem;
+  border-radius: var(--r-md);
+  background: transparent;
+  border: 1px solid rgba(61, 122, 82, 0.2);
+  transition: color 0.25s ease, border-color 0.25s ease, gap 0.35s ease,
+              background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.us-scene__link:hover,
+.us-scene__link:focus-visible {
+  will-change: transform;
+}
+
+.us-scene__link:hover {
+  color: var(--green-mid);
+  border-color: rgba(90, 158, 111, 0.45);
+  gap: 10px;
+  background: rgba(232, 243, 235, 0.6);
+  box-shadow: 0 4px 16px rgba(61, 122, 82, 0.12);
+}
+
+.us-scene__link svg {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.us-scene__link:hover svg {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+/* ── Erfaring ───────────────────────────── */
+.erfaring {
+  background: #020806;
+  border-top: 1px solid rgba(159, 216, 182, 0.12);
+  border-bottom: 1px solid rgba(159, 216, 182, 0.12);
+  padding-block: clamp(4rem, 7vw, 6rem) 0.75rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: background-color 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color     1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Erfaring backdrop scene ─────────────
+   WebGL scene behind the whole section. It is decorative, so unlike
+   the opening scenes it is allowed to crop: the stage is pinned to the
+   viewport height and centred, and the section scrolls past it. */
+.erfaring__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #020806;
+}
+
+.erfaring__scene-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: calc(100vh * 1.6);
+  height: 100%;
+}
+
+.erfaring__scene-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Content sits above the backdrop scene layer. */
+.erfaring > .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Keep the moving scene present while pulling it into the same dark
+   forest palette as the opening sections. */
+.erfaring__scene-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      #020806 0%,
+      rgba(2, 8, 6, 0.66) 9%,
+      rgba(2, 8, 6, 0.38) 28%,
+      rgba(2, 8, 6, 0.34) 76%,
+      rgba(2, 8, 6, 0.7) 94%,
+      #020806 100%),
+    linear-gradient(to right,
+      rgba(1, 5, 4, 0.58),
+      rgba(1, 5, 4, 0.12) 28%,
+      rgba(1, 5, 4, 0.12) 72%,
+      rgba(1, 5, 4, 0.58));
+}
+
+.erfaring .section__label {
+  color: var(--night-green);
+}
+
+.erfaring .section__title {
+  font-size: clamp(2.4rem, 4.5vw, 3.5rem);
+  color: var(--night-text);
+  margin-bottom: 0;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.42);
+}
+
+.erfaring .section__title em {
+  color: #a7dfba;
+}
+
+.erfaring:has(.erf-card:hover) {
+  background-color: #020806;
+  border-color: rgba(159, 216, 182, 0.18);
+}
+
+.erfaring__forest-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 52%,
+    rgba(6, 22, 9, 0.78)   0%,
+    rgba(8, 26, 11, 0.52)  38%,
+    rgba(5, 16, 7, 0.28)   65%,
+    transparent             88%
+  );
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.erfaring:has(.erf-card:hover) .erfaring__forest-overlay {
+  opacity: 1;
+}
+
+/* Section label + title colour shifts */
+.erfaring .section__label,
+.erfaring .section__title,
+.erfaring .section__title em {
+  transition: color 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+              text-shadow 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.erfaring:has(.erf-card:hover) .section__label {
+  color: rgba(159, 216, 182, 0.78);
+}
+
+.erfaring:has(.erf-card:hover) .section__title {
+  color: var(--night-text);
+}
+
+.erfaring:has(.erf-card:hover) .section__title em {
+  color: #a7dfba;
+  text-shadow: 0 0 28px rgba(132, 196, 154, 0.18);
+}
+
+.erfaring::before {
+  content: none;
+}
+
+.erfaring::after {
+  content: none;
+}
+
+.erfaring__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 3s ease;
+}
+
+.erfaring.erf-alive .erfaring__canvas {
+  opacity: 1;
+}
+
+.erfaring__leaves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.erfaring__leaf {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 4s ease;
+}
+
+.erfaring.is-render-active .erfaring__leaf,
+.erfaring.is-render-warm .erfaring__leaf {
+  will-change: transform;
+}
+
+.erfaring.erf-alive .erfaring__leaf {
+  opacity: 1;
+}
+
+.erfaring__leaf svg {
+  animation: var(--erf-anim, erfaringDrift1) var(--erf-dur, 24s) ease-in-out var(--erf-delay, 0s) infinite;
+  animation-play-state: paused;
+}
+
+.erfaring.is-render-active .erfaring__leaf svg {
+  animation-play-state: running;
+}
+
+@keyframes erfaringDrift1 {
+  0%,  100% { transform: translate(0, 0)      rotate(0deg);  }
+  30%        { transform: translate(14px,-16px) rotate(8deg);  }
+  65%        { transform: translate(-6px,12px)  rotate(-5deg); }
+}
+
+@keyframes erfaringDrift2 {
+  0%,  100% { transform: translate(0, 0)        rotate(0deg);   }
+  35%        { transform: translate(-12px,-14px) rotate(-10deg); }
+  70%        { transform: translate(9px, 8px)    rotate(6deg);   }
+}
+
+@keyframes erfaringDrift3 {
+  0%,  100% { transform: translate(0, 0)       rotate(0deg);  }
+  40%        { transform: translate(10px, 18px) rotate(7deg);  }
+  75%        { transform: translate(-14px,-6px) rotate(-8deg); }
+}
+
+@keyframes erfaringDrift4 {
+  0%,  100% { transform: translate(0, 0)       rotate(0deg);  }
+  25%        { transform: translate(18px, -8px) rotate(12deg); }
+  60%        { transform: translate(4px,  14px) rotate(-4deg); }
+  85%        { transform: translate(-10px, 2px) rotate(3deg);  }
+}
+
+.erfaring__head {
+  margin-bottom: clamp(2rem, 3.5vw, 2.5rem);
+  position: relative;
+  z-index: 1;
+}
+
+.erfaring__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* An opaque translucent surface keeps the moving scene sharp while
+   preserving text contrast without a costly backdrop blur. */
+.erf-card {
+  background: rgba(0, 3, 2, 0.68);
+  border: 1px solid rgba(0, 0, 0, 0.58);
+  border-radius: var(--r-lg);
+  padding: 1.125rem 1.25rem 1.25rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  transition: background-color var(--tr-base), border-color var(--tr-base), transform 0.85s cubic-bezier(0.34, 1.2, 0.64, 1),
+              box-shadow var(--tr-base), opacity 0.85s ease, filter 0.85s ease;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Dim non-hovered cards when any card is hovered */
+.erfaring:has(.erf-card:hover) .erf-card:not(:hover) {
+  opacity: 0.7;
+  filter: saturate(0.82);
+  transform: scale(0.985);
+  box-shadow: none;
+}
+
+/* Pop the focused card into the forest */
+.erfaring:has(.erf-card:hover) .erf-card:hover {
+  opacity: 1;
+  filter: none;
+  transform: translateY(-12px) scale(1.03);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.32);
+  background: rgba(0, 4, 2, 0.24);
+  border-color: rgba(0, 0, 0, 0.72);
+  z-index: 5;
+}
+
+.erf-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(132, 196, 154, 0.09), rgba(184, 154, 88, 0.025));
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.erf-card:hover {
+  border-color: rgba(0, 0, 0, 0.72);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+.erf-card:hover::before {
+  opacity: 1;
+}
+
+.erf-card__ico {
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 10, 6, 0.52);
+  border: 1px solid rgba(159, 216, 182, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+  flex-shrink: 0;
+}
+
+.erf-card:hover .erf-card__ico {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3), 0 0 20px rgba(132, 196, 154, 0.08);
+}
+
+.erf-card__ico svg {
+  color: var(--night-green) !important;
+}
+
+.erf-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--night-green);
+  margin-bottom: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.erf-card__meta-dot {
+  width: 3px;
+  height: 3px;
+  background: var(--green-light);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.erf-card__title {
+  font-family: var(--ff-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--night-text);
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+.erf-card__desc {
+  font-size: 0.75rem;
+  color: rgba(226, 235, 227, 0.78);
+  line-height: 1.5;
+  flex-grow: 1;
+  margin-bottom: 0.875rem;
+}
+
+.erf-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.9rem;
+  row-gap: 0.35rem;
+  margin-top: auto;
+}
+
+.erf-tag {
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(211, 238, 219, 0.74);
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Project preview artwork */
+.project-visual {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.project-visual__bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 4;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.9rem;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(4, 10, 8, 0.58);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-visual__dots { display: flex; gap: 5px; }
+.project-visual__dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.32); }
+
+.project-visual--estate { background: #aa8f78; }
+
+.estate-room {
+  position: absolute;
+  inset: 42px 0 0;
+  background:
+    linear-gradient(90deg, rgba(42, 32, 25, 0.34) 0 49.8%, rgba(244, 225, 197, 0.1) 50.2%),
+    linear-gradient(180deg, #bfaa96 0 56%, #6f5644 56% 100%);
+}
+
+.estate-room::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  top: 12%;
+  width: 31%;
+  height: 38%;
+  background: #d8e3df;
+  border: 10px solid #59483b;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 22vw 2vh 0 -2vw rgba(244, 232, 214, 0.8);
+}
+
+.estate-room::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 7%;
+  bottom: 9%;
+  height: 31%;
+  background: linear-gradient(90deg, #4b3a31 0 48.8%, #d7c0a6 49.2% 100%);
+  border-radius: 5px 5px 2px 2px;
+  box-shadow: 0 18px 24px rgba(34, 22, 15, 0.24);
+}
+
+.estate-divider {
+  position: absolute;
+  top: 42px;
+  bottom: 0;
+  left: 50%;
+  z-index: 3;
+  width: 2px;
+  background: #f5f4ec;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
+}
+
+.estate-label {
+  position: absolute;
+  bottom: 0.9rem;
+  z-index: 4;
+  padding: 0.32rem 0.65rem;
+  color: #f7f4ed;
+  background: rgba(7, 16, 13, 0.68);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.estate-label--before { left: 0.9rem; }
+.estate-label--after { right: 0.9rem; }
+
+.project-visual--atlas { background: #102329; }
+.atlas-map { position: absolute; inset: 42px 0 0; width: 100%; height: calc(100% - 42px); }
+.atlas-map__land { fill: #213d38; }
+.atlas-map__coast { fill: none; stroke: #5b8877; stroke-width: 3; }
+.atlas-map__road { fill: none; stroke: rgba(229, 210, 151, 0.62); stroke-width: 2; }
+.atlas-map__minor { fill: none; stroke: rgba(132, 196, 154, 0.24); stroke-width: 1; }
+
+.atlas-marker {
+  position: absolute;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  background: #e3c76f;
+  border: 4px solid rgba(255, 255, 255, 0.78);
+  border-radius: 50%;
+  box-shadow: 0 0 0 7px rgba(227, 199, 111, 0.15), 0 5px 18px rgba(0, 0, 0, 0.32);
+}
+
+.atlas-marker--one { left: 28%; top: 47%; }
+.atlas-marker--two { left: 58%; top: 63%; background: #80cf9d; }
+.atlas-marker--three { left: 76%; top: 35%; background: #ef8b73; }
+
+.atlas-status {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 3;
+  width: min(220px, 42%);
+  padding: 0.85rem;
+  color: rgba(238, 247, 242, 0.82);
+  background: rgba(6, 17, 15, 0.82);
+  border: 1px solid rgba(128, 207, 157, 0.24);
+  border-radius: 5px;
+  backdrop-filter: blur(10px);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.atlas-status strong { display: block; color: #80cf9d; font-size: 0.76rem; margin-bottom: 0.2rem; }
+
+.project-visual--kartverket { background: #172126; }
+
+.kart-grid {
+  position: absolute;
+  inset: 42px 0 0;
+  background-image:
+    linear-gradient(rgba(113, 169, 177, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(113, 169, 177, 0.1) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.kart-radar {
+  position: absolute;
+  left: 7%;
+  top: 22%;
+  width: 43%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(111, 199, 203, 0.38);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 0 24%, rgba(111, 199, 203, 0.18) 24.5% 25%, transparent 25.5% 49%, rgba(111, 199, 203, 0.16) 49.5% 50%, transparent 50.5%),
+    conic-gradient(from 20deg, rgba(111, 199, 203, 0.24), transparent 24%, transparent);
+}
+
+.kart-radar::before,
+.kart-radar::after { content: ''; position: absolute; background: rgba(111, 199, 203, 0.28); }
+.kart-radar::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+.kart-radar::after { top: 50%; left: 0; right: 0; height: 1px; }
+
+.kart-point {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f1b86a;
+  box-shadow: 0 0 0 6px rgba(241, 184, 106, 0.14), 0 0 18px #f1b86a;
+}
+
+.kart-point--one { left: 24%; top: 37%; }
+.kart-point--two { left: 62%; top: 56%; background: #ef766d; }
+.kart-point--three { left: 46%; top: 72%; background: #7dc9ca; }
+
+.kart-metrics {
+  position: absolute;
+  top: 22%;
+  right: 6%;
+  width: 39%;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.kart-metric {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+  padding: 0.72rem 0.8rem;
+  color: rgba(235, 243, 243, 0.66);
+  background: rgba(6, 13, 16, 0.58);
+  border-left: 2px solid #6fc7cb;
+  font-size: 0.65rem;
+}
+
+.kart-metric strong { color: #f2f5f4; font-size: 0.8rem; }
+
+/* Horizontal project gallery — static depth with pointer-driven tilt */
+.projects-gallery.section {
+  --project-accent: #89d2a2;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  position: relative;
+  padding: clamp(5.5rem, 8vw, 8rem) 0 clamp(5rem, 8vw, 7.5rem);
+  color: #edf5ef;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(45, 103, 74, 0.17), transparent 42%),
+    linear-gradient(180deg, #050a08 0%, #07110d 48%, #040806 100%);
+  border-color: rgba(137, 210, 162, 0.13);
+  isolation: isolate;
+  overflow: clip;
+}
+
+.projects-gallery::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.38;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(232, 244, 235, 0.75) 0 0.65px, transparent 0.85px),
+    radial-gradient(circle, rgba(137, 210, 162, 0.48) 0 0.55px, transparent 0.8px),
+    radial-gradient(circle, rgba(232, 244, 235, 0.34) 0 0.45px, transparent 0.7px);
+  background-position: 0 0, 17px 29px, 39px 11px;
+  background-size: 53px 53px, 71px 71px, 37px 37px;
+}
+
+.projects-gallery::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(4, 8, 6, 0.82), transparent 14% 86%, rgba(4, 8, 6, 0.82)),
+    linear-gradient(180deg, rgba(4, 8, 6, 0.3), transparent 22% 78%, rgba(4, 8, 6, 0.45));
+}
+
+.projects-gallery__intro,
+.projects-gallery__viewport {
+  position: relative;
+  z-index: 2;
+}
+
+.projects-gallery__intro {
+  width: min(880px, calc(100% - 3rem));
+  margin: 0 auto clamp(3rem, 5vw, 5rem);
+  text-align: center;
+}
+
+.projects-gallery__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.75rem;
+  color: rgba(137, 210, 162, 0.72);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.projects-gallery__kicker::before,
+.projects-gallery__kicker::after {
+  content: '';
+  width: clamp(2rem, 5vw, 4.5rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor);
+}
+
+.projects-gallery__kicker::after { transform: scaleX(-1); }
+
+.projects-gallery .projects-gallery__title {
+  max-width: none;
+  margin: 0;
+  color: #f3f5ef;
+  font-family: var(--ff-display);
+  font-size: clamp(2.75rem, 5.5vw, 5.35rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.projects-gallery__rule {
+  width: min(260px, 42vw);
+  height: 1px;
+  margin: 1rem auto 1.2rem;
+  background: linear-gradient(90deg, transparent, rgba(137, 210, 162, 0.58), transparent);
+}
+
+.projects-gallery__copy {
+  max-width: 70ch;
+  margin-inline: auto;
+  color: rgba(237, 245, 239, 0.56);
+  font-family: var(--ff-display);
+  font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+  line-height: 1.65;
+}
+
+.projects-gallery__viewport {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 1.5rem;
+}
+
+.projects-gallery__track {
+  --carousel-gap: clamp(1.5rem, 4vw, 4.5rem);
+  width: max-content;
+  display: flex;
+  align-items: start;
+  transform: translate3d(0, 0, 0);
+}
+
+.projects-gallery__track.is-carousel-ready {
+  transform: translate3d(-50%, 0, 0);
+}
+
+.projects-gallery.is-render-active .projects-gallery__track.is-carousel-ready {
+  animation: projectsCarouselRight 50s linear infinite;
+}
+
+.projects-gallery__group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: start;
+  gap: var(--carousel-gap);
+  padding-inline: calc(var(--carousel-gap) / 2);
+}
+
+@keyframes projectsCarouselRight {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+.project-card {
+  --project-tone: #89d2a2;
+  width: clamp(300px, 29vw, 390px);
+  flex: 0 0 auto;
+  perspective: 1100px;
+}
+
+.project-card__tilt {
+  position: relative;
+}
+
+.project-card__tilt::before {
+  content: '';
+  position: absolute;
+  inset: 7px -9px -10px 8px;
+  z-index: -1;
+  background: rgba(4, 9, 7, 0.92);
+  border: 1px solid rgba(211, 238, 219, 0.22);
+  transform: translate(8px, 8px);
+  box-shadow: 15px 22px 42px rgba(0, 0, 0, 0.34);
+}
+
+.project-card__screen {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #0a130f;
+  border: 1px solid rgba(224, 240, 228, 0.56);
+  box-shadow:
+    inset 0 0 0 1px rgba(4, 10, 8, 0.8),
+    0 28px 55px rgba(0, 0, 0, 0.28);
+  contain: layout paint;
+  transform: none;
+}
+
+.projects-gallery .project-visual {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1 !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+.project-card__body {
+  padding: 2rem 0.25rem 0;
+  text-align: center;
+}
+
+.project-card__type {
+  color: color-mix(in srgb, var(--project-tone) 78%, white);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.project-card__title {
+  margin: 0.55rem 0 0.7rem;
+  color: #f1f4ed;
+  font-family: var(--ff-display);
+  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.project-card__desc {
+  max-width: 38ch;
+  min-height: 4.8em;
+  margin: 0 auto 1rem;
+  color: rgba(237, 245, 239, 0.52);
+  font-family: var(--ff-display);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.project-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+.project-card__tag {
+  color: color-mix(in srgb, var(--project-tone) 74%, #edf5ef);
+  font-size: 0.66rem;
+  font-weight: 500;
+}
+
+.project-card__tag:nth-child(3n + 2) { color: #d9b27f; }
+.project-card__tag:nth-child(3n + 3) { color: #79b8c7; }
+
+.project-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(237, 245, 239, 0.68);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: color var(--tr-base), transform var(--tr-base);
+}
+
+.project-card__link:hover,
+.project-card__link:focus-visible {
+  color: color-mix(in srgb, var(--project-tone) 78%, white);
+  transform: translateY(-2px);
+}
+
+.project-card__link svg { width: 15px; height: 15px; }
+
+.projects-gallery__wire {
+  position: absolute;
+  z-index: 1;
+  width: clamp(120px, 15vw, 225px);
+  height: auto;
+  color: rgba(137, 210, 162, 0.16);
+  pointer-events: none;
+}
+
+.projects-gallery__wire--one { top: 14%; left: 5%; transform: rotate(-13deg); }
+.projects-gallery__wire--two { right: 4%; bottom: 10%; transform: rotate(19deg) scale(0.82); }
+
+@media (max-width: 720px) {
+  .projects-gallery.section { min-height: auto; padding-block: 5rem 4.5rem; }
+  .projects-gallery__intro { width: min(100% - 2.5rem, 620px); margin-bottom: 2.75rem; }
+  .projects-gallery__copy { font-size: 0.92rem; }
+  .projects-gallery__track { --carousel-gap: 1.4rem; }
+  .project-card { width: min(84vw, 360px); }
+  .project-card__body { padding-top: 1.65rem; }
+  .project-card__desc { min-height: 0; }
+  .estate-room::before { border-width: 6px; }
+  .atlas-status { width: 52%; }
+  .kart-radar { left: 3%; width: 50%; }
+  .kart-metrics { right: 3%; width: 43%; }
+  .kart-metric { padding: 0.48rem; font-size: 0.56rem; }
+  .projects-gallery__wire { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; }
+  .projects-gallery__viewport {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+  .projects-gallery__viewport::-webkit-scrollbar { display: none; }
+  .projects-gallery__track.is-carousel-ready,
+  .projects-gallery.is-render-active .projects-gallery__track.is-carousel-ready {
+    animation: none;
+    transform: none;
+  }
+  .projects-gallery__group[aria-hidden="true"] { display: none; }
+}
+
+/* ── Contact ────────────────────────────── */
+.contact {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+
+.contact__grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.contact__info {
+  position: sticky;
+  top: 120px;
+}
+
+.contact__copy {
+  font-size: var(--fs-lg);
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-top: var(--sp-3);
+  max-width: 38ch;
+}
+
+.contact__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.contact__item:first-of-type {
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-5);
+}
+
+.contact__ico {
+  width: 36px;
+  height: 36px;
+  background: var(--green-wash);
+  border: 1px solid rgba(61, 122, 82, 0.15);
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.contact__item-label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+
+.contact__item-val {
+  font-size: var(--fs-base);
+  color: var(--text-muted);
+}
+
+.contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.form-label {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.form-input,
+.form-ta {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  color: var(--text);
+  font-family: var(--ff-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.25s ease,
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 3px rgba(40, 80, 50, 0.04);
+}
+
+.form-input::placeholder,
+.form-ta::placeholder {
+  color: var(--text-faint);
+}
+
+.form-input:focus,
+.form-ta:focus {
+  border-color: rgba(61, 122, 82, 0.5);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(61, 122, 82, 0.08), inset 0 1px 3px rgba(40, 80, 50, 0.04);
+}
+
+.form-ta {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.form-group:focus-within .form-label {
+  color: var(--green);
+  transition: color 0.2s ease;
+}
+
+/* ── Footer ─────────────────────────────── */
+.footer {
+  background: var(--bg-2);
+  padding-block: var(--sp-5);
+  border-top: 1px solid var(--border);
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.footer__logo {
+  font-family: var(--ff-display);
+  font-size: var(--fs-xl);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.footer__logo svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--green-light);
+}
+
+.footer__copy {
+  font-size: var(--fs-sm);
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+.footer__links {
+  display: flex;
+  gap: var(--sp-4);
+}
+
+.footer__links a {
+  font-size: var(--fs-sm);
+  color: var(--text-faint);
+  transition: color var(--tr-fast);
+}
+
+.footer__links a:hover {
+  color: var(--green);
+}
+
+/* ── Keyframes ──────────────────────────── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scrollBob {
+  0%   { opacity: 0.2; transform: scaleY(0.45); transform-origin: top; }
+  48%  { opacity: 1;   transform: scaleY(1.18); transform-origin: top; }
+  100% { opacity: 0.2; transform: scaleY(0.45); transform-origin: top; }
+}
+
+@keyframes floatDeco {
+
+  0%,
+  100% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(calc(-50% - 12px)) rotate(2deg);
+  }
+}
+
+@keyframes leafWave {
+
+  0%,
+  100% {
+    transform: rotate(var(--base-rot, 0deg)) translateX(0);
+  }
+
+  50% {
+    transform: rotate(calc(var(--base-rot, 0deg) + 4deg)) translateX(4px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes highlightDraw {
+  0%   { width: 0;    opacity: 0.4; }
+  18%  {              opacity: 1;   }
+  100% { width: 100%; opacity: 1;   }
+}
+
+@keyframes statsGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(40, 80, 50, 0.08); }
+  50%       { box-shadow: 0 8px 40px rgba(61, 122, 82, 0.22), 0 0 0 2px rgba(132, 196, 154, 0.18); }
+}
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 960px) {
+  .erfaring__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact__info {
+    position: static;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 540px) {
+  :root {
+    --sp-7: 3rem;
+    --sp-8: 4rem;
+  }
+
+  .container {
+    padding-inline: 1.25rem;
+  }
+
+  /* Keep the landing links flush with the nav logo at this breakpoint. */
+  .us-scene__links {
+    left: 1.25rem;
+  }
+
+  .section__title {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+  }
+
+  .contact__form .btn {
+    width: 100%;
+    justify-content: center;
+    align-self: stretch !important;
+  }
+
+}
+
+/* ── Touch Devices ──────────────────────── */
+@media (pointer: coarse),
+(hover: none) {
+
+  .side-leaf {
+    display: none !important;
+  }
+}
+
+/* ── Reduced-motion overrides ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .section__label::before { transition: none; }
+}
+
+/* ── Erfaring as a standalone page ──────────
+   On the front page this section was sandwiched between two full-height
+   scenes and never had to open or close anything. Standing alone it does
+   both, so it takes a little more room at the head and hands the reader a
+   way back at the foot. */
+.erfaring--page {
+  padding-block: clamp(5rem, 8vw, 7rem) clamp(3rem, 6vw, 5rem);
+  min-height: 100vh;
+  min-height: 100svh;
+  border-top: 0;
+}
+
+.erfaring-back {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--sp-5);
+  background: var(--bg);
+}
