@@ -282,17 +282,12 @@ const renderSectionActivity = (() => {
     entry.host.dataset.renderPaused = paused ? 'true' : 'false';
   }
 
-  function sceneOptions(entry, prefetchedSource) {
+  function sceneOptions(entry) {
     const options = {
       element: entry.host
     };
-    if (prefetchedSource) options.filePath = prefetchedSource;
-    else if (entry.filePath) options.filePath = entry.filePath;
-    else {
-      options.projectId = entry.projectId;
-      // Cacheable CDN copy rather than a fresh fetch on every visit.
-      options.production = true;
-    }
+    if (entry.filePath) options.filePath = entry.filePath;
+    else options.projectId = entry.projectId;
     const ariaLabel = entry.host.getAttribute('data-us-arialabel');
     const altText = entry.host.getAttribute('data-us-alttext');
     if (ariaLabel) options.ariaLabel = ariaLabel;
@@ -313,7 +308,6 @@ const renderSectionActivity = (() => {
       catch (error) { console.warn('Unicorn scene teardown failed:', error); }
       entry.scene = null;
     }
-    delete entry.host.dataset.sceneReady;
     mark(entry, 'unloaded');
     updateSceneCount();
   }
@@ -367,28 +361,13 @@ const renderSectionActivity = (() => {
     }
 
     mark(entry, 'loading');
-    // scenes.js has usually fetched the scene and started on its images
-    // while the runtime loaded; null means it could not, and the runtime
-    // fetches the scene itself.
-    const prefetched = window.__unicornSceneData?.(entry.host) || Promise.resolve(null);
-    entry.promise = prefetched
-      .then(data => Promise.resolve(window.UnicornStudio.addScene(sceneOptions(entry, data?.source)))
-        .then(scene => {
-          entry.promise = null;
-          entry.scene = scene;
-          updateSceneCount();
-          applyEntryState(entry);
-          return data?.ready;
-        })
-        .then(() => {
-          // The canvas fades in (site.css) only once its images are in, so
-          // the effects never run over an empty frame. Two frames lets the
-          // runtime upload the textures before the fade starts.
-          const scene = entry.scene;
-          requestAnimationFrame(() => requestAnimationFrame(() => {
-            if (scene && entry.scene === scene) entry.host.dataset.sceneReady = '';
-          }));
-        }))
+    entry.promise = Promise.resolve(window.UnicornStudio.addScene(sceneOptions(entry)))
+      .then(scene => {
+        entry.promise = null;
+        entry.scene = scene;
+        updateSceneCount();
+        applyEntryState(entry);
+      })
       .catch(error => {
         entry.promise = null;
         mark(entry, 'error');
@@ -970,37 +949,154 @@ function makeGlowSprite(r, g, b) {
   }, { resize: true });
 })();
 
+/* ─── Compositor-only project carousel ────── */
+(function initProjectCarousel() {
+  const track = document.querySelector('#projects .projects-gallery__track');
+  const sourceGroup = track?.querySelector('.projects-gallery__group');
+  if (!track || !sourceGroup || track.classList.contains('is-carousel-ready')) return;
+
+  const duplicateGroup = sourceGroup.cloneNode(true);
+  duplicateGroup.setAttribute('aria-hidden', 'true');
+  duplicateGroup.removeAttribute('role');
+  duplicateGroup.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+  duplicateGroup.querySelectorAll('[aria-labelledby]').forEach(element => element.removeAttribute('aria-labelledby'));
+  duplicateGroup.querySelectorAll('a').forEach(link => link.setAttribute('tabindex', '-1'));
+  duplicateGroup.querySelectorAll('.reveal').forEach(element => {
+    element.classList.remove('reveal');
+    element.style.removeProperty('opacity');
+    element.style.removeProperty('visibility');
+    element.style.removeProperty('transform');
+  });
+
+  track.prepend(duplicateGroup);
+  track.classList.add('is-carousel-ready');
+})();
+
 /* ─── Project card videos ─────────────────── */
-// Each clip is fetched only once its own card nears the viewport and stops
-// again when it leaves or the tab is hidden. The gallery is a tall grid, so
-// watching the whole section kept every clip downloading and decoding —
-// competing with the backdrop for bandwidth — while most were off screen.
+// Placed after the carousel has cloned its group, so the duplicate's copies
+// are wired up as well. Both copies of a clip share one URL, so the browser
+// downloads each file once however many elements point at it.
+//
+// Nothing is fetched until the gallery is near the viewport, and everything
+// stops again when it leaves or the tab is hidden — four small decodes are
+// cheap while they are being watched and pure waste when they are not.
 (function initProjectVideos() {
+  const section = document.getElementById('projects');
   const videos = [...document.querySelectorAll('.project-visual__video')];
-  if (!videos.length) return;
+  if (!section || !videos.length) return;
 
   // Reduced motion and metered connections keep the poster frames.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (navigator.connection?.saveData) return;
 
-  const onScreen = new Set();
+  let onScreen = false;
 
-  function sync(video) {
-    // play() rejects if the browser declines autoplay; the poster stands in.
-    if (onScreen.has(video) && !document.hidden) video.play().catch(() => {});
-    else video.pause();
+  function sync() {
+    videos.forEach(video => {
+      // Cloned nodes carry the attribute but not always the property, and
+      // autoplay is refused without it.
+      video.muted = true;
+      if (onScreen && !document.hidden) video.play().catch(() => {});
+      else video.pause();
+    });
   }
 
-  const observer = new IntersectionObserver(changes => {
-    changes.forEach(change => {
-      if (change.isIntersecting) onScreen.add(change.target);
-      else onScreen.delete(change.target);
-      sync(change.target);
-    });
-  }, { rootMargin: '200px 0px' });
-  videos.forEach(video => observer.observe(video));
+  new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    sync();
+  }, { rootMargin: '300px 0px' }).observe(section);
 
-  document.addEventListener('visibilitychange', () => videos.forEach(sync));
+  document.addEventListener('visibilitychange', sync);
+})();
+
+/* ─── Smooth carousel braking ─────────────── */
+(function initProjectCarouselBraking() {
+  const section = document.getElementById('projects');
+  const track = section?.querySelector('.projects-gallery__track');
+  if (!section || !track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let rampFrame = 0;
+  let releaseTimer = 0;
+
+  function getCarouselAnimation() {
+    return track.getAnimations().find(animation => animation.animationName === 'projectsCarouselRight');
+  }
+
+  function rampPlayback(targetRate, duration) {
+    if (rampFrame) cancelAnimationFrame(rampFrame);
+    rampFrame = 0;
+
+    const animation = getCarouselAnimation();
+    if (!animation) return;
+
+    const fromRate = Number.isFinite(animation.playbackRate) ? animation.playbackRate : 1;
+    if (targetRate > 0 && animation.playState === 'paused') {
+      animation.playbackRate = Math.max(0.001, fromRate);
+      animation.play();
+    }
+
+    const startedAt = performance.now();
+
+    function step(now) {
+      if (!section.classList.contains('is-render-active') || animation.playState === 'idle') {
+        rampFrame = 0;
+        return;
+      }
+
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = progress * progress * (3 - 2 * progress);
+      const nextRate = fromRate + (targetRate - fromRate) * eased;
+      animation.playbackRate = Math.max(0.001, nextRate);
+
+      if (progress < 1) {
+        rampFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      rampFrame = 0;
+      if (targetRate === 0) {
+        animation.pause();
+        animation.playbackRate = 0;
+      } else {
+        animation.playbackRate = 1;
+      }
+    }
+
+    rampFrame = requestAnimationFrame(step);
+  }
+
+  function slowStop() {
+    clearTimeout(releaseTimer);
+    rampPlayback(0, 1100);
+  }
+
+  function slowResume() {
+    clearTimeout(releaseTimer);
+    rampPlayback(1, 850);
+  }
+
+  function resumeAfterTouch() {
+    clearTimeout(releaseTimer);
+    releaseTimer = window.setTimeout(slowResume, 1200);
+  }
+
+  section.querySelectorAll('.project-card__tilt').forEach(surface => {
+    surface.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'touch') slowStop();
+    }, { passive: true });
+    surface.addEventListener('pointerleave', event => {
+      if (event.pointerType !== 'touch') slowResume();
+    }, { passive: true });
+    surface.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'touch') slowStop();
+    }, { passive: true });
+    surface.addEventListener('pointerup', event => {
+      if (event.pointerType === 'touch') resumeAfterTouch();
+    }, { passive: true });
+    surface.addEventListener('pointercancel', event => {
+      if (event.pointerType === 'touch') resumeAfterTouch();
+    }, { passive: true });
+  });
 })();
 
 /* ─── Magnetic links ──────────────────── */
