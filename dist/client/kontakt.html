@@ -23,7 +23,7 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
 
-  <link rel="stylesheet" href="assets/site.css" />
+  <link rel="stylesheet" href="assets/site.css?v=2" />
 </head>
 
 <body class="page-kontakt">
@@ -35,7 +35,7 @@
 
     <!-- ══ CONTACT ═══════════════════════════════ -->
     <section class="section contact" id="contact" aria-labelledby="contact-h">
-      <p class="page-back"><a href="index.html">← Tilbake til forsiden</a></p>
+      <p class="page-back"><a href="./">← Tilbake til forsiden</a></p>
 
       <div class="contact__scene" aria-hidden="true">
         <video class="contact__video" poster="assets/hermes-marble.webp"
@@ -49,50 +49,7 @@
         <div class="contact__grid">
           <div class="contact__info">
             <p class="section__label reveal">Kontakt</p>
-            <h2 class="section__title" id="contact-h">La oss<br><em>snakke</em></h2>
-            <p class="contact__copy reveal">
-              Har du et prosjekt, spørsmål, eller vil bare ta en prat? Ikke nøl — skriv til meg.
-            </p>
-
-            <div class="contact__item reveal">
-              <div class="contact__ico" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </div>
-              <div>
-                <p class="contact__item-label">E-post</p>
-                <p class="contact__item-val">Yonesmf@uia.no</p>
-              </div>
-            </div>
-            <div class="contact__item reveal">
-              <div class="contact__ico" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </div>
-              <div>
-                <p class="contact__item-label">Sted</p>
-                <p class="contact__item-val">Kristiansand, Norge</p>
-              </div>
-            </div>
-            <div class="contact__item reveal">
-              <div class="contact__ico" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-              </div>
-              <div>
-                <p class="contact__item-label">Utdanning</p>
-                <p class="contact__item-val">UiA — IT &amp; Informasjonssystem</p>
-              </div>
-            </div>
+            <h2 class="section__title" id="contact-h">Send meg gjerne en melding :)</h2>
           </div>
 
           <form class="contact__form reveal" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
@@ -123,7 +80,7 @@
               <textarea class="form-ta" id="f-msg" name="message" rows="6" placeholder="Skriv meldingen din her..."
                 required></textarea>
             </div>
-            <button type="submit" class="btn btn--primary" id="cFormBtn" style="align-self:flex-start">
+            <button type="submit" class="btn btn--primary" id="cFormBtn" style="align-self:center">
               Send melding
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
