@@ -623,33 +623,77 @@ main > section:nth-of-type(even) .scene-ambient {
   line-height: 1.4;
 }
 
-.alder__skills {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem 1.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* Longer entries (the CV section) carry a sentence or two under the role. */
+.alder__timeline p {
+  max-width: 62ch;
+  margin: 0.45rem 0 0;
+  color: rgba(227, 237, 230, 0.7);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.6;
 }
 
-.alder__skills li {
-  position: relative;
-  padding-left: 0.85rem;
+/* Skills grouped the way the CV groups them: a small label over a run of
+   comma-separated items, which wraps far tighter than one bullet each. */
+.alder__skillset {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.alder__skillset dt {
+  margin-bottom: 0.2rem;
+  color: rgba(200, 230, 208, 0.6);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.alder__skillset dd {
+  margin: 0;
   color: rgba(239, 245, 241, 0.76);
   font-size: 0.78rem;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-.alder__skills li::before {
+.alder__contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: rgba(200, 230, 208, 0.7);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.alder__contact li + li::before {
   content: '';
-  position: absolute;
-  top: 0.58em;
-  left: 0;
-  width: 4px;
-  height: 4px;
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 1rem;
+  vertical-align: middle;
   background: rgba(132, 196, 154, 0.72);
   border-radius: 50%;
+}
+
+/* The text layer ignores the pointer so the scene keeps its hover
+   effects; the links take it back. */
+.alder__contact a {
+  pointer-events: auto;
+  color: rgba(236, 243, 238, 0.88);
+  border-bottom: 1px solid rgba(200, 230, 208, 0.35);
+  transition: color var(--tr-base), border-color var(--tr-base);
+}
+
+.alder__contact a:hover,
+.alder__contact a:focus-visible {
+  color: #fff;
+  border-color: rgba(200, 230, 208, 0.8);
 }
 
 @media (max-width: 860px) and (orientation: portrait) {
@@ -701,10 +745,6 @@ main > section:nth-of-type(even) .scene-ambient {
   .alder__timeline li {
     grid-template-columns: 5.8rem minmax(0, 1fr);
     gap: 0.7rem;
-  }
-
-  .alder__skills {
-    gap: 0.7rem 1rem;
   }
 
   /* Keep the complete artboard visible between the text groups. */
@@ -2271,8 +2311,39 @@ main > section:nth-of-type(even) .scene-ambient {
 
 .page-om-meg .alder__timeline span,
 .page-om-meg .alder__timeline time,
-.page-om-meg .alder__skills li {
+.page-om-meg .alder__skillset dd {
   font-size: 0.84rem;
+}
+
+.page-om-meg .alder__timeline p {
+  font-size: 0.88rem;
+}
+
+/* The rest of the CV runs below the scene on the same black ground. Wide
+   screens give the four technical entries the larger column. */
+.page-om-meg main {
+  background: #000;
+}
+
+.page-om-meg .cv {
+  position: relative;
+  padding: clamp(4rem, 9vh, 6.5rem) 0 clamp(5rem, 11vh, 8rem);
+  background: #000;
+  color: rgba(236, 243, 238, 0.9);
+  font-family: var(--ff-scene);
+}
+
+.page-om-meg .cv__columns {
+  width: min(1180px, calc(100% - 3rem));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(3rem, 7vw, 7rem);
+}
+
+.page-om-meg .cv .alder__timeline {
+  gap: 1.6rem;
 }
 
 /* Experience */
@@ -2570,6 +2641,26 @@ main > section:nth-of-type(even) .scene-ambient {
     justify-self: stretch;
   }
 
+  /* Left-aligned it wraps, and a separator would start the new line. */
+  .page-om-meg .alder__contact {
+    justify-content: flex-start;
+    gap: 0.35rem 1.25rem;
+  }
+
+  .page-om-meg .alder__contact li + li::before {
+    content: none;
+  }
+
+  .page-om-meg .cv {
+    padding-block: 3rem 4.5rem;
+  }
+
+  .page-om-meg .cv__columns {
+    width: min(720px, calc(100% - 2.5rem));
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
   .page-prosjekter .projects-gallery__group:not([aria-hidden]) {
     width: min(680px, calc(100% - 3rem));
     grid-template-columns: 1fr;
@@ -2621,8 +2712,8 @@ main > section:nth-of-type(even) .scene-ambient {
     grid-template-columns: 5.4rem minmax(0, 1fr);
   }
 
-  .page-om-meg .alder__skills {
-    gap: 0.75rem;
+  .page-om-meg .cv__columns {
+    width: calc(100% - 2rem);
   }
 
   .page-erfaring .erfaring--page {
