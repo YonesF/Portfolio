@@ -1147,6 +1147,7 @@ main > section:nth-of-type(even) .scene-ambient {
    and stays put; only the second animates, so there is one property in
    flight and the pair can never both be mid-fade. */
 .project-visual--globus { background: #0d1a24; }
+.project-visual--portfolio { background: #000; }
 
 /* Below the title bar rather than behind it. The recordings on the other
    two cards can afford to lose their top strip to the chrome, but this one
@@ -2415,6 +2416,14 @@ main > section:nth-of-type(even) .scene-ambient {
   min-width: 0;
 }
 
+/* An odd card out on the last row sits centred under the pair above,
+   one column wide, rather than hanging off the left edge. */
+.page-prosjekter .project-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc((100% - clamp(2rem, 4vw, 3.5rem)) / 2);
+}
+
 .page-prosjekter .project-visual__slides {
   inset: 0;
 }
@@ -2535,6 +2544,10 @@ main > section:nth-of-type(even) .scene-ambient {
     width: min(680px, calc(100% - 3rem));
     grid-template-columns: 1fr;
     gap: 4.5rem;
+  }
+
+  .page-prosjekter .project-card:last-child:nth-child(odd) {
+    width: 100%;
   }
 
   .page-kontakt .contact {
