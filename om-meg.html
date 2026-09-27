@@ -48,17 +48,29 @@
         <header class="alder__intro">
           <h2 class="alder__title" id="alder-h">Om meg</h2>
           <p class="alder__summary">
-            Jeg er Yones Feili, en IT-student og kreativ utvikler med interesse for design, teknologi og
-            gjennomarbeidede digitale løsninger. Ved Universitetet i Agder studerer jeg IT og
-            informasjonssystemer. Gjennom egne prosjekter og praksis hos Kartverket kombinerer jeg
-            problemløsning med et sterkt visuelt blikk.
+            Jeg er Yones Feili, student i IT og informasjonssystemer ved Universitetet i Agder, med
+            praktisk erfaring innen GIS, Git og webutvikling gjennom Kartverket og tekniske prosjekter.
+            Jeg har bygget systemer for luftfartshinderdata, beredskapskart og KI-baserte digitale
+            produkter med SQL/MariaDB, PostGIS, MapLibre GL JS, JavaScript, C#, HTML og CSS.
           </p>
+          <ul class="alder__contact" aria-label="Kontaktinformasjon">
+            <li>Kristiansand, Norge</li>
+            <li><a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/yones-m-44616536a" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+          </ul>
         </header>
 
         <div class="alder__details">
           <section class="alder__group" aria-labelledby="alder-education-h">
-            <h3 class="alder__group-title" id="alder-education-h">Utdanning &amp; praksis</h3>
+            <h3 class="alder__group-title" id="alder-education-h">Utdanning</h3>
             <ol class="alder__timeline">
+              <li>
+                <time datetime="2024">2024–nå</time>
+                <div>
+                  <strong>Universitetet i Agder (UiA)</strong>
+                  <span>Bachelor i IT og informasjonssystemer · siste&nbsp;år</span>
+                </div>
+              </li>
               <li>
                 <time datetime="2021">2021–2024</time>
                 <div>
@@ -66,37 +78,109 @@
                   <span>Studiespesialisering</span>
                 </div>
               </li>
-              <li>
-                <time datetime="2024">2024–nå</time>
-                <div>
-                  <strong>Universitetet i Agder</strong>
-                  <span>IT og informasjonssystemer</span>
-                </div>
-              </li>
-              <li>
-                <time datetime="2026">2026–nå</time>
-                <div>
-                  <strong>Kartverket</strong>
-                  <span>Praksis / internship</span>
-                </div>
-              </li>
             </ol>
           </section>
 
           <section class="alder__group" aria-labelledby="alder-skills-h">
             <h3 class="alder__group-title" id="alder-skills-h">Ferdigheter</h3>
-            <ul class="alder__skills">
-              <li>JavaScript</li>
-              <li>HTML &amp; CSS</li>
-              <li>C#</li>
-              <li>SQL &amp; MariaDB</li>
-              <li>PostGIS</li>
-              <li>MapLibre</li>
-              <li>UI/UX-design</li>
-              <li>Responsivt design</li>
-            </ul>
+            <dl class="alder__skillset">
+              <div>
+                <dt>Programmering og web</dt>
+                <dd>JavaScript, C#, HTML/CSS, responsivt design</dd>
+              </div>
+              <div>
+                <dt>Data og kart</dt>
+                <dd>SQL, MariaDB, PostGIS, MapLibre GL JS, GIS, relasjonsdatabasedesign, UML/ER,
+                  normalisering, datavalidering</dd>
+              </div>
+              <div>
+                <dt>Produkt og design</dt>
+                <dd>UI/UX, systemdesign, KI-assistert utvikling, rask prototyping, datavisualisering,
+                  kvalitetssikring, prompt engineering</dd>
+              </div>
+              <div>
+                <dt>Språk</dt>
+                <dd>Norsk og engelsk, begge flytende</dd>
+              </div>
+            </dl>
           </section>
         </div>
+      </div>
+    </section>
+
+    <!-- ══ CV ════════════════════════════════════
+         The rest of the CV, below the opening scene. Plain black ground
+         so the longer descriptions read without a veil, in the same type
+         as the notes above. -->
+    <section class="cv" id="cv" aria-label="Erfaring og prosjekter">
+      <div class="cv__columns">
+        <section class="alder__group reveal" aria-labelledby="cv-tech-h">
+          <h3 class="alder__group-title" id="cv-tech-h">Teknisk erfaring og prosjekter</h3>
+          <ol class="alder__timeline">
+            <li>
+              <time datetime="2026">2026–nå</time>
+              <div>
+                <strong>Kartverket</strong>
+                <span>Praksis</span>
+                <p>Bygger praktisk erfaring i et nasjonalt miljø for geodata og teknologi i offentlig sektor.</p>
+              </div>
+            </li>
+            <li>
+              <time datetime="2026">2026</time>
+              <div>
+                <strong>Atlas</strong>
+                <span>GIS- og 3D-visualiseringsprosjekt · vant expo-utfordringen</span>
+                <p>Utviklet et web-GIS for beredskap med MapLibre GL JS, med interaktive ressurser,
+                  3D-bygninger og terreng, filtrering, geosøk, ruteberegning og responsivt UI/UX.</p>
+              </div>
+            </li>
+            <li>
+              <time datetime="2026">2026</time>
+              <div>
+                <strong>LuksusEiendom</strong>
+                <span>KI-basert nettplattform · lansert 2026</span>
+                <p>Var med på å utvikle plattformen fra start til slutt: konsept, forretningsmodell,
+                  UX/UI, innholdsstruktur, KI-integrasjon, kvalitetssikring og responsiv levering i
+                  HTML/CSS og JavaScript.</p>
+              </div>
+            </li>
+            <li>
+              <time datetime="2025">2025</time>
+              <div>
+                <strong>Kartverket NRL-system</strong>
+                <span>Databaseprosjekt</span>
+                <p>Designet og implementerte en relasjonsdatabase for rapportering av luftfartshindre med
+                  rollebasert tilgang, datavalidering, integritet, skalerbarhet og sporbarhet.</p>
+                <p>Laget UML/ER-modeller, normalisering, SQL-spørringer og den fysiske
+                  MariaDB-implementasjonen for effektiv håndtering av kritiske data.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="alder__group reveal" aria-labelledby="cv-other-h">
+          <h3 class="alder__group-title" id="cv-other-h">Annen erfaring</h3>
+          <ol class="alder__timeline">
+            <li>
+              <time datetime="2025">2025–nå</time>
+              <div>
+                <strong>Pizzabakeren Rona</strong>
+                <span>Kjøkken og kundeservice</span>
+                <p>Følger hygiene- og kvalitetsrutiner og koordinerer matlaging og kundeservice i
+                  travle skift.</p>
+              </div>
+            </li>
+            <li>
+              <time datetime="2023">2023–2024</time>
+              <div>
+                <strong>Shell Walhalla</strong>
+                <span>Servicemedarbeider</span>
+                <p>Håndterte kasse, varepåfylling og kundebehov, og drev stasjonen alene i travle
+                  perioder.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
       </div>
     </section>
 
