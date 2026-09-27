@@ -755,16 +755,20 @@ if (cForm && cBtn) cForm.addEventListener('submit', e => {
   })
   .then(r => r.json())
   .then(data => {
-    if (data.success) {
+    // Formsubmit answers "true" or "false" as strings, and a bare truthiness
+    // check passes "false" too — including "this form needs activation", so
+    // visitors were told their message was sent when it was never delivered.
+    if (data.success === true || data.success === 'true') {
       cBtn.innerHTML = 'Sendt! ✓';
       cBtn.style.background = 'var(--green-mid)';
       cForm.reset();
       setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
     } else {
-      throw new Error('Submission failed');
+      throw new Error(data.message || 'Submission failed');
     }
   })
-  .catch(() => {
+  .catch(error => {
+    console.error('Contact form was not delivered:', error.message);
     cBtn.innerHTML = 'Feil — prøv igjen';
     cBtn.style.background = '#b04040';
     setTimeout(() => { cBtn.innerHTML = btnDefault; cBtn.disabled = false; cBtn.style.background = ''; }, 4000);
