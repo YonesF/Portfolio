@@ -1869,55 +1869,6 @@ main > section:nth-of-type(even) .scene-ambient {
   top: 120px;
 }
 
-.contact__copy {
-  font-size: var(--fs-lg);
-  color: var(--night-text-muted);
-  line-height: 1.8;
-  margin-top: var(--sp-3);
-  max-width: 38ch;
-}
-
-.contact__item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  padding-block: var(--sp-3);
-  border-bottom: 1px solid rgba(159, 216, 182, 0.14);
-}
-
-.contact__item:first-of-type {
-  border-top: 1px solid rgba(159, 216, 182, 0.14);
-  margin-top: var(--sp-5);
-}
-
-.contact__ico {
-  width: 36px;
-  height: 36px;
-  /* currentColor for the icon inside, which carries no colour of its own */
-  color: var(--night-green);
-  background: rgba(159, 216, 182, 0.08);
-  border: 1px solid rgba(159, 216, 182, 0.2);
-  border-radius: var(--r-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.contact__item-label {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(226, 235, 255, 0.58);
-  margin-bottom: 2px;
-}
-
-.contact__item-val {
-  font-size: var(--fs-base);
-  color: var(--night-text);
-}
-
 .contact__form {
   display: flex;
   flex-direction: column;
@@ -2491,13 +2442,15 @@ main > section:nth-of-type(even) .scene-ambient {
   font-size: 0.76rem;
 }
 
-/* Contact */
+/* Contact
+   One centred column: the heading over the form, in the middle of the
+   screen. */
 .page-kontakt .contact {
   min-height: 100vh;
   min-height: 100svh;
   display: flex;
   align-items: center;
-  padding-block: clamp(7.5rem, 11vh, 9rem) clamp(4.5rem, 8vh, 6rem);
+  padding-block: clamp(5.5rem, 10vh, 8rem) clamp(2.5rem, 5vh, 4.5rem);
 }
 
 .page-kontakt .contact > .container {
@@ -2505,11 +2458,38 @@ main > section:nth-of-type(even) .scene-ambient {
 }
 
 .page-kontakt .contact__grid {
-  gap: clamp(3.5rem, 8vw, 7rem);
+  width: min(680px, 100%);
+  margin-inline: auto;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 3vh, 2rem);
 }
 
-.page-kontakt .contact__item-val {
-  overflow-wrap: anywhere;
+.page-kontakt .contact__info {
+  position: static;
+  text-align: center;
+}
+
+.page-kontakt .contact .section__label {
+  justify-content: center;
+}
+
+.page-kontakt .contact .section__title {
+  margin-bottom: 0;
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+}
+
+/* Squarer fields and button than the site's usual rounded ones. */
+.page-kontakt .form-input,
+.page-kontakt .form-ta,
+.page-kontakt .contact__form .btn {
+  border-radius: var(--r-sm);
+}
+
+/* A little shorter than elsewhere so heading and form fit one screen; it
+   can still be dragged taller. */
+.page-kontakt .form-ta {
+  height: 8rem;
+  min-height: 6.5rem;
 }
 
 @media (max-width: 960px) {
@@ -2563,7 +2543,7 @@ main > section:nth-of-type(even) .scene-ambient {
   }
 
   .page-kontakt .contact__grid {
-    gap: 3.5rem;
+    gap: 2rem;
   }
 
   .page-kontakt .form-row {
@@ -2645,7 +2625,7 @@ main > section:nth-of-type(even) .scene-ambient {
   }
 
   .page-kontakt .contact__grid {
-    gap: 3rem;
+    gap: 1.75rem;
   }
 
   .page-kontakt .form-row {
