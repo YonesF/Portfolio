@@ -974,6 +974,196 @@ function makeGlowSprite(r, g, b) {
   }, { resize: true });
 })();
 
+/* ─── Erfaring card deck ──────────────────── */
+// The cards start as a 3D pile; a click deals them out into a ring that
+// turns to bring any card to the front. Positions are computed here and
+// tweened with GSAP, so a turn follows the arc of the ring instead of
+// cutting straight across it. Narrow screens and reduced motion keep the
+// plain grid, where every card reads in place.
+(function initErfaringDeck() {
+  const grid = document.querySelector('.erfaring__grid');
+  const controls = document.querySelector('.erf-deck__controls');
+  const cards = grid ? [...grid.querySelectorAll('.erf-card')] : [];
+  if (!controls || cards.length < 2) return;
+
+  const toggle = controls.querySelector('[data-deck="toggle"]');
+  const arrows = [...controls.querySelectorAll('[data-deck="prev"], [data-deck="next"]')];
+  const media = window.matchMedia('(min-width: 700px) and (prefers-reduced-motion: no-preference)');
+  const count = cards.length;
+  const step = (Math.PI * 2) / count;
+  // A loose pile: each card a little further back, off-square and nudged.
+  const pile = [
+    { x: 0, y: 0, rz: -2 },
+    { x: 18, y: -12, rz: 3 },
+    { x: -16, y: -22, rz: -5 },
+    { x: 10, y: -32, rz: 6 }
+  ];
+  // How far each card has been dealt from the pile (0) into the ring (1).
+  // One value per card, so each deals on an eased curve of its own rather
+  // than joining a shared one part-way through at speed.
+  const dealt = cards.map(() => ({ t: 0 }));
+  // turn: ring position in cards. lift: hover fan of the pile.
+  const state = { turn: 0, lift: 0 };
+  let turnTarget = 0;
+  let radius = 0;
+  let active = false;
+  let open = false;
+
+  const mix = (a, b, t) => a + (b - a) * t;
+  const frontOf = turn => ((Math.round(turn) % count) + count) % count;
+
+  function pilePose(i) {
+    const p = pile[i % pile.length];
+    const fan = 1 + state.lift * 0.9;
+    return { x: p.x * fan, y: p.y * fan - state.lift * 10, z: -i * 36, rx: 12, ry: -8, rz: p.rz * fan, o: 1 };
+  }
+
+  function ringPose(i) {
+    const angle = (i - state.turn) * step;
+    const depth = Math.cos(angle) - 1; // 0 at the front, -2 at the back
+    return {
+      x: Math.sin(angle) * radius,
+      // The far side rises, as if the ring were seen from a little above.
+      y: (depth + 1) * radius * 0.26,
+      z: depth * radius,
+      rx: 0,
+      ry: -Math.sin(angle) * 16,
+      rz: 0,
+      o: 1 + depth * 0.16
+    };
+  }
+
+  function render() {
+    const front = frontOf(state.turn);
+    const poses = cards.map((card, i) => {
+      const a = pilePose(i);
+      const b = ringPose(i);
+      const p = {};
+      Object.keys(a).forEach(key => { p[key] = mix(a[key], b[key], dealt[i].t); });
+      card.style.transform =
+        `translate(-50%, -50%) translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, ${p.z.toFixed(1)}px) ` +
+        `rotateX(${p.rx.toFixed(2)}deg) rotateY(${p.ry.toFixed(2)}deg) rotateZ(${p.rz.toFixed(2)}deg)`;
+      card.style.opacity = p.o.toFixed(3);
+      card.classList.toggle('is-front', open && i === front);
+      return p;
+    });
+    // Stacked by depth rank, which only changes when two cards pass each
+    // other; restacking on every frame would redo the page's layering.
+    poses.map((p, i) => i)
+      .sort((a, b) => poses[a].z - poses[b].z)
+      .forEach((i, rank) => {
+        const z = String(rank + 1);
+        if (cards[i].style.zIndex !== z) cards[i].style.zIndex = z;
+      });
+  }
+
+  function measure() {
+    // Wide enough that the side cards clear most of the front one; where
+    // the screen allows, no wider than keeps their outer edges on it (the
+    // side cards sit a radius back, so perspective shrinks them toward the
+    // centre). A narrow screen lets them run off the edges instead of
+    // burying them behind the front card.
+    const cardWidth = cards[0].offsetWidth;
+    const perspective = parseFloat(getComputedStyle(grid).perspective) || 1600;
+    const half = window.innerWidth / 2 - 24;
+    const fits = half < perspective
+      ? perspective * (half - cardWidth / 2) / (perspective - half)
+      : Infinity;
+    radius = Math.max(cardWidth * 0.8, Math.min(cardWidth * 1.1, fits));
+  }
+
+  function setOpen(next) {
+    open = next;
+    grid.classList.toggle('is-ring', open);
+    grid.classList.toggle('is-deck', !open);
+    toggle.textContent = open ? 'Samle kortene' : 'Spre kortene';
+    toggle.setAttribute('aria-expanded', String(open));
+    arrows.forEach(button => { button.hidden = !open; });
+    // Dealt one after another from the top of the pile; gathered back in
+    // the reverse order, a little quicker. Sine in-out starts every card
+    // from rest, so none of them jolts into motion.
+    gsap.to(dealt, {
+      t: open ? 1 : 0,
+      duration: open ? 0.6 : 0.45,
+      ease: 'sine.inOut',
+      stagger: { each: open ? 0.05 : 0.03, from: open ? 'start' : 'end' },
+      onUpdate: render,
+      overwrite: 'auto'
+    });
+    gsap.to(state, { lift: 0, duration: 0.3, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+  }
+
+  function turnBy(delta) {
+    turnTarget += delta;
+    // Eased in and out like the deal; a quick second click carries on from
+    // wherever the ring has got to.
+    gsap.to(state, { turn: turnTarget, duration: 0.5, ease: 'sine.inOut', onUpdate: render, overwrite: 'auto' });
+  }
+
+  function bringToFront(i) {
+    // The shorter way round.
+    let delta = (i - frontOf(turnTarget)) % count;
+    if (delta > count / 2) delta -= count;
+    if (delta < -count / 2) delta += count;
+    if (delta) turnBy(delta);
+  }
+
+  function setActive(next) {
+    active = next;
+    gsap.killTweensOf([state, ...dealt]);
+    grid.classList.toggle('is-3d', active);
+    controls.hidden = !active;
+    if (!active) {
+      open = false;
+      grid.classList.remove('is-deck', 'is-ring');
+      cards.forEach(card => {
+        card.style.transform = card.style.opacity = card.style.zIndex = '';
+        card.classList.remove('is-front');
+      });
+      return;
+    }
+    Object.assign(state, { turn: 0, lift: 0 });
+    dealt.forEach(card => { card.t = 0; });
+    turnTarget = 0;
+    open = true; // so setOpen(false) below settles every class and label
+    measure();
+    setOpen(false);
+    render();
+  }
+
+  grid.addEventListener('click', event => {
+    const card = active && event.target.closest('.erf-card');
+    if (!card) return;
+    if (!open) setOpen(true);
+    else bringToFront(cards.indexOf(card)); // the front card itself stays put, so its text can be selected
+  });
+
+  grid.addEventListener('pointerenter', () => {
+    if (active && !open) gsap.to(state, { lift: 1, duration: 0.35, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+  });
+  grid.addEventListener('pointerleave', () => {
+    if (active && !open) gsap.to(state, { lift: 0, duration: 0.35, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+  });
+
+  toggle.addEventListener('click', () => setOpen(!open));
+  controls.querySelector('[data-deck="prev"]').addEventListener('click', () => turnBy(-1));
+  controls.querySelector('[data-deck="next"]').addEventListener('click', () => turnBy(1));
+  controls.addEventListener('keydown', event => {
+    if (!open) return;
+    if (event.key === 'ArrowLeft') turnBy(-1);
+    else if (event.key === 'ArrowRight') turnBy(1);
+    else if (event.key === 'Escape') setOpen(false);
+  });
+
+  viewportFrame.subscribe(() => {
+    if (!active) return;
+    measure();
+    render();
+  }, { resize: true });
+  media.addEventListener?.('change', () => setActive(media.matches));
+  setActive(media.matches);
+})();
+
 /* ─── Compositor-only project carousel ────── */
 (function initProjectCarousel() {
   const track = document.querySelector('#projects .projects-gallery__track');
