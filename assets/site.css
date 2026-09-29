@@ -1165,11 +1165,31 @@ main > section:nth-of-type(even) .scene-ambient {
   position: absolute;
   top: 0;
   left: 0;
-  width: min(34rem, 56vw);
+  width: min(40rem, 60vw);
+  padding: 1.2rem 1.35rem;
   background: rgba(2, 8, 5, 0.94);
   border-color: rgba(159, 216, 182, 0.12);
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   transition: background-color var(--tr-base), border-color var(--tr-base), box-shadow var(--tr-base);
+}
+
+/* Larger on the stage than in the grid: one card is read at a time there,
+   so it gets the room. */
+.erfaring__grid.is-3d .erf-card__meta {
+  font-size: 0.62rem;
+}
+
+.erfaring__grid.is-3d .erf-card__title {
+  font-size: 1.55rem;
+}
+
+.erfaring__grid.is-3d .erf-card__desc {
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.erfaring__grid.is-3d .erf-tag {
+  font-size: 0.6rem;
 }
 
 /* Only while they move (see site.js): held at rest, it would keep each
