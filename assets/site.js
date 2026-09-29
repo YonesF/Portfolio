@@ -282,12 +282,17 @@ const renderSectionActivity = (() => {
     entry.host.dataset.renderPaused = paused ? 'true' : 'false';
   }
 
-  function sceneOptions(entry) {
+  function sceneOptions(entry, prefetchedSource) {
     const options = {
       element: entry.host
     };
-    if (entry.filePath) options.filePath = entry.filePath;
-    else options.projectId = entry.projectId;
+    if (prefetchedSource) options.filePath = prefetchedSource;
+    else if (entry.filePath) options.filePath = entry.filePath;
+    else {
+      options.projectId = entry.projectId;
+      // Cacheable CDN copy rather than a fresh fetch on every visit.
+      options.production = true;
+    }
     const ariaLabel = entry.host.getAttribute('data-us-arialabel');
     const altText = entry.host.getAttribute('data-us-alttext');
     if (ariaLabel) options.ariaLabel = ariaLabel;
@@ -308,6 +313,7 @@ const renderSectionActivity = (() => {
       catch (error) { console.warn('Unicorn scene teardown failed:', error); }
       entry.scene = null;
     }
+    delete entry.host.dataset.sceneReady;
     mark(entry, 'unloaded');
     updateSceneCount();
   }
@@ -361,13 +367,28 @@ const renderSectionActivity = (() => {
     }
 
     mark(entry, 'loading');
-    entry.promise = Promise.resolve(window.UnicornStudio.addScene(sceneOptions(entry)))
-      .then(scene => {
-        entry.promise = null;
-        entry.scene = scene;
-        updateSceneCount();
-        applyEntryState(entry);
-      })
+    // scenes.js has usually fetched the scene and started on its images
+    // while the runtime loaded; null means it could not, and the runtime
+    // fetches the scene itself.
+    const prefetched = window.__unicornSceneData?.(entry.host) || Promise.resolve(null);
+    entry.promise = prefetched
+      .then(data => Promise.resolve(window.UnicornStudio.addScene(sceneOptions(entry, data?.source)))
+        .then(scene => {
+          entry.promise = null;
+          entry.scene = scene;
+          updateSceneCount();
+          applyEntryState(entry);
+          return data?.ready;
+        })
+        .then(() => {
+          // The canvas fades in (site.css) only once its images are in, so
+          // the effects never run over an empty frame. Two frames lets the
+          // runtime upload the textures before the fade starts.
+          const scene = entry.scene;
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (scene && entry.scene === scene) entry.host.dataset.sceneReady = '';
+          }));
+        }))
       .catch(error => {
         entry.promise = null;
         mark(entry, 'error');
