@@ -1024,8 +1024,9 @@ main > section:nth-of-type(even) .scene-ambient {
   gap: 0;
 }
 
-/* Dim non-hovered cards when any card is hovered */
-.erfaring:has(.erf-card:hover) .erf-card:not(:hover) {
+/* Dim non-hovered cards when any card is hovered (plain grid only; on the
+   3D deck site.js sets transform and opacity itself) */
+.erfaring:has(.erf-card:hover) .erfaring__grid:not(.is-3d) .erf-card:not(:hover) {
   opacity: 0.7;
   filter: saturate(0.82);
   transform: scale(0.985);
@@ -1033,7 +1034,7 @@ main > section:nth-of-type(even) .scene-ambient {
 }
 
 /* Pop the focused card into the forest */
-.erfaring:has(.erf-card:hover) .erf-card:hover {
+.erfaring:has(.erf-card:hover) .erfaring__grid:not(.is-3d) .erf-card:hover {
   opacity: 1;
   filter: none;
   transform: translateY(-12px) scale(1.03);
@@ -1055,7 +1056,7 @@ main > section:nth-of-type(even) .scene-ambient {
   pointer-events: none;
 }
 
-.erf-card:hover {
+.erfaring__grid:not(.is-3d) .erf-card:hover {
   border-color: rgba(0, 0, 0, 0.72);
   transform: translateY(-6px);
   box-shadow: 0 24px 58px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.28);
@@ -1146,6 +1147,96 @@ main > section:nth-of-type(even) .scene-ambient {
   border: 0;
   padding: 0;
   border-radius: 0;
+}
+
+/* ── Erfaring card deck ─────────────────────
+   With room and motion to spare, site.js turns the grid into a 3D stage:
+   the cards start as a pile and deal out into a ring. It sets each card's
+   transform, opacity and stacking; this only places them on the stage.
+   Near-opaque cards, because on the stage they overlap and the usual
+   see-through surface would show the text of the card behind. */
+.erfaring__grid.is-3d {
+  display: block;
+  perspective: 1600px;
+  perspective-origin: 50% 40%;
+}
+
+.erfaring__grid.is-3d .erf-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(34rem, 56vw);
+  background: rgba(2, 8, 5, 0.94);
+  border-color: rgba(159, 216, 182, 0.12);
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  transition: background-color var(--tr-base), border-color var(--tr-base), box-shadow var(--tr-base);
+  will-change: transform;
+}
+
+.erfaring__grid.is-deck .erf-card,
+.erfaring__grid.is-ring .erf-card:not(.is-front) {
+  cursor: pointer;
+}
+
+.erfaring__grid.is-ring .erf-card.is-front {
+  border-color: rgba(159, 216, 182, 0.3);
+}
+
+.erf-deck__controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.erf-deck__controls[hidden] {
+  display: none;
+}
+
+.erf-deck__toggle,
+.erf-deck__arrow {
+  font-family: var(--ff-body);
+  color: var(--night-text);
+  background: rgba(2, 8, 5, 0.78);
+  border: 1px solid rgba(159, 216, 182, 0.28);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color var(--tr-base), border-color var(--tr-base), background-color var(--tr-base);
+}
+
+.erf-deck__toggle {
+  padding: 0.6rem 1.15rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.erf-deck__arrow {
+  width: 2.3rem;
+  height: 2.3rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.erf-deck__toggle:hover,
+.erf-deck__toggle:focus-visible,
+.erf-deck__arrow:hover,
+.erf-deck__arrow:focus-visible {
+  color: #fff;
+  border-color: rgba(159, 216, 182, 0.62);
+  background: rgba(8, 24, 15, 0.9);
+}
+
+/* Below the desktop layout the section flows, so the stage needs a height
+   of its own; on desktop it fills what the heading leaves. */
+@media (max-width: 960px) {
+  .erfaring__grid.is-3d {
+    height: clamp(30rem, 72vh, 42rem);
+  }
 }
 
 /* Project preview artwork */
