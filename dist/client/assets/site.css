@@ -419,6 +419,19 @@ main > section:nth-of-type(even) .scene-ambient {
    to *contain*, never crop, so no lettering is ever cut off — the
    letterboxing is invisible against the shared black ground, which
    is also what lets the two sections run together seamlessly. */
+/* Every scene's canvas waits for its images (site.js sets data-scene-ready)
+   and then fades up, rather than running its effects over an empty frame
+   and snapping the picture in seconds later. */
+[data-us-project] canvas,
+[data-us-project-src] canvas {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+[data-scene-ready] canvas {
+  opacity: 1;
+}
+
 .us-scene {
   position: relative;
   min-height: 100vh;
@@ -2371,7 +2384,7 @@ main > section:nth-of-type(even) .scene-ambient {
   min-height: 100vh;
   min-height: 100svh;
   display: block;
-  padding: clamp(8rem, 10vw, 10rem) 0 clamp(5rem, 8vw, 7rem);
+  padding: clamp(5.5rem, 6.5vw, 6.5rem) 0 clamp(5rem, 8vw, 7rem);
 }
 
 .page-prosjekter .projects-gallery__intro {
@@ -2613,7 +2626,7 @@ main > section:nth-of-type(even) .scene-ambient {
   }
 
   .page-prosjekter .projects-gallery.section {
-    padding-block: 6.5rem 4rem;
+    padding-block: 5rem 4rem;
   }
 
   .page-prosjekter .projects-gallery__intro,
