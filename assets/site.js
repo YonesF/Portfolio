@@ -1226,154 +1226,90 @@ function makeGlowSprite(r, g, b) {
   setActive(media.matches);
 })();
 
-/* ─── Compositor-only project carousel ────── */
-(function initProjectCarousel() {
-  const track = document.querySelector('#projects .projects-gallery__track');
-  const sourceGroup = track?.querySelector('.projects-gallery__group');
-  if (!track || !sourceGroup || track.classList.contains('is-carousel-ready')) return;
+/* ─── Project index ───────────────────────── */
+// On wide screens the project names form an index beside one big screen:
+// pointing at a name (after a short pause, so crossing a name on the way
+// to the screen doesn't switch it), clicking it or tabbing to it shows
+// that project (site.css does the crossfade). Narrower screens list the
+// projects one after another, and the one in the middle of the screen is
+// the active one. Either way only the active recording plays: Chrome drops
+// the whole page to 30 fps while two or more of these clips play at once.
+(function initProjectIndex() {
+  const index = document.querySelector('.project-index');
+  const projects = index ? [...index.querySelectorAll('.project-card')] : [];
+  if (!projects.length) return;
 
-  const duplicateGroup = sourceGroup.cloneNode(true);
-  duplicateGroup.setAttribute('aria-hidden', 'true');
-  duplicateGroup.removeAttribute('role');
-  duplicateGroup.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
-  duplicateGroup.querySelectorAll('[aria-labelledby]').forEach(element => element.removeAttribute('aria-labelledby'));
-  duplicateGroup.querySelectorAll('a').forEach(link => link.setAttribute('tabindex', '-1'));
-  duplicateGroup.querySelectorAll('.reveal').forEach(element => {
-    element.classList.remove('reveal');
-    element.style.removeProperty('opacity');
-    element.style.removeProperty('visibility');
-    element.style.removeProperty('transform');
-  });
-
-  track.prepend(duplicateGroup);
-  track.classList.add('is-carousel-ready');
-})();
-
-/* ─── Project card videos ─────────────────── */
-// Placed after the carousel has cloned its group, so the duplicate's copies
-// are wired up as well. Both copies of a clip share one URL, so the browser
-// downloads each file once however many elements point at it.
-//
-// Nothing is fetched until the gallery is near the viewport, and everything
-// stops again when it leaves or the tab is hidden — four small decodes are
-// cheap while they are being watched and pure waste when they are not.
-(function initProjectVideos() {
-  const section = document.getElementById('projects');
-  const videos = [...document.querySelectorAll('.project-visual__video')];
-  if (!section || !videos.length) return;
-
+  const wide = window.matchMedia('(min-width: 961px)');
   // Reduced motion and metered connections keep the poster frames.
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (navigator.connection?.saveData) return;
-
-  let onScreen = false;
+  const stillsOnly = window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    Boolean(navigator.connection?.saveData);
+  const HOVER_INTENT = 90;
+  let active = -1;
+  let hoverTimer = 0;
+  let inView = false;
 
   function sync() {
-    videos.forEach(video => {
-      // Cloned nodes carry the attribute but not always the property, and
-      // autoplay is refused without it.
-      video.muted = true;
-      if (onScreen && !document.hidden) video.play().catch(() => {});
+    projects.forEach((project, i) => {
+      const video = project.querySelector('.project-visual__video');
+      if (!video) return;
+      // play() rejects if the browser declines autoplay; the poster stands in.
+      if (!stillsOnly && inView && !document.hidden && i === active) video.play().catch(() => {});
       else video.pause();
     });
   }
 
-  new IntersectionObserver(([entry]) => {
-    onScreen = entry.isIntersecting;
+  function activate(i) {
+    if (i === active) return;
+    active = i;
+    projects.forEach((project, n) => {
+      project.classList.toggle('is-active', n === i);
+      project.querySelector('.project-card__pick')?.setAttribute('aria-expanded', String(n === i || !wide.matches));
+    });
     sync();
-  }, { rootMargin: '300px 0px' }).observe(section);
-
-  document.addEventListener('visibilitychange', sync);
-})();
-
-/* ─── Smooth carousel braking ─────────────── */
-(function initProjectCarouselBraking() {
-  const section = document.getElementById('projects');
-  const track = section?.querySelector('.projects-gallery__track');
-  if (!section || !track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  let rampFrame = 0;
-  let releaseTimer = 0;
-
-  function getCarouselAnimation() {
-    return track.getAnimations().find(animation => animation.animationName === 'projectsCarouselRight');
   }
 
-  function rampPlayback(targetRate, duration) {
-    if (rampFrame) cancelAnimationFrame(rampFrame);
-    rampFrame = 0;
-
-    const animation = getCarouselAnimation();
-    if (!animation) return;
-
-    const fromRate = Number.isFinite(animation.playbackRate) ? animation.playbackRate : 1;
-    if (targetRate > 0 && animation.playState === 'paused') {
-      animation.playbackRate = Math.max(0.001, fromRate);
-      animation.play();
-    }
-
-    const startedAt = performance.now();
-
-    function step(now) {
-      if (!section.classList.contains('is-render-active') || animation.playState === 'idle') {
-        rampFrame = 0;
-        return;
-      }
-
-      const progress = Math.min(1, (now - startedAt) / duration);
-      const eased = progress * progress * (3 - 2 * progress);
-      const nextRate = fromRate + (targetRate - fromRate) * eased;
-      animation.playbackRate = Math.max(0.001, nextRate);
-
-      if (progress < 1) {
-        rampFrame = requestAnimationFrame(step);
-        return;
-      }
-
-      rampFrame = 0;
-      if (targetRate === 0) {
-        animation.pause();
-        animation.playbackRate = 0;
-      } else {
-        animation.playbackRate = 1;
-      }
-    }
-
-    rampFrame = requestAnimationFrame(step);
-  }
-
-  function slowStop() {
-    clearTimeout(releaseTimer);
-    rampPlayback(0, 1100);
-  }
-
-  function slowResume() {
-    clearTimeout(releaseTimer);
-    rampPlayback(1, 850);
-  }
-
-  function resumeAfterTouch() {
-    clearTimeout(releaseTimer);
-    releaseTimer = window.setTimeout(slowResume, 1200);
-  }
-
-  section.querySelectorAll('.project-card__tilt').forEach(surface => {
-    surface.addEventListener('pointerenter', event => {
-      if (event.pointerType !== 'touch') slowStop();
-    }, { passive: true });
-    surface.addEventListener('pointerleave', event => {
-      if (event.pointerType !== 'touch') slowResume();
-    }, { passive: true });
-    surface.addEventListener('pointerdown', event => {
-      if (event.pointerType === 'touch') slowStop();
-    }, { passive: true });
-    surface.addEventListener('pointerup', event => {
-      if (event.pointerType === 'touch') resumeAfterTouch();
-    }, { passive: true });
-    surface.addEventListener('pointercancel', event => {
-      if (event.pointerType === 'touch') resumeAfterTouch();
-    }, { passive: true });
+  projects.forEach((project, i) => {
+    const head = project.querySelector('.project-card__head');
+    const pick = project.querySelector('.project-card__pick');
+    head.addEventListener('pointerenter', event => {
+      if (!wide.matches || event.pointerType !== 'mouse') return;
+      clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => activate(i), HOVER_INTENT);
+    });
+    head.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
+    head.addEventListener('click', () => {
+      if (!wide.matches) return;
+      clearTimeout(hoverTimer);
+      activate(i);
+    });
+    pick?.addEventListener('focus', () => { if (wide.matches) activate(i); });
   });
+
+  // Narrow screens: whichever project crosses the middle of the screen.
+  const middle = new IntersectionObserver(changes => {
+    if (wide.matches) return;
+    const hit = changes.filter(change => change.isIntersecting).pop();
+    if (hit) activate(projects.indexOf(hit.target.closest('.project-card')));
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  projects.forEach(project => middle.observe(project.querySelector('.project-card__panel')));
+
+  // Nothing plays while the projects are off screen or the tab is hidden.
+  // Watched through their section: on wide screens the list itself is
+  // display: contents and has no box to intersect.
+  new IntersectionObserver(([entry]) => {
+    inView = entry.isIntersecting;
+    sync();
+  }, { rootMargin: '200px 0px' }).observe(index.closest('section') || index);
+  document.addEventListener('visibilitychange', sync);
+
+  wide.addEventListener?.('change', () => {
+    // Every panel is shown when narrow, so every name reads as expanded.
+    projects.forEach((project, n) => {
+      project.querySelector('.project-card__pick')?.setAttribute('aria-expanded', String(n === active || !wide.matches));
+    });
+  });
+
+  activate(0);
 })();
 
 /* ─── Magnetic links ──────────────────── */
