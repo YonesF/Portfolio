@@ -1152,7 +1152,7 @@ main > section:nth-of-type(even) .scene-ambient {
 /* ── Erfaring card deck ─────────────────────
    With room and motion to spare, site.js turns the grid into a 3D stage:
    the cards start as a pile and deal out into a ring. It sets each card's
-   transform, opacity and stacking; this only places them on the stage.
+   position and stacking; this only puts them on the stage.
    Near-opaque cards, because on the stage they overlap and the usual
    see-through surface would show the text of the card behind. */
 .erfaring__grid.is-3d {
@@ -1163,13 +1163,18 @@ main > section:nth-of-type(even) .scene-ambient {
 
 .erfaring__grid.is-3d .erf-card {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   width: min(34rem, 56vw);
   background: rgba(2, 8, 5, 0.94);
   border-color: rgba(159, 216, 182, 0.12);
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   transition: background-color var(--tr-base), border-color var(--tr-base), box-shadow var(--tr-base);
+}
+
+/* Only while they move (see site.js): held at rest, it would keep each
+   card at the sharpness it was first drawn with. */
+.erfaring__grid.is-moving .erf-card {
   will-change: transform;
 }
 
