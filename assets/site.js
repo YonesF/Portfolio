@@ -522,7 +522,9 @@ document.addEventListener('click', event => {
     // starts as Alder gives way to the content-led Experience section.
     { id: 'landing' },
     { id: 'alder', ambient: '.us-scene__blend', zoom: 'out' },
-    { id: 'erfaring', ambient: ':scope > .container' },
+    // Only the heading drifts: sliding the cards by fractions of a pixel
+    // keeps their small text permanently soft.
+    { id: 'erfaring', ambient: '.erfaring__head' },
     { id: 'projects', ambient: '.projects-gallery__intro' },
     { id: 'contact', ambient: ':scope > .container' }
   ];
@@ -1004,10 +1006,14 @@ function makeGlowSprite(r, g, b) {
   const dealt = cards.map(() => ({ t: 0 }));
   // turn: ring position in cards. lift: hover fan of the pile.
   const state = { turn: 0, lift: 0 };
+  // Stage centre, and where the stage itself sits on screen.
+  const stage = { cx: 0, cy: 0, left: 0, top: 0 };
+  const sizes = cards.map(() => ({ w: 0, h: 0 }));
   let turnTarget = 0;
   let radius = 0;
   let active = false;
   let open = false;
+  let moving = false;
 
   const mix = (a, b, t) => a + (b - a) * t;
   const frontOf = turn => ((Math.round(turn) % count) + count) % count;
@@ -1015,9 +1021,12 @@ function makeGlowSprite(r, g, b) {
   function pilePose(i) {
     const p = pile[i % pile.length];
     const fan = 1 + state.lift * 0.9;
-    return { x: p.x * fan, y: p.y * fan - state.lift * 10, z: -i * 36, rx: 12, ry: -8, rz: p.rz * fan, o: 1 };
+    return { x: p.x * fan, y: p.y * fan - state.lift * 10, z: -i * 36, rx: 12, ry: -8, rz: p.rz * fan };
   }
 
+  // Every card in the ring faces the viewer square on and at full opacity:
+  // turned or faded, its text is resampled and reads as a blur. Depth comes
+  // from the perspective alone.
   function ringPose(i) {
     const angle = (i - state.turn) * step;
     const depth = Math.cos(angle) - 1; // 0 at the front, -2 at the back
@@ -1027,23 +1036,31 @@ function makeGlowSprite(r, g, b) {
       y: (depth + 1) * radius * 0.26,
       z: depth * radius,
       rx: 0,
-      ry: -Math.sin(angle) * 16,
-      rz: 0,
-      o: 1 + depth * 0.16
+      ry: 0,
+      rz: 0
     };
   }
 
   function render() {
     const front = frontOf(state.turn);
+    // Whole screen pixels once still: a card resting on a fraction of a
+    // pixel has its text smeared across two. Snapped where it lands on the
+    // screen, since the stage itself may sit part-way into a pixel, and in
+    // device pixels, for displays scaled to 125 % or 150 %.
+    const dpr = window.devicePixelRatio || 1;
+    const snap = (value, offset) => (moving
+      ? value.toFixed(2)
+      : (Math.round((offset + value) * dpr) / dpr - offset).toFixed(3));
     const poses = cards.map((card, i) => {
       const a = pilePose(i);
       const b = ringPose(i);
       const p = {};
       Object.keys(a).forEach(key => { p[key] = mix(a[key], b[key], dealt[i].t); });
+      const x = stage.cx - sizes[i].w / 2 + p.x;
+      const y = stage.cy - sizes[i].h / 2 + p.y;
       card.style.transform =
-        `translate(-50%, -50%) translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, ${p.z.toFixed(1)}px) ` +
+        `translate3d(${snap(x, stage.left)}px, ${snap(y, stage.top)}px, ${snap(p.z, 0)}px) ` +
         `rotateX(${p.rx.toFixed(2)}deg) rotateY(${p.ry.toFixed(2)}deg) rotateZ(${p.rz.toFixed(2)}deg)`;
-      card.style.opacity = p.o.toFixed(3);
       card.classList.toggle('is-front', open && i === front);
       return p;
     });
@@ -1057,13 +1074,51 @@ function makeGlowSprite(r, g, b) {
       });
   }
 
+  // will-change only while something moves. It keeps the motion on the
+  // compositor, but it also freezes each card at the sharpness it was first
+  // drawn with, so a card shown smaller stays blurred. At rest the browser
+  // redraws them crisply at the size they end up.
+  function startMoving() {
+    if (moving) return;
+    moving = true;
+    grid.classList.add('is-moving');
+  }
+
+  function settle() {
+    // Deferred a frame: a tween still counts as running in its own onComplete.
+    requestAnimationFrame(() => {
+      if (!moving || gsap.isTweening(state) || dealt.some(card => gsap.isTweening(card))) return;
+      moving = false;
+      grid.classList.remove('is-moving');
+      locate();
+      render();
+    });
+  }
+
+  function animate(targets, vars) {
+    return gsap.to(targets, { ...vars, onStart: startMoving, onUpdate: render, onComplete: settle, overwrite: 'auto' });
+  }
+
+  function locate() {
+    const box = grid.getBoundingClientRect();
+    stage.left = box.left;
+    stage.top = box.top;
+  }
+
   function measure() {
+    locate();
+    stage.cx = grid.clientWidth / 2;
+    stage.cy = grid.clientHeight / 2;
+    cards.forEach((card, i) => {
+      sizes[i].w = card.offsetWidth;
+      sizes[i].h = card.offsetHeight;
+    });
     // Wide enough that the side cards clear most of the front one; where
     // the screen allows, no wider than keeps their outer edges on it (the
     // side cards sit a radius back, so perspective shrinks them toward the
     // centre). A narrow screen lets them run off the edges instead of
     // burying them behind the front card.
-    const cardWidth = cards[0].offsetWidth;
+    const cardWidth = sizes[0].w;
     const perspective = parseFloat(getComputedStyle(grid).perspective) || 1600;
     const half = window.innerWidth / 2 - 24;
     const fits = half < perspective
@@ -1082,22 +1137,20 @@ function makeGlowSprite(r, g, b) {
     // Dealt one after another from the top of the pile; gathered back in
     // the reverse order, a little quicker. Sine in-out starts every card
     // from rest, so none of them jolts into motion.
-    gsap.to(dealt, {
+    animate(dealt, {
       t: open ? 1 : 0,
-      duration: open ? 0.6 : 0.45,
+      duration: open ? 0.45 : 0.35,
       ease: 'sine.inOut',
-      stagger: { each: open ? 0.05 : 0.03, from: open ? 'start' : 'end' },
-      onUpdate: render,
-      overwrite: 'auto'
+      stagger: { each: open ? 0.035 : 0.02, from: open ? 'start' : 'end' }
     });
-    gsap.to(state, { lift: 0, duration: 0.3, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+    animate(state, { lift: 0, duration: 0.25, ease: 'power2.out' });
   }
 
   function turnBy(delta) {
     turnTarget += delta;
     // Eased in and out like the deal; a quick second click carries on from
     // wherever the ring has got to.
-    gsap.to(state, { turn: turnTarget, duration: 0.5, ease: 'sine.inOut', onUpdate: render, overwrite: 'auto' });
+    animate(state, { turn: turnTarget, duration: 0.38, ease: 'sine.inOut' });
   }
 
   function bringToFront(i) {
@@ -1111,13 +1164,15 @@ function makeGlowSprite(r, g, b) {
   function setActive(next) {
     active = next;
     gsap.killTweensOf([state, ...dealt]);
+    moving = false;
+    grid.classList.remove('is-moving');
     grid.classList.toggle('is-3d', active);
     controls.hidden = !active;
     if (!active) {
       open = false;
       grid.classList.remove('is-deck', 'is-ring');
       cards.forEach(card => {
-        card.style.transform = card.style.opacity = card.style.zIndex = '';
+        card.style.transform = card.style.zIndex = '';
         card.classList.remove('is-front');
       });
       return;
@@ -1139,10 +1194,10 @@ function makeGlowSprite(r, g, b) {
   });
 
   grid.addEventListener('pointerenter', () => {
-    if (active && !open) gsap.to(state, { lift: 1, duration: 0.35, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+    if (active && !open) animate(state, { lift: 1, duration: 0.25, ease: 'power2.out' });
   });
   grid.addEventListener('pointerleave', () => {
-    if (active && !open) gsap.to(state, { lift: 0, duration: 0.35, ease: 'power2.out', onUpdate: render, overwrite: 'auto' });
+    if (active && !open) animate(state, { lift: 0, duration: 0.25, ease: 'power2.out' });
   });
 
   toggle.addEventListener('click', () => setOpen(!open));
@@ -1160,6 +1215,11 @@ function makeGlowSprite(r, g, b) {
     measure();
     render();
   }, { resize: true });
+  document.fonts?.ready.then(() => {
+    if (!active) return;
+    measure();
+    render();
+  });
   media.addEventListener?.('change', () => setActive(media.matches));
   setActive(media.matches);
 })();
