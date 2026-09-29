@@ -1032,8 +1032,10 @@ function makeGlowSprite(r, g, b) {
     const depth = Math.cos(angle) - 1; // 0 at the front, -2 at the back
     return {
       x: Math.sin(angle) * radius,
-      // The far side rises, as if the ring were seen from a little above.
-      y: (depth + 1) * radius * 0.26,
+      // The far side rises, as if the ring were seen from a little above,
+      // and the whole ring sits a little above the stage centre so the
+      // front card clears the buttons below it.
+      y: (depth + 0.6) * radius * 0.26,
       z: depth * radius,
       rx: 0,
       ry: 0,
