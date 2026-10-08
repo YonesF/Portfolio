@@ -1226,8 +1226,25 @@ function makeGlowSprite(r, g, b) {
   setActive(media.matches);
 })();
 
+/* ─── Prosjekter 3D wall hand-off ─────────── */
+// Where WebGL and motion are welcome, assets/project-stage.js shows the
+// projects as screens on a curved 3D wall and plays one recording at a
+// time itself; the grid then stays hidden as the source of their content.
+// Decided here, before the grid's own scripts below start its videos. If
+// the module cannot start after all, it hands the page back to the grid.
+const projectStage = (() => {
+  const section = document.getElementById('projects');
+  const stage = section?.querySelector('.project-stage');
+  if (!stage || !window.WebGLRenderingContext) return null;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+  section.classList.add('has-stage');
+  stage.hidden = false;
+  return stage;
+})();
+
 /* ─── Compositor-only project carousel ────── */
 (function initProjectCarousel() {
+  if (projectStage) return;
   const track = document.querySelector('#projects .projects-gallery__track');
   const sourceGroup = track?.querySelector('.projects-gallery__group');
   if (!track || !sourceGroup || track.classList.contains('is-carousel-ready')) return;
@@ -1258,6 +1275,7 @@ function makeGlowSprite(r, g, b) {
 // stops again when it leaves or the tab is hidden — four small decodes are
 // cheap while they are being watched and pure waste when they are not.
 (function initProjectVideos() {
+  if (projectStage) return;
   const section = document.getElementById('projects');
   const videos = [...document.querySelectorAll('.project-visual__video')];
   if (!section || !videos.length) return;
@@ -1288,6 +1306,7 @@ function makeGlowSprite(r, g, b) {
 
 /* ─── Smooth carousel braking ─────────────── */
 (function initProjectCarouselBraking() {
+  if (projectStage) return;
   const section = document.getElementById('projects');
   const track = section?.querySelector('.projects-gallery__track');
   if (!section || !track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
