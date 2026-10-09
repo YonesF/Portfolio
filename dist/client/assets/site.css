@@ -118,14 +118,40 @@ button {
   font: inherit;
 }
 
-/* Subtle paper texture */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+/* No paper-grain overlay. As a fixed layer over the whole window it had to
+   be drawn from an SVG turbulence filter at full window size on every
+   resize and composited over every frame of every scene, for a texture at
+   2.5 % opacity that moves no pixel by more than a level or two on these
+   dark pages. */
+
+/* ── Lenis ─────────────────────────────────
+   lenis@1.3.26/dist/lenis.css, kept here rather than linked from unpkg:
+   a third-party stylesheet holds up the first paint while it loads. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
   pointer-events: none;
-  z-index: 9000;
+}
+
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
 }
 
 ::-webkit-scrollbar {
@@ -482,14 +508,21 @@ main > section:nth-of-type(even) .scene-ambient {
    line. Feathering the stage's own flanks lets the artwork dissolve
    into the ground instead. Percentages are of the 1440px artboard,
    so the mist scales with the scene; it stops short of the 21 ÅR
-   GAMMEL lettering, which reaches roughly 9%–92%. */
-#alder .us-scene__stage {
-  -webkit-mask-image: linear-gradient(to right,
-      transparent 0%, rgba(0, 0, 0, 0.45) 2%, #000 6%,
-      #000 94%, rgba(0, 0, 0, 0.45) 98%, transparent 100%);
-  mask-image: linear-gradient(to right,
-      transparent 0%, rgba(0, 0, 0, 0.45) 2%, #000 6%,
-      #000 94%, rgba(0, 0, 0, 0.45) 98%, transparent 100%);
+   GAMMEL lettering, which reaches roughly 9%–92%.
+
+   Laid over the canvas in black rather than masked out of it: on this
+   black ground the two give the same pixels, but a mask on a live canvas
+   costs the graphics card an extra full pass on every frame. Above the
+   canvas, below the runtime's transparent text layers (z-index 2). */
+#alder .us-scene__stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to right,
+      #000 0%, rgba(0, 0, 0, 0.55) 2%, transparent 6%,
+      transparent 94%, rgba(0, 0, 0, 0.55) 98%, #000 100%);
 }
 
 /* Full-bleed rather than letterboxed. A viewport-height section can
@@ -792,8 +825,9 @@ main > section:nth-of-type(even) .scene-ambient {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  transition: background-color 1.8s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color     1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  /* No transition on the hairline borders' change of tone below: animated,
+     it repainted the whole window-sized section on every frame for 1.8s
+     each time a card was hovered. */
 }
 
 /* ── Erfaring backdrop scene ─────────────
@@ -865,7 +899,6 @@ main > section:nth-of-type(even) .scene-ambient {
 }
 
 .erfaring:has(.erf-card:hover) {
-  background-color: #020806;
   border-color: rgba(159, 216, 182, 0.18);
 }
 
@@ -3063,4 +3096,51 @@ main > section:nth-of-type(even) .scene-ambient {
   .page-kontakt .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Lite rendering ─────────────────────────
+   Set on <html> by assets/perf.js when this machine cannot keep the scenes
+   moving smoothly; site.js and project-stage.js lower their own resolution
+   and frame rate. Here the effects that cost the compositor on every frame
+   stand down. Glass over a moving picture has to be blurred afresh each
+   time the picture changes, so it becomes a plain tint, a little denser to
+   keep the copy on it legible. The decorative drifts and sways hold their
+   resting pose: each keeps the compositor producing frames on top of what
+   the scenes already ask of it. Last in the file, so it wins every tie. */
+.perf-lite .us-scene__links .us-scene__link {
+  backdrop-filter: none;
+  background: rgba(8, 18, 12, 0.72);
+}
+
+.perf-lite .us-scene__links .us-scene__link:hover {
+  background: rgba(20, 44, 28, 0.86);
+}
+
+.perf-lite .contact .form-input,
+.perf-lite .contact .form-ta {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(9, 15, 12, 0.82);
+}
+
+.perf-lite .contact .form-input:focus,
+.perf-lite .contact .form-ta:focus {
+  background: rgba(9, 15, 12, 0.9);
+}
+
+.perf-lite .scene-ambient,
+.perf-lite .erfaring__leaf svg {
+  animation: none;
+  will-change: auto;
+}
+
+.perf-lite .erfaring .erfaring__leaf {
+  will-change: auto;
+}
+
+/* The sway is set inline by site.js, hence !important. Its first keyframe
+   is the pose to hold, rotation included. */
+.perf-lite .side-leaf svg {
+  animation: none !important;
+  transform: rotate(var(--base-rot, 0deg)) !important;
 }
