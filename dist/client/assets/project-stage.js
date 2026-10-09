@@ -14,9 +14,12 @@
    - Only the centre project's recording plays, as a video texture; every
      other screen shows its poster still, so one video decodes at a time.
    - Textures are mipmapped and anisotropic, so screens turned away stay
-     clean instead of shimmering. */
+     clean instead of shimmering.
+   - On a lite page (assets/perf.js) it draws one pixel per CSS pixel,
+     without antialiasing, and filters textures less finely. */
 
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js';
+const perf = window.__perf || { lite: false, onChange() {} };
 
 // The wall, in units of one screen's width.
 const PANEL_W = 1;
@@ -80,14 +83,18 @@ async function startStage() {
     link: details.querySelector('.project-stage__link')
   };
 
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+  // Multisampling only where it shows: at two device pixels per CSS pixel
+  // the screens' edges are already fine, and a lite page goes without.
+  // Fixed once the context exists, so a page that turns lite later keeps it.
+  const antialias = !perf.lite && (window.devicePixelRatio || 1) < 2;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(20, 1, 0.1, 50);
   camera.position.set(0, 0, CAMERA_BACK);
   const geometry = new THREE.PlaneGeometry(PANEL_W, PANEL_H);
-  const anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), perf.lite ? 4 : 16);
   const loader = new THREE.TextureLoader();
 
   // Cover the screen with a still or video of another shape, cropping the
@@ -318,7 +325,7 @@ async function startStage() {
     const width = view.clientWidth;
     const height = view.clientHeight;
     if (!width || !height) return;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, perf.lite ? 1 : 2));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     // The centre screen's share of the width comes from site.css, which
@@ -345,6 +352,7 @@ async function startStage() {
   }
 
   new ResizeObserver(resize).observe(view);
+  perf.onChange(resize);
 
   /* ── Input ────────────────────────────── */
   const ray = new THREE.Raycaster();
