@@ -7,7 +7,13 @@
 // both systems share GSAP's clock while scrolling. The Lenis callback is
 // detached after four settled frames, allowing GSAP's ticker to sleep
 // normally whenever no other tween is active.
-const lenis = new Lenis();
+//
+// A lite page (assets/perf.js) scrolls natively instead. The browser
+// scrolls off the main thread and keeps up while the page is busy, where
+// Lenis eases toward the wheel one rendered frame at a time and trails it
+// badly once frames run late.
+const perf = window.__perf || { lite: false, onChange() {}, probe() {} };
+let lenis = perf.lite ? null : new Lenis();
 gsap.registerPlugin(ScrollTrigger, SplitText);
 gsap.ticker.lagSmoothing(0);
 
@@ -24,7 +30,16 @@ const lenisTicker = (() => {
     document.documentElement.dataset.lenisTicker = 'idle';
   }
 
+  // Hands the page back to native scrolling for good, wherever it stands.
+  function release() {
+    if (!lenis) return;
+    detach();
+    lenis.destroy();
+    lenis = null;
+  }
+
   function drive(time) {
+    if (!lenis) return;
     const timeMs = time * 1000;
     if (resetClock) {
       // Do not treat time spent asleep as one enormous animation frame.
@@ -45,25 +60,27 @@ const lenisTicker = (() => {
 
   function wake() {
     settledFrames = 0;
-    if (attached || document.hidden) return;
+    if (!lenis || attached || document.hidden) return;
     resetClock = true;
     attached = true;
     document.documentElement.dataset.lenisTicker = 'running';
     gsap.ticker.add(drive);
   }
 
-  lenis.on('scroll', instance => {
-    ScrollTrigger.update();
-    if (instance.isScrolling) wake();
-  });
-  lenis.on('virtual-scroll', wake);
+  if (lenis) {
+    lenis.on('scroll', instance => {
+      ScrollTrigger.update();
+      if (instance.isScrolling) wake();
+    });
+    lenis.on('virtual-scroll', wake);
 
-  // Programmatic anchor navigation must wake from a fully idle page.
-  const scrollTo = lenis.scrollTo.bind(lenis);
-  lenis.scrollTo = (...args) => {
-    wake();
-    return scrollTo(...args);
-  };
+    // Programmatic anchor navigation must wake from a fully idle page.
+    const scrollTo = lenis.scrollTo.bind(lenis);
+    lenis.scrollTo = (...args) => {
+      wake();
+      return scrollTo(...args);
+    };
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) detach();
@@ -71,8 +88,12 @@ const lenisTicker = (() => {
   });
 
   wake();
-  return { wake, get running() { return attached; } };
+  return { wake, release, get running() { return attached; } };
 })();
+
+perf.onChange(lite => {
+  if (lite) lenisTicker.release();
+});
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -252,6 +273,9 @@ const renderSectionActivity = (() => {
       section: host.closest('section'),
       projectId: host.getAttribute('data-us-project'),
       filePath: host.getAttribute('data-us-project-src'),
+      // The scenes behind Erfaring and Prosjekter, rather than the fitted
+      // artboards that carry the landing's words and the Om meg page.
+      backdrop: !host.hasAttribute('data-scene-fit'),
       scene: null,
       promise: null,
       destroyTimer: 0,
@@ -263,6 +287,9 @@ const renderSectionActivity = (() => {
 
   const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
   const DESTROY_DELAY = 650;
+  const DPI_CEILING = 1.5;    // the density Unicorn exports every scene at
+  const LITE_FPS = 30;
+  const LITE_BACKDROP = 0.75; // backdrops sit under a dark veil, so lose least
   let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
   let activeSection = renderSectionActivity.active;
   let direction = 1;
@@ -282,9 +309,60 @@ const renderSectionActivity = (() => {
     entry.host.dataset.renderPaused = paused ? 'true' : 'false';
   }
 
+  // Unicorn's export pins every scene at 1.5 canvas pixels per CSS pixel
+  // whatever the screen, and a fitted stage is drawn at its full 1440x900
+  // artboard however small its transform shows it — a 1366x768 laptop drew
+  // three pixels, through every effect pass, for each one it displayed. So
+  // each scene is drawn at the size it is shown instead: never finer than
+  // the screen, nor than data-us-dpi (1.5 by default, as exported). A lite
+  // page goes coarser, to one pixel per CSS pixel at most and less again
+  // for the backdrops, and caps the frame rate.
+  function sceneDpi(entry) {
+    const ceiling = Number(entry.host.getAttribute('data-us-dpi')) || DPI_CEILING;
+    // The transform scale scenes.js gives a fitted stage; backdrops show at their own size.
+    const fit = parseFloat(entry.host.style.getPropertyValue('--scene-fit')) || 1;
+    let dpi = Math.min(ceiling, (window.devicePixelRatio || 1) * fit);
+    if (perf.lite) dpi = Math.min(dpi, fit) * (entry.backdrop ? LITE_BACKDROP : 1);
+    // Rounded up, so a canvas is never stretched over a slightly larger box.
+    return Math.max(0.25, Math.ceil(dpi * 100) / 100);
+  }
+
+  function sceneFps(entry) {
+    const fps = Number(entry.host.getAttribute('data-us-fps')) || 60;
+    return perf.lite ? Math.min(fps, LITE_FPS) : fps;
+  }
+
+  // A scene keeps the resolution it was created with, so it is re-tuned
+  // when the window or the zoom (which moves devicePixelRatio) changes, and
+  // when the page turns lite. This reaches into the runtime, whose canvas
+  // takes its size from curtain.pixelRatio on every resize; guarded, so a
+  // runtime that works differently simply keeps its scene as created.
+  function tuneScene(entry) {
+    const scene = entry.scene;
+    if (!scene) return;
+    try {
+      const fps = sceneFps(entry);
+      if (scene.fps !== fps) {
+        scene.fps = fps;
+        scene.frameDuration = 1000 / fps;
+      }
+      const dpi = sceneDpi(entry);
+      // A resize reallocates every buffer the effects draw through, so it
+      // is kept for a change that shows.
+      if (!scene.curtain || typeof scene.resize !== 'function' || Math.abs(dpi - scene.dpi) < 0.05) return;
+      scene.dpi = dpi;
+      scene.curtain.pixelRatio = dpi;
+      scene.resize();
+    } catch (error) {
+      console.warn('Unicorn scene could not be re-tuned:', error);
+    }
+  }
+
   function sceneOptions(entry, prefetchedSource) {
     const options = {
-      element: entry.host
+      element: entry.host,
+      dpi: sceneDpi(entry),
+      fps: sceneFps(entry)
     };
     if (prefetchedSource) options.filePath = prefetchedSource;
     else if (entry.filePath) options.filePath = entry.filePath;
@@ -298,10 +376,8 @@ const renderSectionActivity = (() => {
     if (ariaLabel) options.ariaLabel = ariaLabel;
     if (altText) options.altText = altText;
 
-    ['scale', 'dpi', 'fps'].forEach(name => {
-      const value = entry.host.getAttribute(`data-us-${name}`);
-      if (value !== null && Number.isFinite(Number(value))) options[name] = Number(value);
-    });
+    const scale = entry.host.getAttribute('data-us-scale');
+    if (scale !== null && Number.isFinite(Number(scale))) options.scale = Number(scale);
     return options;
   }
 
@@ -386,7 +462,10 @@ const renderSectionActivity = (() => {
           // runtime upload the textures before the fade starts.
           const scene = entry.scene;
           requestAnimationFrame(() => requestAnimationFrame(() => {
-            if (scene && entry.scene === scene) entry.host.dataset.sceneReady = '';
+            if (!scene || entry.scene !== scene) return;
+            entry.host.dataset.sceneReady = '';
+            // Now there is real drawing to time (assets/perf.js).
+            perf.probe();
           }));
         }))
       .catch(error => {
@@ -497,12 +576,22 @@ const renderSectionActivity = (() => {
   }, { once: true });
   window.addEventListener('pageshow', scheduleSync);
 
+  // Settled first: dragging a window edge would otherwise reallocate the
+  // scene's buffers on every frame of the drag.
+  let tuneTimer = 0;
+  viewportFrame.subscribe(() => {
+    clearTimeout(tuneTimer);
+    tuneTimer = window.setTimeout(() => entries.forEach(tuneScene), 250);
+  }, { resize: true });
+  perf.onChange(() => entries.forEach(tuneScene));
+
   scheduleSync();
 })();
 
 // In-page links are handled here so anchor movement wakes the idle Lenis ticker.
+// Without Lenis (a lite page) the browser's own jump stands.
 document.addEventListener('click', event => {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+  if (!lenis || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
   const link = event.target.closest('a[href^="#"]');
   if (!link) return;
   const hash = link.getAttribute('href');
@@ -826,6 +915,9 @@ if (cForm && cBtn) cForm.addEventListener('submit', e => {
   }, { rootMargin: '300px 0px' }).observe(video);
 
   document.addEventListener('visibilitychange', sync);
+  // The page's one moving picture, with the form's glass blurred over it:
+  // the moment to time this machine's frames (assets/perf.js).
+  video.addEventListener('playing', () => perf.probe(), { once: true });
 })();
 
 /* ─── Shared firefly glow sprite cache ─── */
@@ -857,7 +949,11 @@ function makeGlowSprite(r, g, b) {
   if (!section || !canvas) return;
 
   const ctx = canvas.getContext('2d');
-  let flies = [], animId = null, started = false;
+  // Drawn at most 60 times a second, or 30 on a lite page (assets/perf.js),
+  // rather than at whatever a 144 Hz screen asks for. The flies move by
+  // elapsed time, so a lower rate changes nothing but the smoothness.
+  const FRAME = 1000 / 60;
+  let flies = [], animId = null, started = false, lastFrame = 0;
   let sectionIntersecting = false;
   let sectionVisible = false;
 
@@ -887,6 +983,10 @@ function makeGlowSprite(r, g, b) {
       this.targetAlpha = this.baseAlpha;
       this.color = ffColors[Math.floor(Math.random() * ffColors.length)];
       this.glowSprite = makeGlowSprite(this.color.r, this.color.g, this.color.b);
+      // The core's colour is fixed; its fade comes from globalAlpha, so no
+      // colour string is built per fly per frame.
+      const { r, g, b } = this.color;
+      this.core = `rgb(${Math.min(r + 40, 255)},${Math.min(g + 40, 255)},${Math.min(b + 20, 255)})`;
       this.vx = (Math.random() - 0.5) * 0.22;
       this.vy = (Math.random() - 0.5) * 0.16;
       this.phase = Math.random() * Math.PI * 2;
@@ -894,12 +994,13 @@ function makeGlowSprite(r, g, b) {
       this.glowSize = this.size * (Math.random() * 5 + 7);
       this.w = w; this.h = h;
     }
-    update() {
-      this.phase += this.pulseSpeed;
-      this.alpha += (this.targetAlpha - this.alpha) * 0.025;
+    // step: elapsed time in 60 fps frames, the unit these speeds are tuned in.
+    update(step) {
+      this.phase += this.pulseSpeed * step;
+      this.alpha += (this.targetAlpha - this.alpha) * Math.min(1, 0.025 * step);
       const pulse = Math.sin(this.phase) * 0.5 + 0.5;
-      this.x += Math.sin(this.phase * 0.7) * 0.32 + this.vx;
-      this.y += Math.cos(this.phase * 0.5) * 0.22 + this.vy;
+      this.x += (Math.sin(this.phase * 0.7) * 0.32 + this.vx) * step;
+      this.y += (Math.cos(this.phase * 0.5) * 0.22 + this.vy) * step;
       if (this.x < -20) this.x = this.w + 20;
       if (this.x > this.w + 20) this.x = -20;
       if (this.y < -20) this.y = this.h + 20;
@@ -912,11 +1013,9 @@ function makeGlowSprite(r, g, b) {
       const g = this.glowSize;
       ctx.globalAlpha = a;
       ctx.drawImage(this.glowSprite.canvas, this.x - g, this.y - g, g * 2, g * 2);
-      ctx.globalAlpha = 1;
-      const { r, g: cg, b } = this.color;
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size * (0.7 + pulse * 0.3), 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${Math.min(r+40,255)},${Math.min(cg+40,255)},${Math.min(b+20,255)},${a})`;
+      ctx.fillStyle = this.core;
       ctx.fill();
     }
   }
@@ -932,10 +1031,18 @@ function makeGlowSprite(r, g, b) {
     }
   }
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    flies.forEach(f => { const p = f.update(); f.draw(p); });
+  function animate(now) {
     animId = sectionVisible ? requestAnimationFrame(animate) : null;
+    const interval = perf.lite ? FRAME * 2 : FRAME;
+    // A little slack, so a 60 Hz screen's frames are never skipped for
+    // arriving a fraction of a millisecond early.
+    if (lastFrame && now - lastFrame < interval - 2) return;
+    // Capped, so a return from a hidden tab does not fling every fly at once.
+    const step = lastFrame ? Math.min((now - lastFrame) / FRAME, 4) : 1;
+    lastFrame = now;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    flies.forEach(f => f.draw(f.update(step)));
+    ctx.globalAlpha = 1;
   }
 
   function syncSectionActivity(activeSection = renderSectionActivity.active) {
@@ -946,6 +1053,8 @@ function makeGlowSprite(r, g, b) {
     if (!sectionVisible && animId) {
       cancelAnimationFrame(animId);
       animId = null;
+      // Resumes from rest rather than catching up on the time away.
+      lastFrame = 0;
       return;
     }
 
@@ -955,7 +1064,7 @@ function makeGlowSprite(r, g, b) {
       initFlies();
       flies.forEach(f => { f.targetAlpha = f.baseAlpha; });
     }
-    if (sectionVisible && !animId && started) animate();
+    if (sectionVisible && !animId && started) animId = requestAnimationFrame(animate);
   }
 
   const obs = new IntersectionObserver(entries => {
@@ -1271,9 +1380,10 @@ const projectStage = (() => {
 // are wired up as well. Both copies of a clip share one URL, so the browser
 // downloads each file once however many elements point at it.
 //
-// Nothing is fetched until the gallery is near the viewport, and everything
-// stops again when it leaves or the tab is hidden — four small decodes are
-// cheap while they are being watched and pure waste when they are not.
+// Nothing is fetched until a clip is near the viewport, and each one stops
+// again when it leaves or the tab is hidden. Watched one by one rather than
+// as a gallery: the grid shows two or three at a time, and the carousel's
+// hidden duplicates are never on screen at all, so only clips in view decode.
 (function initProjectVideos() {
   if (projectStage) return;
   const section = document.getElementById('projects');
@@ -1284,24 +1394,26 @@ const projectStage = (() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (navigator.connection?.saveData) return;
 
-  let onScreen = false;
+  const onScreen = new Set();
 
-  function sync() {
-    videos.forEach(video => {
-      // Cloned nodes carry the attribute but not always the property, and
-      // autoplay is refused without it.
-      video.muted = true;
-      if (onScreen && !document.hidden) video.play().catch(() => {});
-      else video.pause();
-    });
+  function sync(video) {
+    // Cloned nodes carry the attribute but not always the property, and
+    // autoplay is refused without it.
+    video.muted = true;
+    if (onScreen.has(video) && !document.hidden) video.play().catch(() => {});
+    else video.pause();
   }
 
-  new IntersectionObserver(([entry]) => {
-    onScreen = entry.isIntersecting;
-    sync();
-  }, { rootMargin: '300px 0px' }).observe(section);
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) onScreen.add(entry.target);
+      else onScreen.delete(entry.target);
+      sync(entry.target);
+    });
+  }, { rootMargin: '300px' });
+  videos.forEach(video => observer.observe(video));
 
-  document.addEventListener('visibilitychange', sync);
+  document.addEventListener('visibilitychange', () => videos.forEach(sync));
 })();
 
 /* ─── Smooth carousel braking ─────────────── */
