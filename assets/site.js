@@ -12,7 +12,7 @@
 // scrolls off the main thread and keeps up while the page is busy, where
 // Lenis eases toward the wheel one rendered frame at a time and trails it
 // badly once frames run late.
-const perf = window.__perf || { lite: false, onChange() {}, probe() {} };
+const perf = window.__perf || { tier: 'normal', lite: false, onChange() {}, probe() {} };
 let lenis = perf.lite ? null : new Lenis();
 gsap.registerPlugin(ScrollTrigger, SplitText);
 gsap.ticker.lagSmoothing(0);
@@ -91,8 +91,8 @@ const lenisTicker = (() => {
   return { wake, release, get running() { return attached; } };
 })();
 
-perf.onChange(lite => {
-  if (lite) lenisTicker.release();
+perf.onChange(() => {
+  if (perf.lite) lenisTicker.release();
 });
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -311,14 +311,18 @@ const renderSectionActivity = (() => {
 
   // Unicorn's export pins every scene at 1.5 canvas pixels per CSS pixel
   // whatever the screen, and a fitted stage is drawn at its full 1440x900
-  // artboard however small its transform shows it — a 1366x768 laptop drew
-  // three pixels, through every effect pass, for each one it displayed. So
-  // each scene is drawn at the size it is shown instead: never finer than
+  // artboard however small its transform shows it. Drawn that much larger
+  // and scaled down is what gives the scenes' grain the look they were
+  // published with, so a machine with the power for it (perf.tier 'fine')
+  // keeps exactly that. But on a 1366x768 laptop it meant three pixels
+  // drawn, through every effect pass, for each one displayed, so at
+  // 'normal' each scene is drawn at the size it is shown: never finer than
   // the screen, nor than data-us-dpi (1.5 by default, as exported). A lite
   // page goes coarser, to one pixel per CSS pixel at most and less again
   // for the backdrops, and caps the frame rate.
   function sceneDpi(entry) {
     const ceiling = Number(entry.host.getAttribute('data-us-dpi')) || DPI_CEILING;
+    if (perf.tier === 'fine') return ceiling;
     // The transform scale scenes.js gives a fitted stage; backdrops show at their own size.
     const fit = parseFloat(entry.host.style.getPropertyValue('--scene-fit')) || 1;
     let dpi = Math.min(ceiling, (window.devicePixelRatio || 1) * fit);
@@ -334,9 +338,10 @@ const renderSectionActivity = (() => {
 
   // A scene keeps the resolution it was created with, so it is re-tuned
   // when the window or the zoom (which moves devicePixelRatio) changes, and
-  // when the page turns lite. This reaches into the runtime, whose canvas
-  // takes its size from curtain.pixelRatio on every resize; guarded, so a
-  // runtime that works differently simply keeps its scene as created.
+  // when perf.js moves the page to another level. This reaches into the
+  // runtime, whose canvas takes its size from curtain.pixelRatio on every
+  // resize; guarded, so a runtime that works differently simply keeps its
+  // scene as created.
   function tuneScene(entry) {
     const scene = entry.scene;
     if (!scene) return;
@@ -917,7 +922,7 @@ if (cForm && cBtn) cForm.addEventListener('submit', e => {
   document.addEventListener('visibilitychange', sync);
   // The page's one moving picture, with the form's glass blurred over it:
   // the moment to time this machine's frames (assets/perf.js).
-  video.addEventListener('playing', () => perf.probe(), { once: true });
+  video.addEventListener('playing', () => perf.probe({ scene: false }), { once: true });
 })();
 
 /* ─── Shared firefly glow sprite cache ─── */
