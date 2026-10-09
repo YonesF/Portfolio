@@ -289,7 +289,7 @@ const renderSectionActivity = (() => {
   const DESTROY_DELAY = 650;
   const DPI_CEILING = 1.5;    // the density Unicorn exports every scene at
   const LITE_FPS = 30;
-  const LITE_BACKDROP = 0.75; // backdrops sit under a dark veil, so lose least
+  const LOWEST_BACKDROP = 0.75; // backdrops sit under a dark veil, so lose least
   let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
   let activeSection = renderSectionActivity.active;
   let direction = 1;
@@ -311,24 +311,35 @@ const renderSectionActivity = (() => {
 
   // Unicorn's export pins every scene at 1.5 canvas pixels per CSS pixel
   // whatever the screen, and a fitted stage is drawn at its full 1440x900
-  // artboard however small its transform shows it. Drawn that much larger
-  // and scaled down is what gives the scenes' grain the look they were
-  // published with, so a machine with the power for it (perf.tier 'fine')
-  // keeps exactly that. But on a 1366x768 laptop it meant three pixels
-  // drawn, through every effect pass, for each one displayed, so at
-  // 'normal' each scene is drawn at the size it is shown: never finer than
-  // the screen, nor than data-us-dpi (1.5 by default, as exported). A lite
-  // page goes coarser, to one pixel per CSS pixel at most and less again
-  // for the backdrops, and caps the frame rate.
+  // artboard however small its transform shows it. A machine with the
+  // power for it (perf.tier 'fine') keeps exactly that, the look the
+  // scenes were published with. But on a 1366x768 laptop it meant three
+  // pixels drawn, through every effect pass, for each one displayed.
+  //
+  // What carries most of that look is not the extra pixels but the
+  // artboard: the dither and halftone lay their grain on its grid, one cell
+  // per artboard pixel, as long as the canvas is at least that large.
+  // Smaller, they fall back to one cell per canvas pixel and the grain goes
+  // soft, and so do the photographs under it. So 'normal' draws each scene
+  // at the size it is shown, but never below its artboard (for a backdrop,
+  // its own CSS size): nearly all of the grain, for under half the pixels
+  // of fine. 'lite' keeps that floor but gives up the extra density of
+  // sharp screens and half the frames; only 'lowest' goes below it, softer
+  // still for the backdrops. Nothing is drawn finer than data-us-dpi (1.5
+  // by default, as exported).
   function sceneDpi(entry) {
     const ceiling = Number(entry.host.getAttribute('data-us-dpi')) || DPI_CEILING;
-    if (perf.tier === 'fine') return ceiling;
+    const tier = perf.tier;
+    if (tier === 'fine') return ceiling;
     // The transform scale scenes.js gives a fitted stage; backdrops show at their own size.
     const fit = parseFloat(entry.host.style.getPropertyValue('--scene-fit')) || 1;
-    let dpi = Math.min(ceiling, (window.devicePixelRatio || 1) * fit);
-    if (perf.lite) dpi = Math.min(dpi, fit) * (entry.backdrop ? LITE_BACKDROP : 1);
+    const shown = (window.devicePixelRatio || 1) * fit;
+    let dpi;
+    if (tier === 'normal') dpi = Math.max(1, shown);
+    else if (tier === 'lite') dpi = Math.max(1, Math.min(shown, fit));
+    else dpi = Math.min(shown, fit) * (entry.backdrop ? LOWEST_BACKDROP : 1);
     // Rounded up, so a canvas is never stretched over a slightly larger box.
-    return Math.max(0.25, Math.ceil(dpi * 100) / 100);
+    return Math.max(0.25, Math.ceil(Math.min(ceiling, dpi) * 100) / 100);
   }
 
   function sceneFps(entry) {
