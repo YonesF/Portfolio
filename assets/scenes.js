@@ -117,6 +117,10 @@
 })();
 
 (function loadUnicornStudio() {
+  // Kontakt has no scene, and the runtime is 190 kB of script to fetch and
+  // compile for nothing there.
+  if (!document.querySelector('[data-us-project], [data-us-project-src]')) return;
+
   function announceRuntime() {
     if (!window.UnicornStudio?.addScene) {
       console.error('Unicorn Studio runtime loaded without addScene support.');
