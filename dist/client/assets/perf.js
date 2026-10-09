@@ -5,41 +5,49 @@
    graphics it falls behind, and once frames come late everything comes
    late with them — the scroll, the cursor, every hover.
 
-   So a page draws at one of three levels, and times its own frames once a
+   So a page draws at one of four levels, and times its own frames once a
    scene is running (site.js asks for that) to settle on the right one:
 
    - fine: the scenes as Unicorn exports them, at 1.5 pixels per CSS
-     pixel. Drawn larger than they are shown and scaled down, which is what
-     gives their grain its look; on an ordinary screen that is two to three
-     times the pixels of normal, through every effect pass.
-   - normal: each scene drawn at the size it is shown (site.js). Finer
-     grain, a fraction of the work.
-   - lite: the scenes at 30 frames a second and coarser still, the project
-     wall without antialiasing (project-stage.js), the browser's own
+     pixel, drawn larger than they are shown and scaled down: the crispest
+     grain, at two to three times the pixels of normal on an ordinary
+     screen, through every effect pass.
+   - normal: each scene drawn at the size it is shown, but never smaller
+     than its artboard (site.js). The scenes' grain is laid on the
+     artboard's grid and turns soft below it; at it, the grain keeps nearly
+     all of fine's look for under half the work.
+   - lite: normal's grain at 30 frames a second, with the project wall
+     drawn without antialiasing (project-stage.js), the browser's own
      scrolling in place of Lenis's, and none of the glass blurs or the
      decorative drifts (site.css).
+   - lowest: lite, with the scenes let below their artboard as well, for
+     a machine that cannot keep up with anything more. The grain goes soft.
 
    A dedicated graphics card starts at fine, anything else at normal, and a
    plainly weak machine (two CPU threads, or 2 GB of memory) at lite. A
    page that keeps up at normal is then tried at fine, once; a level that
    falls behind steps down. Fine has to hold about 55 frames a second,
-   normal about 45.
+   normal about 45, and lite about 25 of its 30.
 
    The level is kept for the tab's session, so the next page starts there
-   at once. ?quality=fine, normal or lite in the address fixes it for the
-   session instead (?lite=1 and ?lite=0 are short for lite and fine), and
-   ?quality=auto hands the choice back to the measurements.
+   at once. ?quality=fine, normal, lite or lowest in the address fixes it
+   for the session instead (?lite=1 and ?lite=0 are short for lite and
+   fine), and ?quality=auto hands the choice back to the measurements.
 
    Loaded in the head, ahead of the stylesheets, so a lite page has its
    class on <html> before anything is painted. */
 
 (function () {
   const KEY = 'portfolio-quality';
-  const LEVELS = ['lite', 'normal', 'fine'];
-  const KEEPS_UP = { fine: 18.5, normal: 22 }; // ms, the typical frame each level must beat
+  const LEVELS = ['lowest', 'lite', 'normal', 'fine'];
+  // ms, the typical frame each level must beat. Lite's scenes draw every
+  // other frame, so its typical frame mixes a heavy one and a light one.
+  const KEEPS_UP = { fine: 18.5, normal: 22, lite: 28 };
   const PROBE_DELAY = 600;  // ms after a scene appears or changes, past fade-ins and reallocation
   const PROBE_SPAN = 2000;  // ms of frames to judge by
-  const MAX_PROBES = 3;     // normal, then fine, then back to normal at the most
+  const MAX_PROBES = 4;     // enough for fine down to lowest, or normal to fine and back
+
+  const isLite = level => level === 'lite' || level === 'lowest';
 
   const root = document.documentElement;
   const listeners = [];
@@ -94,7 +102,7 @@
     state.level = next;
     if (next === 'fine') state.triedFine = true;
     remember();
-    root.classList.toggle('perf-lite', next === 'lite');
+    root.classList.toggle('perf-lite', isLite(next));
     listeners.slice().forEach(listener => listener(next));
   }
 
@@ -113,7 +121,7 @@
   )) {
     state = { level: 'lite', triedFine: true, fixed: false };
   }
-  root.classList.toggle('perf-lite', state?.level === 'lite');
+  root.classList.toggle('perf-lite', isLite(state?.level));
 
   // Times PROBE_SPAN of frames and hands over the typical one.
   function measure(done) {
@@ -148,24 +156,26 @@
   // machine that kept up on the landing can still fall behind on Erfaring.
   // After any change the new level is timed in turn, so a step up that
   // turns out too heavy is taken back at once. A page without a scene
-  // (Kontakt) is drawn alike at fine and normal, so there the only
+  // (Kontakt) is drawn alike at every level but lite's, so there the only
   // question is whether the machine keeps up at all.
   function probe({ scene = true } = {}) {
     if (probing || probes >= MAX_PROBES || state?.fixed) return;
-    if ((scene ? level() : state?.level) === 'lite') return;
+    const start = scene ? level() : state?.level;
+    if (start === 'lowest' || (!scene && isLite(start))) return;
     probing = true;
     probes += 1;
     setTimeout(() => measure(typical => {
       probing = false;
-      if (state?.fixed || state?.level === 'lite') return;
+      if (state?.fixed) return;
       if (!scene) {
-        if (typical > KEEPS_UP.normal) {
+        if (!isLite(state?.level) && typical > KEEPS_UP.normal) {
           state = state || { level: 'normal', triedFine: false, fixed: false };
           setLevel('lite');
         }
         return;
       }
       const current = state.level;
+      if (current === 'lowest') return;
       if (typical > KEEPS_UP[current]) {
         setLevel(LEVELS[LEVELS.indexOf(current) - 1]);
       } else if (current === 'normal' && !state.triedFine && typical <= KEEPS_UP.fine) {
@@ -181,8 +191,9 @@
   window.__perf = {
     // Read by the scenes; settles the starting level on first use.
     get tier() { return level(); },
-    // Read by everything else; never needs the graphics card looked at.
-    get lite() { return state?.level === 'lite'; },
+    // Read by everything else, true at lite and lowest alike; never needs
+    // the graphics card looked at.
+    get lite() { return isLite(state?.level); },
     onChange(listener) { listeners.push(listener); },
     probe
   };
