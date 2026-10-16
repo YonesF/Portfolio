@@ -40,12 +40,43 @@ const VIDEO_DELAY = 220;                   // ms a project must stay centred bef
 const section = document.getElementById('projects');
 const stage = section && section.querySelector('.project-stage');
 
+// Resolves when the browser has a moment to spare, so the wall can be built
+// in pieces without holding up a frame.
+const idle = () => new Promise(resolve => {
+  if ('requestIdleCallback' in window) window.requestIdleCallback(resolve, { timeout: 1200 });
+  else window.setTimeout(resolve, 60);
+});
+
 if (section && stage && section.classList.contains('has-stage')) {
-  startStage().catch(error => {
-    console.warn('3D project wall unavailable; showing the grid instead.', error);
-    section.classList.remove('has-stage');
-    stage.hidden = true;
-  });
+  let started = false;
+  let approach = null;
+  const start = () => {
+    if (started) return;
+    started = true;
+    approach?.disconnect();
+    startStage().catch(error => {
+      console.warn('3D project wall unavailable; showing the grid instead.', error);
+      section.classList.remove('has-stage');
+      stage.hidden = true;
+    });
+  };
+  // Prosjekter is the third section of the front page. Building the wall —
+  // fetching Three.js and the project stills, a WebGL context, the first
+  // upload of every still — costs the main thread a few frames, and while
+  // the opening scenes are still loading it would take them from those.
+  // Done during the visitor's scroll it would show as a stumble. So it is
+  // built once the opening scenes have settled (site.js says so), in idle
+  // moments, and before then only if the visitor reaches it first.
+  if (window.__scenesSettled) idle().then(start);
+  else window.addEventListener('scenes-settled', () => idle().then(start), { once: true });
+  if ('IntersectionObserver' in window) {
+    approach = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) start();
+    }, { rootMargin: '150% 0px' });
+    approach.observe(section);
+  } else {
+    start();
+  }
 }
 
 function readProjects() {
@@ -65,6 +96,9 @@ function readProjects() {
 
 async function startStage() {
   const THREE = await import(THREE_URL);
+  // Each heavy step in its own idle moment: the library's evaluation, the
+  // WebGL context, then the stills (which upload one per frame as they land).
+  await idle();
   const projects = readProjects();
   if (!projects.length) throw new Error('no projects found');
 
@@ -96,6 +130,7 @@ async function startStage() {
   const geometry = new THREE.PlaneGeometry(PANEL_W, PANEL_H);
   const anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), perf.lite ? 4 : 16);
   const loader = new THREE.TextureLoader();
+  await idle();
 
   // Cover the screen with a still or video of another shape, cropping the
   // overflow evenly rather than stretching it.
