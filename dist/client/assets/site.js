@@ -365,10 +365,17 @@ const renderSectionActivity = (() => {
       const dpi = sceneDpi(entry);
       // A resize reallocates every buffer the effects draw through, so it
       // is kept for a change that shows.
-      if (!scene.curtain || typeof scene.resize !== 'function' || Math.abs(dpi - scene.dpi) < 0.05) return;
+      if (!scene.curtain || typeof scene.refresh !== 'function' || Math.abs(dpi - scene.dpi) < 0.05) return;
       scene.dpi = dpi;
       scene.curtain.pixelRatio = dpi;
-      scene.resize();
+      // refresh(), the runtime's own answer to a window resize, and not a
+      // bare resize(). The runtime draws a scene's still layers, such as the
+      // landing's portrait, once into buffers and then stops drawing them;
+      // resize() reallocates those buffers empty and leaves them so, which
+      // turned the landing black behind its words. refresh() switches every
+      // layer back on, resizes, and draws the still ones again once their
+      // images are in.
+      scene.refresh();
     } catch (error) {
       console.warn('Unicorn scene could not be re-tuned:', error);
     }
