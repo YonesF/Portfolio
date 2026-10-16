@@ -245,101 +245,72 @@ img,video {
   color: var(--accent);
 }
 
-/* The opening holds the title and the way down, nothing else: one word set
-   large in a tight grotesque, in the column to the right of the face. */
+/* The opening holds the title and the way in, nothing else: one word set
+   large and heavy in a tight grotesque, in the column to the right of the
+   face, and one line at the foot of the screen. */
 .hero {
-  --hero-column: .43;
+  --hero-column: .38;
   position: relative;
   min-height: 600px;
   min-height: max(600px,100svh);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 7.5rem var(--gutter) 2.4rem calc(var(--gutter) + (100% - var(--gutter)*2)*var(--hero-column));
+  padding: 7.5rem var(--gutter) 5.5rem calc(var(--gutter) + (100% - var(--gutter)*2)*var(--hero-column));
 }
 
 .hero__title {
   margin-block: auto;
-  padding-bottom: .12em;
+  padding-bottom: .22em;
   overflow: hidden;
-  font: 400 clamp(5rem,15vw,19rem)/.92 'Inter Tight',var(--font);
-  letter-spacing: -.05em;
+  /* As wide as the column allows: the word runs about 3.33 times its size. */
+  font: 600 calc((100vw - var(--gutter)*2)*(1 - var(--hero-column))/3.4)/.92 'Inter Tight',var(--font);
+  letter-spacing: -.03em;
   white-space: nowrap;
   color: var(--text);
 }
 
-.hero__title span {
+.hero__title>span {
   display: block;
 }
 
-.scroll-down {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: clamp(7.25rem,7.5vw,9.5rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
+/* Each letter rises on its own and lights up when pointed at. */
+.hero__title span span {
+  display: inline-block;
+  transition: color .6s var(--ease);
+}
+
+.hero__title span span:hover {
+  color: var(--accent);
+  transition-duration: .15s;
+}
+
+/* Fades in and out (below) until it is pointed at, then holds and
+   underlines itself. */
+.begin {
+  position: absolute;
+  left: 50%;
+  bottom: 1.5rem;
+  padding: .8rem 1.2rem;
+  transform: translateX(-50%);
+  font: 400 clamp(.95rem,1.1vw,1.15rem) 'Inter Tight',var(--font);
+  letter-spacing: .01em;
+  white-space: nowrap;
   color: var(--text);
 }
 
-.scroll-down::before,.scroll-down::after {
+.begin::after {
   content: '';
-  position: absolute;
-  inset: 25%;
-  border-radius: 50%;
-}
-
-.scroll-down::before {
-  border: 1px solid #f0f1e766;
-}
-
-.scroll-down::after {
-  background: var(--accent);
-  transform: scale(0);
+  display: block;
+  height: 1px;
+  margin-top: .3rem;
+  background: currentColor;
+  transform: scaleX(0);
   transition: transform .5s var(--ease);
 }
 
-.scroll-down:hover::after,.scroll-down:focus-visible::after {
-  transform: scale(1);
-}
-
-.scroll-down__ring {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  font: 500 9px var(--font);
-  text-transform: uppercase;
-  fill: currentColor;
-}
-
-.scroll-down__arrow {
-  position: relative;
-  z-index: 1;
-  width: 1.45rem;
-  height: 1.45rem;
-  overflow: hidden;
-  transition: color .3s;
-}
-
-.scroll-down__arrow svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.scroll-down:hover .scroll-down__arrow,.scroll-down:focus-visible .scroll-down__arrow {
-  color: var(--ground);
-}
-
-.scroll-down__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+.begin:hover::after,.begin:focus-visible::after {
+  transform: scaleX(1);
 }
 
 .work {
@@ -907,20 +878,16 @@ h2 {
     scroll-behavior: smooth;
   }
 
-  .hero__title span {
-    animation: rise 1.4s .1s var(--ease) both;
+  .hero__title span span {
+    animation: rise 1.3s calc(.15s + var(--i)*.07s) var(--ease) both;
   }
 
-  .scroll-down {
-    animation: enter 1.2s .7s var(--ease) both;
+  .begin {
+    animation: breathe 3.2s 1.1s ease-in-out infinite both;
   }
 
-  .scroll-down__ring {
-    animation: spin 18s linear infinite;
-  }
-
-  .scroll-down__arrow svg {
-    animation: fall 2.4s var(--ease) infinite;
+  .begin:hover,.begin:focus-visible {
+    animation: none;
   }
 
   [data-reveal].will-reveal {
@@ -952,43 +919,23 @@ h2 {
 
   @keyframes rise {
     from {
-      transform: translateY(105%);
+      transform: translateY(105%) skewY(8deg);
+      filter: blur(6px);
     }
   }
 
-  @keyframes spin {
-    to {
-      transform: rotate(1turn);
-    }
-  }
-
-  /* In from above, a pause in the middle of the ring, out below. */
-  @keyframes fall {
-    0% {
-      transform: translateY(-110%);
+  @keyframes breathe {
+    0%,100% {
+      opacity: .12;
     }
 
-    40%,62% {
-      transform: none;
+    50% {
+      opacity: 1;
     }
-
-    100% {
-      transform: translateY(110%);
-    }
-  }
-}
-
-@media(min-width:1600px) {
-  .hero {
-    --hero-column: .44;
   }
 }
 
 @media(max-width:1100px) {
-  .hero {
-    --hero-column: .39;
-  }
-
   .experience-browser {
     grid-template-columns: 220px minmax(0,1fr);
     gap: 2.5rem;
@@ -1065,20 +1012,15 @@ h2 {
   }
 
   /* The face fills the top of a phone, so the title sits low, above the
-     button, where the veil is darkest. */
+     line, where the veil is darkest. */
   .hero {
     --hero-column: 0;
     min-height: max(560px,100svh);
-    padding-bottom: 1.5rem;
+    padding-bottom: 5rem;
   }
 
   .hero__title {
-    margin: auto 0 1.4rem;
-    font-size: 29vw;
-  }
-
-  .scroll-down {
-    width: 5.9rem;
+    margin: auto 0 0;
   }
 
   .work {
@@ -1302,7 +1244,7 @@ h2 {
     font-size: 11pt;
   }
 
-  .erf-scene,.site-header,.reading-progress,.scroll-down,.experience-index,.project-pagination,.media-toggle,.contact-orbit {
+  .erf-scene,.site-header,.reading-progress,.begin,.experience-index,.project-pagination,.media-toggle,.contact-orbit {
     display: none!important;
   }
 
