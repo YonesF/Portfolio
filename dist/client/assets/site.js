@@ -653,24 +653,36 @@ const renderSectionActivity = (() => {
   scheduleSync();
 })();
 
-// In-page links are handled here so anchor movement wakes the idle Lenis ticker.
-// Without Lenis (a lite page) the browser's own jump stands.
+// Resolve the destination numerically so both scrolling paths account for the
+// sticky portfolio navigation without also applying CSS scroll margins.
+function pageAnchorTop(target) {
+  const navigationHeight = document.querySelector('.portfolio-nav')?.getBoundingClientRect().height || 0;
+  return Math.max(0, window.scrollY + target.getBoundingClientRect().top - navigationHeight);
+}
+
+function scrollToPageElement(target, { immediate = false, force = false } = {}) {
+  const top = pageAnchorTop(target);
+  const instant = immediate || prefersReducedMotion.matches;
+  if (lenis) lenis.scrollTo(top, { immediate: instant, force });
+  else window.scrollTo({ top, behavior: instant ? 'instant' : 'smooth' });
+}
+
+// In-page links wake the idle Lenis ticker, or use native scrolling on lite pages.
 document.addEventListener('click', event => {
-  if (!lenis || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  if (!(event.target instanceof Element)) return;
   const link = event.target.closest('a[href^="#"]');
   if (!link) return;
   const hash = link.getAttribute('href');
-  if (hash === '#' || !document.querySelector(hash)) return;
+  const target = hash !== '#' && document.querySelector(hash);
+  if (!target) return;
   event.preventDefault();
   history.replaceState(null, '', hash);
-  lenis.scrollTo(hash);
+  scrollToPageElement(target);
 });
 
 // For the section scripts (erfaring.js) that move the page themselves.
-window.__scrollToElement = target => {
-  if (lenis) lenis.scrollTo(target);
-  else target.scrollIntoView({ behavior: prefersReducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
-};
+window.__scrollToElement = target => scrollToPageElement(target);
 
 // The sections were pages of their own, and their addresses live on in
 // links and bookmarks. The server answers them with this page (an address
@@ -681,17 +693,14 @@ window.__scrollToElement = target => {
   const target = hash && document.querySelector(hash);
   if (!target) return;
   history.replaceState(null, '', `/${hash}`);
-  const jump = () => {
-    if (lenis) lenis.scrollTo(target, { immediate: true, force: true });
-    else target.scrollIntoView({ block: 'start' });
-  };
+  const jump = () => scrollToPageElement(target, { immediate: true, force: true });
   // After every section script has laid its section out (Erfaring folds
   // its panels away, Prosjekter swaps its grid for the wall), and once more
   // when the fonts arrive and every line of text takes its real height.
   document.addEventListener('DOMContentLoaded', () => {
     jump();
     document.fonts?.ready.then(() => {
-      if (Math.abs(target.getBoundingClientRect().top) > 2) jump();
+      if (Math.abs(window.scrollY - pageAnchorTop(target)) > 2) jump();
     });
   }, { once: true });
 })();
@@ -699,7 +708,7 @@ window.__scrollToElement = target => {
 /* Smooth zoom handoff between the site's main scenes */
 (function initSceneTransitions() {
   const main = document.querySelector('main');
-  if (!main) return;
+  if (!main || main.hasAttribute('data-static-content')) return;
 
   const definitions = [
     // The depth handoff starts as Alder (Om meg) gives way to the
@@ -1639,7 +1648,7 @@ const projectStage = (() => {
 /* ─── Interactive side leaves ──────────── */
 (function buildSideLeaves() {
   const container = document.getElementById('side-leaves');
-  if (!window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
+  if (!container || !window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
 
   /* Leaf shape templates — drawn from left-centre origin so rotation looks natural */
   const shapes = [
