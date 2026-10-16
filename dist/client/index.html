@@ -68,51 +68,26 @@
            The four words in the landing scene (ERFARINGER, PORTRETT,
            PROSJEKTER, KONTAKT) are painted by Unicorn Studio, but the
            runtime also lays a real text node over each one. hero-nav.js
-           measures those nodes and parks a hit area and one of the cards
-           below on top, so hovering a word opens a preview of where it
-           leads. Content lives here rather than in the script so it stays
-           editable and readable without JavaScript. -->
+           measures those nodes and parks a hit area on top of each, so the
+           words become links. Content lives here rather than in the script
+           so it stays editable and readable without JavaScript. -->
       <div class="hero-nav" id="heroNav">
 
         <a class="hero-hit" data-hero-word="ERFARINGER" href="erfaring">
           <span class="hero-hit__sr">Erfaring</span>
         </a>
-        <article class="hero-card" data-hero-word="ERFARINGER" aria-hidden="true">
-          <figure class="hero-card__shot">
-            <img src="assets/previews/erfaring.webp" alt="" width="760" height="570"
-              decoding="async" fetchpriority="low">
-          </figure>
-        </article>
 
         <a class="hero-hit" data-hero-word="PORTRETT" href="om-meg">
           <span class="hero-hit__sr">Om meg</span>
         </a>
-        <article class="hero-card" data-hero-word="PORTRETT" aria-hidden="true">
-          <figure class="hero-card__shot">
-            <img src="assets/previews/om-meg.webp" alt="" width="760" height="570"
-              decoding="async" fetchpriority="low">
-          </figure>
-        </article>
 
         <a class="hero-hit" data-hero-word="PROSJEKTER" href="prosjekter">
           <span class="hero-hit__sr">Prosjekter</span>
         </a>
-        <article class="hero-card" data-hero-word="PROSJEKTER" aria-hidden="true">
-          <figure class="hero-card__shot">
-            <img src="assets/previews/prosjekter.webp" alt="" width="760" height="570"
-              decoding="async" fetchpriority="low">
-          </figure>
-        </article>
 
         <a class="hero-hit" data-hero-word="KONTAKT" href="kontakt">
           <span class="hero-hit__sr">Kontakt</span>
         </a>
-        <article class="hero-card" data-hero-word="KONTAKT" aria-hidden="true">
-          <figure class="hero-card__shot">
-            <img src="assets/previews/kontakt.webp" alt="" width="760" height="570"
-              decoding="async" fetchpriority="low">
-          </figure>
-        </article>
 
       </div>
 
