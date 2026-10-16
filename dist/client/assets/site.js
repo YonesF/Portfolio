@@ -694,10 +694,10 @@ window.__scrollToElement = target => {
   if (!main) return;
 
   const definitions = [
-    // Landing and Alder read as one continuous field. The depth handoff
-    // starts as Alder gives way to the content-led Experience section.
+    // The depth handoff starts as Alder (Om meg) gives way to the
+    // sections below it.
     { id: 'landing' },
-    { id: 'alder', ambient: '.us-scene__blend', zoom: 'out' },
+    { id: 'alder', zoom: 'out' },
     // Only the heading drifts: sliding the cards by fractions of a pixel
     // keeps their small text permanently soft.
     { id: 'erfaring', ambient: '.erfaring__head' },
