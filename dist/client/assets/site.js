@@ -289,6 +289,13 @@ const renderSectionActivity = (() => {
 
   const entryBySection = new Map(entries.map(entry => [entry.section, entry]));
   const DESTROY_DELAY = 650;
+  // Tearing a scene down as it scrolls away frees its graphics memory, but
+  // building it again compiles its shaders and uploads its images: a freeze
+  // of a quarter of a second or more on an ordinary laptop. With the landing
+  // the page's one scene, every small scroll back up in Om meg did exactly
+  // that. So a page with few scenes keeps each one, once built, and only
+  // pauses it — a paused scene draws nothing — while it is out of sight.
+  const KEEP_BUILT = entries.length <= 2;
   const DPI_CEILING = 1.5;    // the density Unicorn exports every scene at
   const LITE_FPS = 30;
   const LOWEST_BACKDROP = 0.75; // backdrops sit under a dark veil, so lose least
@@ -441,8 +448,9 @@ const renderSectionActivity = (() => {
 
     // Keep the last rendered frame while any part of its section remains
     // visible. Once fully offscreen, release its WebGL context shortly
-    // after to avoid churn from tiny direction reversals at a boundary.
-    if (entry.visible || entry.destroyTimer) return;
+    // after to avoid churn from tiny direction reversals at a boundary —
+    // unless the page keeps its scenes built (KEEP_BUILT).
+    if (KEEP_BUILT || entry.visible || entry.destroyTimer) return;
     entry.destroyTimer = window.setTimeout(() => {
       entry.destroyTimer = 0;
       if (entry.wanted || entry.visible || entry.promise) return;
@@ -729,6 +737,7 @@ window.__scrollToElement = target => {
 
     return {
       element,
+      shade,
       zoomIn: definition.zoom === 'in',
       zoomOut: definition.zoom === 'out',
       current: null,
@@ -771,12 +780,15 @@ window.__scrollToElement = target => {
     });
   }
 
+  // Written straight onto the section and its shade. Through custom
+  // properties, as before, every element inside the section inherited the
+  // change and was restyled on every frame of the scroll; these restyle two.
   function paintScene(scene) {
-    scene.element.style.setProperty('--scene-scale', scene.current.scale.toFixed(5));
-    scene.element.style.setProperty('--scene-y', `${scene.current.y.toFixed(2)}px`);
-    scene.element.style.setProperty('--scene-opacity', scene.current.opacity.toFixed(4));
-    scene.element.style.setProperty('--scene-shade', scene.current.shade.toFixed(4));
-    scene.element.style.setProperty('--scene-origin-y', `${scene.current.origin.toFixed(2)}%`);
+    const { element, shade, current } = scene;
+    element.style.transform = `translate3d(0, ${current.y.toFixed(2)}px, 0) scale(${current.scale.toFixed(5)})`;
+    element.style.transformOrigin = `50% ${current.origin.toFixed(2)}%`;
+    element.style.opacity = current.opacity.toFixed(4);
+    shade.style.opacity = current.shade.toFixed(4);
   }
 
   function resetScenes() {
@@ -784,8 +796,8 @@ window.__scrollToElement = target => {
       scene.current = null;
       scene.target = null;
       scene.element.classList.remove('is-frame-animating');
-      ['--scene-scale', '--scene-y', '--scene-opacity', '--scene-shade', '--scene-origin-y']
-        .forEach(property => scene.element.style.removeProperty(property));
+      ['transform', 'transform-origin', 'opacity'].forEach(property => scene.element.style.removeProperty(property));
+      scene.shade.style.removeProperty('opacity');
     });
   }
 
@@ -1708,18 +1720,23 @@ const projectStage = (() => {
     } else {
       el.style.right = '0';
       el.style.transformOrigin = 'right center';
-      /* mirror the SVG horizontally */
-      svgStr = svgStr.replace('<svg ', `<svg style="transform:scaleX(-1)" `);
       el.style.transform = `rotate(${cfg.rot}deg) translateX(55%)`;
     }
 
-    el.innerHTML = svgStr;
+    el.innerHTML = `<span class="side-leaf__sway">${svgStr}</span>`;
 
-    /* Gentle perpetual sway */
-    const svg = el.querySelector('svg');
-    svg.style.animation = `leafWave ${3.5 + i * 0.4}s ease-in-out infinite`;
-    svg.style.setProperty('--base-rot', cfg.rot + 'deg');
-    svg.style.transformOrigin = isLeft ? 'left center' : 'right center';
+    /* Gentle perpetual sway, on a wrapper of its own whose only transform
+       is the animated one: the one case the compositor always runs by
+       itself. The leaf keeps its own angle as the svg's transform. Run on
+       the svg, with that angle inside its keyframes, the sway ran on the
+       main thread and restyled every leaf on every frame of the page. */
+    const sway = el.firstElementChild;
+    const svg = sway.firstElementChild;
+    const origin = isLeft ? 'left center' : 'right center';
+    svg.style.transform = `rotate(${cfg.rot}deg)`;
+    svg.style.transformOrigin = origin;
+    sway.style.transformOrigin = origin;
+    sway.style.animation = `leafWave ${3.5 + i * 0.4}s ease-in-out infinite`;
     svg.style.display = 'block';
 
     container.appendChild(el);
