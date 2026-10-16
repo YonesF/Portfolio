@@ -65,7 +65,7 @@
   height: max(1px, 0.022em);
   background: var(--night-green);
   transform: scaleX(0);
-  transform-origin: left center;
+  transform-origin: center;
   transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
