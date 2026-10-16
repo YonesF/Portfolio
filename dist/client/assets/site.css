@@ -3098,6 +3098,41 @@ main > section:nth-of-type(even) .scene-ambient {
   }
 }
 
+/* ── One page ───────────────────────────────
+   Every section is back on the front page: Portrett (#alder) under the
+   landing, then Prosjekter, Erfaring (assets/erfaring.css) and Kontakt.
+   <body> still carries the classes the sections had as pages of their own,
+   so the page layouts above apply as they were; this is only what changes
+   now that they share one page. Below Portrett every ground is plain
+   black, with no scene, footage or texture behind it. */
+.page-onepage,
+.page-onepage main {
+  background: #000;
+}
+
+.page-onepage .projects-gallery.section,
+.page-onepage .contact {
+  background: #000;
+}
+
+/* The wall's text under the screens fills in once the wall is built, and
+   changes height from project to project (about 170–320px). With Erfaring
+   and Kontakt below it now, that moved everything under it: a jump to
+   Kontakt could land short, and every section below shifted as the wall
+   turned. Room for the tallest is kept from the start instead. */
+.page-onepage .projects-gallery.has-stage .project-stage__details {
+  min-height: 20rem;
+}
+
+/* With nothing behind them but black, the fields' glass blurred nothing
+   it could show: the tint alone gives the same pixels, without a blur
+   pass for each field. */
+.page-onepage .contact .form-input,
+.page-onepage .contact .form-ta {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 /* ── Lite rendering ─────────────────────────
    Set on <html> by assets/perf.js when this machine cannot keep the scenes
    moving smoothly; site.js and project-stage.js lower their own resolution
