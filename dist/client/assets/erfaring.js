@@ -85,10 +85,13 @@
         scene.frameDuration = 1000 / fps;
       }
       const dpi = sceneDpi();
-      if (!scene.curtain || typeof scene.resize !== 'function' || Math.abs(dpi - scene.dpi) < 0.05) return;
+      if (!scene.curtain || typeof scene.refresh !== 'function' || Math.abs(dpi - scene.dpi) < 0.05) return;
       scene.dpi = dpi;
       scene.curtain.pixelRatio = dpi;
-      scene.resize();
+      // refresh(), not resize(): the runtime draws the still layers (the
+      // photographs) once and keeps them in buffers that a bare resize()
+      // reallocates empty, leaving the scene black (see site.js).
+      scene.refresh();
     } catch (error) {
       console.warn('Unicorn scene could not be re-tuned:', error);
     }
