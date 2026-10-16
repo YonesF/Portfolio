@@ -396,6 +396,12 @@ main > section:nth-of-type(even) .scene-ambient {
   opacity: 1;
 }
 
+/* Carries the sway (leafWave). A block, as a transform is ignored on an
+   inline box. */
+.side-leaf__sway {
+  display: block;
+}
+
 /* ── Buttons ────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -2190,15 +2196,19 @@ main > section:nth-of-type(even) .scene-ambient {
   }
 }
 
+/* The sway alone, on each leaf's .side-leaf__sway wrapper; the leaf's own
+   angle is set once as its svg's transform (site.js). Built from var() and
+   run on the svg, as it was, it ran on the main thread: all twelve leaves
+   were restyled on every frame of the page, scrolling or not. */
 @keyframes leafWave {
 
   0%,
   100% {
-    transform: rotate(var(--base-rot, 0deg)) translateX(0);
+    transform: rotate(0deg) translateX(0);
   }
 
   50% {
-    transform: rotate(calc(var(--base-rot, 0deg) + 4deg)) translateX(4px);
+    transform: rotate(4deg) translateX(4px);
   }
 }
 
@@ -3127,9 +3137,8 @@ main > section:nth-of-type(even) .scene-ambient {
   will-change: auto;
 }
 
-/* The sway is set inline by site.js, hence !important. Its first keyframe
-   is the pose to hold, rotation included. */
-.perf-lite .side-leaf svg {
+/* The sway is set inline by site.js, hence !important. Without it each
+   leaf holds its own angle, its svg's transform. */
+.perf-lite .side-leaf__sway {
   animation: none !important;
-  transform: rotate(var(--base-rot, 0deg)) !important;
 }
