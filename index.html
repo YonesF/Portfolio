@@ -17,7 +17,7 @@
   <!-- The scene and its images, which scenes.js fetches (with CORS). -->
   <link rel="preconnect" href="https://assets.unicorn.studio" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@300;400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@300;400;600&display=swap"
     rel="stylesheet" />
 
   <!-- Lenis smooth scroll — https://github.com/darkroomengineering/lenis
@@ -31,11 +31,16 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js" defer></script>
 
-  <link rel="stylesheet" href="assets/site.css" />
-  <link rel="stylesheet" href="assets/hero-nav.css" />
+  <link rel="stylesheet" href="assets/site.css?v=4" />
+  <link rel="stylesheet" href="assets/hero-nav.css?v=2" />
+  <link rel="stylesheet" href="assets/erfaring.css?v=2" />
 </head>
 
-<body>
+<body class="page-onepage page-om-meg page-prosjekter page-kontakt">
+
+  <!-- The sections that were pages of their own keep those pages' classes
+       on <body>, so their layouts in site.css apply as they did (see
+       "One page" there). -->
 
   <!-- Side leaves layer -->
   <div id="side-leaves" aria-hidden="true"></div>
@@ -73,19 +78,19 @@
            so it stays editable and readable without JavaScript. -->
       <div class="hero-nav" id="heroNav">
 
-        <a class="hero-hit" data-hero-word="ERFARINGER" href="erfaring">
+        <a class="hero-hit" data-hero-word="ERFARINGER" href="#erfaring">
           <span class="hero-hit__sr">Erfaring</span>
         </a>
 
-        <a class="hero-hit" data-hero-word="PORTRETT" href="om-meg">
+        <a class="hero-hit" data-hero-word="PORTRETT" href="#alder">
           <span class="hero-hit__sr">Om meg</span>
         </a>
 
-        <a class="hero-hit" data-hero-word="PROSJEKTER" href="prosjekter">
+        <a class="hero-hit" data-hero-word="PROSJEKTER" href="#projects">
           <span class="hero-hit__sr">Prosjekter</span>
         </a>
 
-        <a class="hero-hit" data-hero-word="KONTAKT" href="kontakt">
+        <a class="hero-hit" data-hero-word="KONTAKT" href="#contact">
           <span class="hero-hit__sr">Kontakt</span>
         </a>
 
@@ -93,12 +98,490 @@
 
     </section>
 
+    <!-- ══ PORTRETT (#alder) ══════════════════════
+         Second half of the opening, the Om meg scene. Shares the black
+         ground and the edge blend with the landing above, so the two run
+         together as one field instead of reading as a section break. -->
+    <section class="us-scene" id="alder" aria-labelledby="alder-h">
+
+      <div class="us-scene__stage" data-scene-fit data-scene-cover data-us-project="RAyPIbd2ejj6vhK4n049"
+        data-us-arialabel="Animert scene med marmorsøyler og teksten 21 år gammel"></div>
+      <div class="us-scene__blend" aria-hidden="true"></div>
+      <div class="alder__content">
+        <header class="alder__intro">
+          <h2 class="alder__title" id="alder-h">Om meg</h2>
+          <p class="alder__summary">
+            Jeg er Yones Feili, en IT-student og kreativ utvikler med interesse for design, teknologi og
+            gjennomarbeidede digitale løsninger. Ved Universitetet i Agder studerer jeg IT og
+            informasjonssystemer. Gjennom egne prosjekter og praksis hos Kartverket kombinerer jeg
+            problemløsning med et sterkt visuelt blikk.
+          </p>
+        </header>
+
+        <div class="alder__details">
+          <section class="alder__group" aria-labelledby="alder-education-h">
+            <h3 class="alder__group-title" id="alder-education-h">Utdanning &amp; praksis</h3>
+            <ol class="alder__timeline">
+              <li>
+                <time datetime="2021">2021–2024</time>
+                <div>
+                  <strong>Tangen videregående skole</strong>
+                  <span>Studiespesialisering</span>
+                </div>
+              </li>
+              <li>
+                <time datetime="2024">2024–nå</time>
+                <div>
+                  <strong>Universitetet i Agder</strong>
+                  <span>IT og informasjonssystemer</span>
+                </div>
+              </li>
+              <li>
+                <time datetime="2026">2026–nå</time>
+                <div>
+                  <strong>Kartverket</strong>
+                  <span>Praksis / internship</span>
+                </div>
+              </li>
+            </ol>
+          </section>
+
+          <section class="alder__group" aria-labelledby="alder-skills-h">
+            <h3 class="alder__group-title" id="alder-skills-h">Ferdigheter</h3>
+            <ul class="alder__skills">
+              <li>JavaScript</li>
+              <li>HTML &amp; CSS</li>
+              <li>C#</li>
+              <li>SQL &amp; MariaDB</li>
+              <li>PostGIS</li>
+              <li>MapLibre</li>
+              <li>UI/UX-design</li>
+              <li>Responsivt design</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PROJECTS ══════════════════════════════ -->
+    <section class="section projects projects-gallery" id="projects" aria-labelledby="projects-h">
+
+      <header class="projects-gallery__intro">
+        <p class="projects-gallery__kicker reveal">Utvalgte arbeider</p>
+        <h2 class="section__title projects-gallery__title" id="projects-h">Prosjekter</h2>
+        <div class="projects-gallery__rule" aria-hidden="true"></div>
+        <p class="projects-gallery__copy reveal">
+          Gjennom studier, praksis og egne sideprosjekter har jeg lært mest ved å bygge selv. Her er et utvalg av prosjektene som har formet meg.
+        </p>
+      </header>
+
+      <!-- The projects as screens on a curved 3D wall (assets/project-stage.js).
+           Shown only where WebGL and motion are welcome: the grid below stays
+           the source of every project's text and media, and the fallback. -->
+      <div class="project-stage" hidden>
+        <div class="project-stage__view" tabindex="0" role="group" aria-roledescription="karusell"
+          aria-label="Prosjektene i 3D. Bruk piltastene, eller dra, for å bla.">
+          <canvas class="project-stage__canvas" aria-hidden="true"></canvas>
+          <div class="project-stage__focus" aria-hidden="true">
+            <strong class="project-stage__focus-title"></strong>
+            <span class="project-stage__focus-type"></span>
+          </div>
+          <button type="button" class="project-stage__arrow project-stage__arrow--prev" data-stage="prev" aria-label="Forrige prosjekt">←</button>
+          <button type="button" class="project-stage__arrow project-stage__arrow--next" data-stage="next" aria-label="Neste prosjekt">→</button>
+        </div>
+        <div class="project-stage__details" aria-live="polite">
+          <p class="project-stage__type"></p>
+          <h3 class="project-stage__title"></h3>
+          <p class="project-stage__desc"></p>
+          <div class="project-stage__extra"></div>
+          <div class="project-stage__tags"></div>
+          <a class="project-stage__link" target="_blank" rel="noopener noreferrer" hidden></a>
+        </div>
+      </div>
+
+      <div class="projects-gallery__viewport" aria-label="Prosjektgalleri" aria-roledescription="karusell">
+        <div class="projects-gallery__track">
+          <div class="projects-gallery__group" role="list">
+          <article class="project-card reveal" id="project-luksus" style="--project-tone:#d9b27f" role="listitem" aria-labelledby="project-luksus-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--estate" role="img" aria-label="Opptak av LuksusEiendom: KI-forbedrede boligbilder og abonnementssider">
+                  <video class="project-visual__video" poster="assets/project-luksuseiendom.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-luksuseiendom.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">KI og eiendom</p>
+              <h3 class="project-card__title" id="project-luksus-title">LuksusEiendom</h3>
+              <p class="project-card__desc">Et visuelt eiendomskonsept som bruker KI til å forbedre boligbilder og gjør før-og-etter-resultatet til selve opplevelsen.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">HTML/CSS</span><span class="project-card__tag">JavaScript</span>
+                <span class="project-card__tag">KI-bilder</span><span class="project-card__tag">Responsivt design</span>
+              </div>
+              <a class="project-card__link" href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer">
+                Se nettsiden
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="project-card reveal" id="project-atlas" style="--project-tone:#80cf9d" role="listitem" aria-labelledby="project-atlas-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--atlas" role="img" aria-label="Opptak av Atlas: kartsøk, 3D-terreng og ruteberegning">
+                  <video class="project-visual__video" poster="assets/project-atlas.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-atlas.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Beredskapskart</p>
+              <h3 class="project-card__title" id="project-atlas-title">Atlas</h3>
+              <p class="project-card__desc">Et responsivt webkart som hjelper innbyggere med å finne nærmeste beredskapsressurs når tiden er kritisk.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">PostGIS</span><span class="project-card__tag">MapLibre</span>
+                <span class="project-card__tag">JavaScript</span><span class="project-card__tag">Geodata</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="project-card reveal" id="project-kartverket" style="--project-tone:#7dc9ca" role="listitem" aria-labelledby="project-kartverket-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--kartverket" role="img" aria-label="Opptak av Kartverket-systemet: registrering og validering av luftfartshindre">
+                  <video class="project-visual__video" poster="assets/project-kartverket.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-kartverket.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Kritisk infrastruktur</p>
+              <h3 class="project-card__title" id="project-kartverket-title">Kartverket</h3>
+              <p class="project-card__desc">Et databasesystem for sikker registrering, validering og håndtering av luftfartshindre for samfunnskritiske aktører.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">MariaDB</span><span class="project-card__tag">SQL</span>
+                <span class="project-card__tag">C#</span><span class="project-card__tag">Datavalidering</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/IsakJG/IT-2025-Kartverket.git" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 4: Globuskart -->
+          <article class="project-card reveal" id="project-globus" style="--project-tone:#7fb8e8" role="listitem" aria-labelledby="project-globus-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--globus" role="img" aria-label="3D-kart over Kristiansand med terreng, bygninger og lagvalg">
+                  <div class="project-visual__slides">
+                    <img src="assets/globus-1.webp" alt="" width="920" height="562" decoding="async" fetchpriority="low">
+                    <img src="assets/globus-2.webp" alt="" width="920" height="434" decoding="async" fetchpriority="low">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Geospatial plattform</p>
+              <h3 class="project-card__title" id="project-globus-title">Globuskart prosjekt</h3>
+              <p class="project-card__desc">Et innovativt geospatialt prosjekt som utforsker moderne verktøy og biblioteker for å bygge en unik interaktiv plattform for visualisering av sanntidsdata, havnivåstigning og geografiske analyser i Norge.</p>
+              <p class="project-card__note">Driftet på Azure Static Web Apps med CI/CD via GitHub Actions.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">3D-kart</span><span class="project-card__tag">Sanntidsdata</span>
+                <span class="project-card__tag">Havnivåstigning</span><span class="project-card__tag">Geodata</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/YonesF/Et-Globus-kartprosjekt" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 5: ScanTing -->
+          <article class="project-card reveal" id="project-scanting" style="--project-tone:#e8955c" role="listitem" aria-labelledby="project-scanting-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--scanting" role="img" aria-label="Opptak av ScanTing: personer og kjøretøy merket med bokser, fart og høyde i sanntid">
+                  <video class="project-visual__video" poster="assets/project-scanting.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-scanting.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Sanntids videoanalyse</p>
+              <h3 class="project-card__title" id="project-scanting-title">ScanTing</h3>
+              <p class="project-card__desc">Et datasynssystem som finner, følger og teller personer og kjøretøy i video i sanntid, og regner ut fart og høyde – satt sammen av åpne verktøy på en vanlig hjemme-PC.</p>
+              <details class="project-card__more">
+                <summary>Les hele historien</summary>
+                <div class="project-card__story">
+                  <p>Alle har sett det på TV eller YouTube: Noen zoomer inn på et overvåkingskamera, og plutselig dukker det opp bokser rundt hver person, sånn der spion typ🤣.</p>
+                  <p>Jeg har alltid tenkt at det var Hollywood greier, eller noe bare store selskaper hadde råd til. Nå har jeg laget det selv. På en vanlig hjemme PC med et grafikkort fra 2019. Jeg har ikke funnet opp noe nytt.</p>
+                  <p>Forskere og open source miljøer deler verktøyene gratis på GitHub, og jobben min var kun å koble bitene sammen (med god hjelp av en AI kodeassistent). Det er kanskje det kuleste med tiden vi lever i.</p>
+                  <ol>
+                    <li><strong>Gjenkjenning:</strong> Hvert videobilde går gjennom <a href="https://rfdetr.roboflow.com/latest/" target="_blank" rel="noopener noreferrer">RF-DETR</a>, en åpen objektdetektor fra Roboflow. Den svarer på «hva er hvor?»: person her, bil der. Det tar rundt 40 millisekunder per bilde, så fire kameraer kan analyseres fem ganger i sekundet. (Er ikke dette sick???)</li>
+                    <li><strong>Sporing:</strong> Gjenkjenning alene vet ikke at personen i dette bildet er den samme som i forrige. DERFOR har vi ByteTrack som kobler boksene sammen over tid og gir hver person et nummer. Det er da man kan telle unike personer og se hvor de "Ish" går.</li>
+                    <li><strong>Fra piksler til meter:</strong> Et kamera gjør verden flat. For å regne ut fart og høyde må programmet vite hvor høyt kameraet henger. Trikset er at folk er omtrent like høye, så de som ser små ut, står langt unna. Ut fra hundrevis av mennesker regner programmet ut kamerahøyde og vinkel på egen hånd. Man kan også klikke på fire hjørner av noe med kjent størrelse, som et kjørefelt på 3,75 meter. Da avslørte geometrien at trafikkameraet satt rundt 7,7 meter over veien, trolig på en bro, og at veistripene måtte gå i 12-meters intervaller. Med 18 meter passet ikke tallene med noe ekte kamera.</li>
+                    <li><strong>Resultatet:</strong> Bilene i demovideoen kjører rundt 80 km/t, fotgjengerne går i rundt 3-4 km/t, og en linje i bildet teller hvor mange som krysser den, i hver retning. Den største flaskehalsen var ikke AI'en i dette tilfellet. Det var fargekonvertering, altså å gjøre om ett 4K bilde fra videoens fargeformat til vanlige piksler. Her er personvern bygget inn. Systemet lagrer bare tellinger per minutt. Ingen bilder, ingen ansiktsgjenkjenning, ingen skiltlesing. Jeg har testet på demovideoer, fordi (offentlige kameraer i Norge eies av noen og krever tillatelse. 😅 )</li>
+                  </ol>
+                  <p>Poenget er at det som før krevde et forskningsmiljø, kan i dag settes sammen av en nysgjerrig person.</p>
+                </div>
+              </details>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">RF-DETR</span><span class="project-card__tag">ByteTrack</span>
+                <span class="project-card__tag">Datasyn</span><span class="project-card__tag">Sanntid</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 6: SYMITO -->
+          <article class="project-card reveal" id="project-symito" style="--project-tone:#b9a3e6" role="listitem" aria-labelledby="project-symito-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--symito" role="img" aria-label="Opptak av SYMITO-nettsiden: gruppebildet med de fem medlemmene, filmen, medlemsprofilene og prosjektkarusellen">
+                  <video class="project-visual__video" poster="assets/project-symito.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-symito.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Bachelorgruppe</p>
+              <h3 class="project-card__title" id="project-symito-title">SYMITO</h3>
+              <p class="project-card__desc">Nettsiden til bachelorgruppen vår SYMITO, laget til REFRESHIT – der bedrifter blir kjent med gruppene og velger hvem de vil ha med på bacheloroppgaven sin. Med film, medlemsprofiler og en 3D-karusell av prosjektene våre.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">React</span><span class="project-card__tag">Three.js</span>
+                <span class="project-card__tag">GSAP</span><span class="project-card__tag">Vite</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/taikiyakitaiyaki/IS-310_Prosjektgjennomforing" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 7: Treningen -->
+          <article class="project-card reveal" id="project-treningen" style="--project-tone:#e58fa8" role="listitem" aria-labelledby="project-treningen-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--treningen" role="img" aria-label="Opptak av Treningen-appen: startsiden med nivå, XP og streak, og valg av økter">
+                  <video class="project-visual__video" poster="assets/project-treningen.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-treningen.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Treningsapp</p>
+              <h3 class="project-card__title" id="project-treningen-title">Treningen</h3>
+              <p class="project-card__desc">Gratis treningsapp for å loggføre økter, lære øvelser med video og beskrivelse, og regne ut BMI, vekt og anbefalte økter – med nivåer, XP og streaks som holder motivasjonen oppe.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">Treningslogg</span><span class="project-card__tag">Øvelsesvideoer</span>
+                <span class="project-card__tag">BMI</span><span class="project-card__tag">Nivåer og XP</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 8: Plant det! -->
+          <article class="project-card reveal" id="project-plantdet" style="--project-tone:#a3cf6e" role="listitem" aria-labelledby="project-plantdet-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--plantdet" role="img" aria-label="Opptak av Plant det!: varsler for hagen, dagens plante og hva som bør plantes denne måneden">
+                  <video class="project-visual__video" poster="assets/project-plantdet.webp"
+                    muted loop playsinline preload="none">
+                    <source src="assets/project-plantdet.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Hyperlokal hageguide</p>
+              <h3 class="project-card__title" id="project-plantdet-title">Plant det!</h3>
+              <p class="project-card__desc">Hyperlokal hageprofil for adressen din, med råd ut fra sanntidsvær fra Yr, herdighetssone (H1–H8), jordtype og sol – og varsler når det er fare for frost, kraftig regn, tørke eller sneglevær.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">Yr-værdata</span><span class="project-card__tag">Herdighetssoner</span>
+                <span class="project-card__tag">Jord og sol</span><span class="project-card__tag">Varsler</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 9: Portfolio -->
+          <article class="project-card reveal" id="project-portfolio" style="--project-tone:#d8cfc0" role="listitem" aria-labelledby="project-portfolio-title">
+            <div class="project-card__tilt">
+              <div class="project-card__screen">
+                <div class="project-visual project-visual--portfolio" role="img" aria-label="Skjermbilder av porteføljen: forsiden med marmorportrett og Om meg-siden med marmorsøyler">
+                  <div class="project-visual__slides">
+                    <img src="assets/portfolio-1.webp" alt="" width="960" height="540" decoding="async" fetchpriority="low">
+                    <img src="assets/portfolio-2.webp" alt="" width="960" height="540" decoding="async" fetchpriority="low">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__type">Personlig nettside</p>
+              <h3 class="project-card__title" id="project-portfolio-title">Portfolio</h3>
+              <p class="project-card__desc">Nettsiden du er på nå: en personlig portefølje med animerte WebGL-scener, myk rulling, og erfaring, prosjekter og kontakt samlet på én side.</p>
+              <div class="project-card__tags" aria-label="Teknologier">
+                <span class="project-card__tag">HTML/CSS</span><span class="project-card__tag">JavaScript</span>
+                <span class="project-card__tag">GSAP</span><span class="project-card__tag">WebGL</span>
+              </div>
+              <a class="project-card__link" href="https://github.com/YonesF/Portfolio" target="_blank" rel="noopener noreferrer">
+                Se på GitHub
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ERFARING ══════════════════════════════
+         Its own type and colours (assets/erfaring.css), kept inside .erf. -->
+    <section class="erf" id="erfaring" aria-labelledby="hero-title">
+      <div class="hero">
+        <h2 class="hero__title" id="hero-title" aria-label="Erfaring"><span aria-hidden="true"><span style="--i:0">E</span><span style="--i:1">r</span><span style="--i:2">f</span><span style="--i:3">a</span><span style="--i:4">r</span><span style="--i:5">i</span><span style="--i:6">n</span><span style="--i:7">g</span></span></h2>
+        <a class="begin" href="#utvalgt">Trykk her for å begynne</a>
+      </div>
+      <section class="work section-shell" id="utvalgt" aria-labelledby="work-title">
+        <header class="section-heading" data-reveal><div><p class="eyebrow">01 / Utvalgt erfaring</p><h2 id="work-title">Lært ved å gjøre.<br /><em>Vist gjennom arbeidet.</em></h2></div><p>Fire prosjekter. Ulike utfordringer.<br />Et felles ønske om å gjøre komplekse ting enklere å bruke.</p></header>
+        <div class="experience-browser" data-reveal>
+          <div class="experience-index">
+            <p class="index-label">Utforsk prosjektene <span aria-hidden="true">↘</span></p>
+            <nav class="project-tabs" aria-label="Velg erfaring">
+              <a class="project-tab" href="#kartverket" id="tab-kartverket"><span class="project-tab__number">01</span><span><strong>Kartverket</strong><small>Databasedesign · 2025</small></span><span class="project-tab__arrow" aria-hidden="true">↗</span></a>
+              <a class="project-tab" href="#atlas" id="tab-atlas"><span class="project-tab__number">02</span><span><strong>Atlas</strong><small>GIS &amp; UI/UX · 2026</small></span><span class="project-tab__arrow" aria-hidden="true">↗</span></a>
+              <a class="project-tab" href="#luksuseiendom" id="tab-luksuseiendom"><span class="project-tab__number">03</span><span><strong>LuksusEiendom</strong><small>Eget produkt · 2026</small></span><span class="project-tab__arrow" aria-hidden="true">↗</span></a>
+              <a class="project-tab" href="#ai-lab" id="tab-ai-lab"><span class="project-tab__number">04</span><span><strong>AI Lab</strong><small>Utforskning · Pågående</small></span><span class="project-tab__arrow" aria-hidden="true">↗</span></a>
+            </nav>
+            <p class="index-note">Fra et solid fundament<br />til nye muligheter.</p>
+            <a class="text-link index-all" href="#projects">Se alle prosjekter <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="project-panels">
+            <article class="experience" id="kartverket" aria-labelledby="kartverket-title">
+              <div class="experience__topline"><span>Databaseutvikling</span><span>2025 <span class="project-count">/ 01</span></span></div>
+              <h3 id="kartverket-title">Data som må <em>stemme.</em></h3>
+              <p class="experience__summary">Et relasjonsdatabasesystem for Kartverkets nasjonale register over luftfartshindre. Bygget rundt sikker rapportering, rollebasert tilgang og høy dataintegritet.</p>
+              <figure class="project-media"><video poster="assets/project-kartverket.webp" muted loop playsinline preload="none" aria-label="Demonstrasjon av Kartverket NRL-systemet"><source src="assets/project-kartverket.mp4" type="video/mp4" /></video><figcaption><span><span class="media-dot" aria-hidden="true"></span> Kartverket NRL System</span><button class="media-toggle" type="button" hidden>Spill av demo <span aria-hidden="true">▶</span></button></figcaption></figure>
+              <div class="experience__details"><div><p class="eyebrow">Min rolle</p><p>Jeg bidro med hele databasedesignet, fra konseptuell modell til fysisk implementasjon.</p></div><div><p class="eyebrow">Dette jobbet jeg med</p><ul class="contributions"><li>UML- og ER-modellering</li><li>Normalisering og SQL-spørringer</li><li>Implementasjon i MariaDB</li></ul></div></div>
+              <div class="experience__footer"><ul class="tags" aria-label="Teknologier"><li>SQL</li><li>MariaDB</li><li>UML / ER</li><li>Databasedesign</li></ul><a class="text-link" href="https://github.com/IsakJG/IT-2025-Kartverket.git" target="_blank" rel="noopener noreferrer">Se koden <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article class="experience" id="atlas" aria-labelledby="atlas-title">
+              <div class="experience__topline"><span>GIS &amp; 3D-visualisering</span><span>2026 <span class="project-count">/ 02</span></span></div>
+              <h3 id="atlas-title">Oversikt når det <em>gjelder.</em></h3>
+              <p class="experience__summary">En webbasert GIS-løsning for kriseberedskap. Interaktive kart gjør nødressurser, terreng og navigasjon tilgjengelig når tiden er kritisk.</p>
+              <figure class="project-media"><video poster="assets/project-atlas.webp" muted loop playsinline preload="none" aria-label="Demonstrasjon av Atlas beredskapskart"><source src="assets/project-atlas.mp4" type="video/mp4" /></video><figcaption><span><span class="media-dot" aria-hidden="true"></span> Atlas — beredskapskart</span><button class="media-toggle" type="button" hidden>Spill av demo <span aria-hidden="true">▶</span></button></figcaption></figure>
+              <div class="experience__details"><div><p class="eyebrow">Min rolle</p><p>Jeg hadde ansvaret for UI/UX-design og kartopplevelsen i MapLibre GL JS.</p></div><div><p class="eyebrow">Dette jobbet jeg med</p><ul class="contributions"><li>3D-bygninger og 3D-terreng</li><li>Filtrering og geosøk</li><li>Rutevisning og interaktive kart</li></ul></div></div>
+              <div class="experience__footer"><ul class="tags" aria-label="Teknologier"><li>MapLibre GL JS</li><li>JavaScript</li><li>GIS</li><li>UI/UX</li></ul><a class="text-link" href="https://github.com/snbhansen/IS218.git" target="_blank" rel="noopener noreferrer">Se koden <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article class="experience" id="luksuseiendom" aria-labelledby="luksus-title">
+              <div class="experience__topline"><span>Produktutvikling &amp; oppstart</span><span>Lansert 2026 <span class="project-count">/ 03</span></span></div>
+              <h3 id="luksus-title">Fra idé til <em>eget produkt.</em></h3>
+              <p class="experience__summary">En digital tjeneste som løfter presentasjonen av boligannonser med tekst, tydelig struktur og visuell optimalisering. Utviklet og lansert sammen med en venn.</p>
+              <figure class="project-media"><video poster="assets/project-luksuseiendom.webp" muted loop playsinline preload="none" aria-label="Demonstrasjon av LuksusEiendom"><source src="assets/project-luksuseiendom.mp4" type="video/mp4" /></video><figcaption><span><span class="media-dot" aria-hidden="true"></span> LuksusEiendom</span><button class="media-toggle" type="button" hidden>Spill av demo <span aria-hidden="true">▶</span></button></figcaption></figure>
+              <div class="experience__details"><div><p class="eyebrow">Min rolle</p><p>Vi tok ansvar for hele prosessen — fra konsept og forretningsmodell til ferdig tjeneste.</p></div><div><p class="eyebrow">Dette jobbet jeg med</p><ul class="contributions"><li>UX/UI og innholdsstruktur</li><li>KI-integrasjon og visuell optimalisering</li><li>Konseptutvikling og kvalitetssikring</li></ul></div></div>
+              <div class="experience__footer"><ul class="tags" aria-label="Fagområder"><li>Produktutvikling</li><li>KI</li><li>UX/UI</li><li>Innholdsstrategi</li></ul><a class="text-link" href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer">Besøk nettsiden <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article class="experience" id="ai-lab" aria-labelledby="ai-title">
+              <div class="experience__topline"><span>KI-drevet utvikling</span><span><span class="status-dot" aria-hidden="true"></span> Pågående <span class="project-count">/ 04</span></span></div>
+              <h3 id="ai-title">Nysgjerrighet som <em>drivkraft.</em></h3>
+              <p class="experience__summary">En løpende serie eksperimenter der jeg bruker KI til å bygge, teste og validere digitale produkter — fra nettbutikker til dataplattformer.</p>
+              <div class="lab-visual" aria-label="Arbeidsflyt: idé, prototype, test og læring"><div class="lab-visual__grid" aria-hidden="true"></div><span class="lab-visual__label">AI LAB / UNDER UTVIKLING</span><div class="lab-orbit" aria-hidden="true"><span></span><span></span><i>yf.</i></div><div class="lab-visual__flow"><span>Idé</span><b aria-hidden="true">↗</b><span>Prototype</span><b aria-hidden="true">↗</b><span>Test &amp; lær</span></div></div>
+              <div class="experience__details"><div><p class="eyebrow">Min rolle</p><p>Jeg utforsker KI som utviklingspartner, med rask prototyping, systemdesign og UI/UX.</p></div><div><p class="eyebrow">Et av eksperimentene</p><p>Parhesia: en Palantir-inspirert plattform for å samle, analysere og visualisere beslutningsdata i norsk offentlig og privat sektor.</p></div></div>
+              <div class="experience__footer"><ul class="tags" aria-label="Fagområder"><li>KI-utvikling</li><li>Prototyping</li><li>Dataanalyse</li><li>Systemdesign</li></ul><a class="text-link" href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">Utforsk GitHub <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <div class="project-pagination" hidden><span class="project-position" aria-live="polite">01 / 04</span><button class="next-project" type="button">Neste erfaring <span aria-hidden="true">→</span></button></div>
+          </div>
+        </div>
+      </section>
+      <section class="foundation section-shell" aria-labelledby="foundation-title">
+        <header data-reveal><p class="eyebrow">02 / Fundamentet</p><h2 id="foundation-title">Teknisk forståelse.<br /><em>Kreativt blikk.</em></h2><p class="foundation__intro">Jeg liker å forstå hvordan ting henger sammen — og gjøre den forståelsen om til noe som fungerer.</p><a class="text-link" href="#alder">Bli bedre kjent med meg <span aria-hidden="true">↗</span></a></header>
+        <div class="foundation__content" data-reveal>
+          <div class="timeline"><div class="timeline__item"><span class="timeline__date">2026 — nå</span><div><h3>Kartverket</h3><p>Praksis / internship</p></div><span class="timeline__dot" aria-hidden="true"></span></div><div class="timeline__item"><span class="timeline__date">2024 — nå</span><div><h3>Universitetet i Agder</h3><p>IT og informasjonssystemer</p></div></div></div>
+          <div class="competencies"><p class="eyebrow">Det jeg tar med meg</p><dl><div><dt>Grensesnitt &amp; opplevelser</dt><dd>JavaScript · HTML/CSS · UI/UX</dd></div><div><dt>Data &amp; systemer</dt><dd>SQL · MariaDB · C# · PostGIS</dd></div><div><dt>Kart &amp; visualisering</dt><dd>MapLibre · GIS · 3D-kart</dd></div></dl></div>
+        </div>
+      </section>
+      <section class="closing section-shell" aria-labelledby="closing-title" data-reveal><p class="eyebrow">03 / Neste kapittel</p><div class="closing__row"><h2 id="closing-title">Hva bygger<br /><em>vi sammen?</em></h2><a class="contact-orbit" href="#contact" aria-label="Ta kontakt med Yones Feili"><span aria-hidden="true">↗</span><span>La oss snakke</span></a></div><p>Har dere en utfordring, en idé eller plass til en nysgjerrig utvikler?<br />Jeg vil gjerne høre fra dere.</p></section>
+    </section>
+
+    <!-- ══ CONTACT ═══════════════════════════════ -->
+    <section class="section contact" id="contact" aria-labelledby="contact-h">
+
+      <div class="container">
+        <div class="contact__grid">
+          <div class="contact__info">
+            <p class="section__label reveal">Kontakt</p>
+            <h2 class="section__title" id="contact-h">Send meg gjerne en melding :)</h2>
+          </div>
+
+          <form class="contact__form reveal" id="cForm" action="https://formsubmit.co/ajax/Yonesmf@uia.no" method="POST">
+            <!-- Formsubmit.co config -->
+            <input type="hidden" name="_subject" value="Ny melding fra Portfolio">
+            <input type="hidden" name="_template" value="table">
+            <input type="text" name="_honey" style="display:none">
+            <input type="hidden" name="_captcha" value="false">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-name">Navn</label>
+                <input class="form-input" type="text" id="f-name" name="name" placeholder="Ola Nordmann"
+                  autocomplete="name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-email">E-post</label>
+                <input class="form-input" type="email" id="f-email" name="email" placeholder="ola@example.com"
+                  autocomplete="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-subject">Emne</label>
+              <input class="form-input" type="text" id="f-subject" name="subject"
+                placeholder="Hva gjelder henvendelsen?">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-msg">Melding</label>
+              <textarea class="form-ta" id="f-msg" name="message" rows="6" placeholder="Skriv meldingen din her..."
+                required></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary" id="cFormBtn" style="align-self:center">
+              Send melding
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <script src="assets/scenes.js"></script>
 
   </main>
 
-  <script src="assets/site.js" defer></script>
-  <script src="assets/hero-nav.js" defer></script>
+  <!-- Erfaring's footer closes the page, in Erfaring's type (.erf). -->
+  <div class="erf">
+    <footer class="site-footer section-shell"><a class="wordmark" href="#top">Yones Feili<span class="wordmark__star" aria-hidden="true">✳</span></a><p>Alltid nysgjerrig. Alltid i utvikling.</p><div><a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/yones-m-44616536a" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="#top" aria-label="Til toppen">↑</a></div></footer>
+  </div>
+
+  <script src="assets/site.js?v=4" defer></script>
+  <script src="assets/hero-nav.js?v=2" defer></script>
+  <script src="assets/erfaring.js?v=2" defer></script>
+  <script type="module" src="assets/project-stage.js?v=2"></script>
 </body>
 
 </html>
