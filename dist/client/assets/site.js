@@ -165,7 +165,9 @@ const renderSectionActivity = (() => {
     const centerX = Math.max(0, Math.min(window.innerWidth - 1, window.innerWidth / 2));
     const centerY = Math.max(0, Math.min(window.innerHeight - 1, window.innerHeight / 2));
     const hit = document.elementFromPoint(centerX, centerY);
-    const hitSection = hit?.closest('section');
+    // Erfaring holds sections of its own; the page's section is the one
+    // directly under <main>.
+    const hitSection = hit?.closest('main > section');
     if (hitSection && hitSection.parentElement === main) return hitSection;
 
     let bestSection = null;
@@ -290,7 +292,16 @@ const renderSectionActivity = (() => {
   const DPI_CEILING = 1.5;    // the density Unicorn exports every scene at
   const LITE_FPS = 30;
   const LOWEST_BACKDROP = 0.75; // backdrops sit under a dark veil, so lose least
+  // ms after the scene on screen has drawn before its neighbour is built:
+  // past perf.js's first timing of this machine's frames, so building the
+  // second scene neither slows the first nor skews that measurement.
+  const NEIGHBOUR_DELAY = 2600;
   let runtimeReady = Boolean(window.__unicornRuntimeReady && window.UnicornStudio?.addScene);
+  // The neighbour is built ahead of time, but not while the scene on screen
+  // is still loading: two scenes compiling at once on page load kept the
+  // first waiting on the second. Allowed once that scene has drawn, the
+  // page is scrolled, or the page opens on a section without a scene.
+  let neighboursAllowed = false;
   let activeSection = renderSectionActivity.active;
   let direction = 1;
   let lastScrollY = window.scrollY;
@@ -489,6 +500,8 @@ const renderSectionActivity = (() => {
             entry.host.dataset.sceneReady = '';
             // Now there is real drawing to time (assets/perf.js).
             perf.probe();
+            window.setTimeout(allowNeighbours, NEIGHBOUR_DELAY);
+            announceSettled();
           }));
         }))
       .catch(error => {
@@ -526,8 +539,9 @@ const renderSectionActivity = (() => {
     const wanted = new Set();
     const activeEntry = entryBySection.get(activeSection);
     const nextEntry = adjacentEntry(activeSection);
+    if (!activeEntry) neighboursAllowed = true;
     if (activeEntry) wanted.add(activeEntry);
-    if (nextEntry) wanted.add(nextEntry);
+    if (nextEntry && (neighboursAllowed || nextEntry.visible)) wanted.add(nextEntry);
     if (navigationTarget && entryBySection.has(navigationTarget)) {
       wanted.add(entryBySection.get(navigationTarget));
     }
@@ -537,10 +551,29 @@ const renderSectionActivity = (() => {
       if (entry.wanted) ensureEntry(entry);
       else releaseEntry(entry);
     });
+    announceSettled();
   }
 
   function scheduleSync() {
     if (!syncFrame) syncFrame = requestAnimationFrame(syncLifecycle);
+  }
+
+  function allowNeighbours() {
+    if (neighboursAllowed) return;
+    neighboursAllowed = true;
+    scheduleSync();
+  }
+
+  // Said once, when every scene the page wants (neighbour included) has
+  // drawn, so heavier work further down — the 3D wall, project-stage.js —
+  // can take its turn without crowding the opening.
+  let settled = false;
+  function announceSettled() {
+    if (settled || !neighboursAllowed) return;
+    if (entries.some(entry => entry.wanted && !('sceneReady' in entry.host.dataset))) return;
+    settled = true;
+    window.__scenesSettled = true;
+    window.dispatchEvent(new CustomEvent('scenes-settled'));
   }
 
   entries.forEach(entry => mark(entry, 'unloaded'));
@@ -555,6 +588,7 @@ const renderSectionActivity = (() => {
     const delta = nextY - lastScrollY;
     lastScrollY = nextY;
     if (Math.abs(delta) < 2) return;
+    allowNeighbours();
     const nextDirection = delta > 0 ? 1 : -1;
     if (nextDirection !== direction) {
       direction = nextDirection;
@@ -623,6 +657,36 @@ document.addEventListener('click', event => {
   history.replaceState(null, '', hash);
   lenis.scrollTo(hash);
 });
+
+// For the section scripts (erfaring.js) that move the page themselves.
+window.__scrollToElement = target => {
+  if (lenis) lenis.scrollTo(target);
+  else target.scrollIntoView({ behavior: prefersReducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
+};
+
+// The sections were pages of their own, and their addresses live on in
+// links and bookmarks. The server answers them with this page (an address
+// it has no file for gets index.html), so take the visitor to the section.
+(function openLegacyRoute() {
+  const routes = { '/om-meg': '#alder', '/prosjekter': '#projects', '/erfaring': '#erfaring', '/kontakt': '#contact' };
+  const hash = routes[location.pathname.replace(/\.html$|\/$/, '')];
+  const target = hash && document.querySelector(hash);
+  if (!target) return;
+  history.replaceState(null, '', `/${hash}`);
+  const jump = () => {
+    if (lenis) lenis.scrollTo(target, { immediate: true, force: true });
+    else target.scrollIntoView({ block: 'start' });
+  };
+  // After every section script has laid its section out (Erfaring folds
+  // its panels away, Prosjekter swaps its grid for the wall), and once more
+  // when the fonts arrive and every line of text takes its real height.
+  document.addEventListener('DOMContentLoaded', () => {
+    jump();
+    document.fonts?.ready.then(() => {
+      if (Math.abs(target.getBoundingClientRect().top) > 2) jump();
+    });
+  }, { once: true });
+})();
 
 /* Smooth zoom handoff between the site's main scenes */
 (function initSceneTransitions() {
@@ -864,7 +928,8 @@ function requestScrollTriggerRefresh() {
 })();
 
 /* ─── Contact form (Formsubmit.co via AJAX) ── */
-// Guarded: the standalone Erfaring page ships the same bundle without a form.
+// Guarded, like the other section scripts here, so a page without the form
+// still runs the rest.
 const cForm = document.getElementById('cForm');
 const cBtn  = document.getElementById('cFormBtn');
 const btnDefault = cBtn ? cBtn.innerHTML : '';
