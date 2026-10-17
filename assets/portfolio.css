@@ -126,7 +126,8 @@ html[data-active-render-section]:not([data-active-render-section="landing"]) .po
 .pf-timeline { list-style: none; margin-left: 40px; padding: 24px 24px 24px 0; border-left: 1px solid var(--pf-line); }
 .pf-timeline__item { position: relative; margin-left: 40px; }
 .pf-timeline__item + .pf-timeline__item { margin-top: 32px; }
-.pf-timeline__logo { position: absolute; top: -4px; left: -61px; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--pf-line); border-radius: 50%; background: var(--pf-bg); font-size: .7rem; font-weight: 700; letter-spacing: .02em; }
+.pf-timeline__logo { position: absolute; top: -4px; left: -61px; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--pf-line); border-radius: 50%; background: var(--pf-bg); }
+.pf-timeline__logo img { width: 24px; height: 24px; object-fit: contain; }
 .pf-timeline__head { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; }
 .pf-timeline__head h4 { grid-column: 1 / -1; font-size: 1rem; line-height: 1.25; }
 .pf-timeline__role { margin-top: 2px; color: var(--pf-muted); font-size: .875rem; }
