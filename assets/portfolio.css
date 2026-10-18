@@ -86,8 +86,11 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
 .pf-intro h1 { font-size: 3rem; text-wrap: balance; }
 .pf-wave { display: inline-block; }
 .pf-intro__role { margin-top: 4px; }
-.pf-intro__place { margin-left: 6px; color: var(--pf-muted); font-size: .875rem; white-space: nowrap; }
-.pf-intro__bio { margin-top: 16px; max-width: 30rem; }
+/* Drawn rather than the 🇳🇴 emoji, which Windows shows as the letters NO.
+   Kept on the line with "Norge", so the flag never wraps on its own. */
+.pf-intro__country { white-space: nowrap; }
+.pf-flag { display: inline-block; width: 1.1em; height: .8em; margin-left: 2px; vertical-align: -.05em; border-radius: 2px; }
+.pf-intro__bio { margin-top: 16px; max-width: 30rem; text-wrap: pretty; }
 .pf-intro__note { margin-top: 12px; max-width: 30rem; color: var(--pf-muted); font-size: .875rem; }
 .pf-intro__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 24px; }
 .pf-outline-button { display: inline-flex; align-items: center; gap: 10px; height: 36px; padding: 0 14px; border: 1px solid var(--pf-line); border-radius: 6px; font-size: .875rem; font-weight: 600; transition: background-color .15s ease; }
@@ -196,7 +199,6 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
   .pf-highlights { padding-top: 32px; }
   .pf-highlights__list { grid-template-columns: 1fr; gap: 10px; }
   .pf-intro h1 { font-size: 2.25rem; }
-  .pf-intro__place { display: block; margin: 2px 0 0; }
   .pf-section h2 { font-size: 1.5rem; }
   .pf-timeline { margin-left: 32px; padding: 20px 16px 20px 0; }
   .pf-timeline__item { margin-left: 32px; }
