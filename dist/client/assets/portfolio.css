@@ -1,11 +1,10 @@
-/* ══ The portfolio below the landing ══════════════════
+/* ══ The portfolio ═════════════════════════════════════
    Laid out after tedawf.com, in its dark colours: one narrow column. A
    sticky row of lower-case links; an intro with a heading, a short bio, a
    CV button and icon links beside a photo; three highlights; work,
    education and skills as tabs over a timeline card; two project cards
    side by side; further projects as a list card; contact; a quiet footer.
-   Calistoga for the headings, Inter for everything else. The landing
-   scene above is left as it was. */
+   Calistoga for the headings, Inter for everything else. */
 body.portfolio-page {
   --pf-bg: #030712;
   --pf-ink: #f9fafb;
@@ -18,7 +17,6 @@ body.portfolio-page {
 
 html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
 .portfolio-page main[data-static-content] { background: var(--pf-bg); }
-html[data-active-render-section]:not([data-active-render-section="landing"]) .portfolio-page #side-leaves { visibility: hidden; }
 
 /* ── Shared ─────────────────────────────── */
 .pf-shell { width: 100%; max-width: 768px; margin-inline: auto; padding-inline: 32px; }
@@ -225,7 +223,7 @@ html[data-active-render-section]:not([data-active-render-section="landing"]) .po
 @media print {
   /* Dark on paper wastes ink and prints muddy: printed, it is light. */
   body.portfolio-page { --pf-bg: #fff; --pf-ink: #030712; --pf-muted: #4b5563; --pf-line: #d1d5db; --pf-soft: #f3f4f6; }
-  #landing, #side-leaves, .portfolio-nav, .pf-skip-link, .pf-project__media, .pf-tabs__list { display: none !important; }
+  .portfolio-nav, .pf-skip-link, .pf-project__media, .pf-tabs__list { display: none !important; }
   .pf-section { padding-top: 24px; break-inside: avoid; }
   .pf-tabs .pf-panel[hidden] { display: block !important; }
   .pf-tabs .pf-panel__title { display: block !important; }
