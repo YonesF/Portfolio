@@ -3,7 +3,8 @@
    sticky row of links; an intro with a heading, a short bio, a
    CV button and icon links beside a photo; three highlights; work,
    education and skills as tabs over a timeline card; two project cards
-   side by side; further projects as a list card; contact; a quiet footer.
+   side by side, and a button on to every project (prosjekter.html);
+   contact; a quiet footer.
    Calistoga for the headings, Inter for everything else. */
 body.portfolio-page {
   --pf-bg: #030712;
@@ -72,7 +73,7 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
 .portfolio-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; }
 .portfolio-nav__links { display: flex; gap: 24px; }
 .portfolio-nav__links a { color: var(--pf-muted); white-space: nowrap; transition: color .15s ease; }
-.portfolio-nav__links a:hover, .portfolio-nav__links a[aria-current="location"] { color: var(--pf-ink); }
+.portfolio-nav__links a:hover, .portfolio-nav__links a[aria-current] { color: var(--pf-ink); }
 .pf-nav-cv { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--pf-line); border-radius: 6px; font-size: .875rem; font-weight: 500; transition: background-color .15s ease; }
 .pf-nav-cv .pf-i { width: 1rem; height: 1rem; }
 .pf-nav-cv:hover { background: var(--pf-soft); }
@@ -147,27 +148,36 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
 .pf-project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .pf-project { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 .pf-project__media { padding: 16px 16px 0; }
-.pf-project__media video { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #000; box-shadow: 0 4px 12px rgba(0, 0, 0, .4); }
+.pf-project__media video, .pf-fade, .pf-tile { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #000; box-shadow: 0 4px 12px rgba(0, 0, 0, .4); }
+/* Two stills taking turns, for a project with no footage. */
+.pf-fade { position: relative; overflow: hidden; }
+.pf-fade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pf-fade img + img { animation: pf-fade 9s ease-in-out infinite; }
+@keyframes pf-fade { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+/* A drawn tile, for a project with nothing to film. */
+.pf-tile { display: grid; place-items: center; background: radial-gradient(circle at 30% 25%, #1f2937, #030712 70%); color: var(--pf-ink); font-size: 3rem; line-height: 1; }
 .pf-project__body { display: flex; flex: 1; flex-direction: column; align-items: flex-start; padding: 16px 20px 20px; }
 .pf-project__body .pf-badge { margin-bottom: 10px; }
-.pf-project h3 { font-size: 1rem; line-height: 1.25; }
+/* h3 on the front page, h2 on the projects page: the same title either way. */
+.pf-section .pf-project :is(h2, h3) { font-family: var(--pf-text); font-weight: 600; font-size: 1rem; line-height: 1.25; }
 .pf-project__meta { margin-top: 2px; color: var(--pf-muted); font-size: .75rem; }
+.pf-project__desc { margin-top: 10px; color: var(--pf-muted); font-size: .8125rem; }
 .pf-project__points { margin-top: 10px; padding-left: 16px; list-style: disc; color: var(--pf-muted); font-size: .8125rem; }
 .pf-project__points li + li { margin-top: 6px; }
 .pf-project .pf-tags { margin-top: 14px; }
 .pf-project .pf-tags li { font-size: .6875rem; }
 .pf-project__links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 16px; }
 
-/* ── Further projects, as a list ────────── */
-.pf-list__item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; padding: 24px; }
-.pf-list__item + .pf-list__item { border-top: 1px solid var(--pf-line); }
-.pf-list__item h3 { font-size: 1.125rem; line-height: 1.35; }
-.pf-list__item h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
-.pf-list__main p { margin-top: 8px; color: var(--pf-muted); font-size: .875rem; }
-.pf-list__main .pf-tags { margin-top: 14px; }
-.pf-list__meta { list-style: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; color: var(--pf-muted); font-size: .875rem; }
-.pf-list__meta li { display: inline-flex; align-items: center; gap: 6px; }
-.pf-list__meta .pf-i { width: 1rem; height: 1rem; }
+.pf-projects__more { display: flex; justify-content: center; margin-top: 24px; }
+
+/* ── Every project (prosjekter.html) ────── */
+.pf-back { display: inline-flex; align-items: center; gap: 6px; color: var(--pf-muted); font-size: .875rem; transition: color .15s ease; }
+.pf-back:hover { color: var(--pf-ink); }
+.pf-back .pf-i { width: 1rem; height: 1rem; transform: scaleX(-1); }
+.pf-all h1 { margin-top: 16px; font-size: 3rem; }
+.pf-all__intro { margin-top: 8px; max-width: 34rem; color: var(--pf-muted); text-wrap: pretty; }
+.pf-all .pf-project-grid { margin-top: 32px; }
+.pf-preview { cursor: pointer; }
 
 /* ── Contact ────────────────────────────── */
 .pf-contact__card { padding: 24px; }
@@ -208,8 +218,7 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
   .pf-skills { padding: 4px 18px; }
   .pf-skills > div { grid-template-columns: 1fr; gap: 8px; }
   .pf-project-grid { grid-template-columns: 1fr; }
-  .pf-list__item { grid-template-columns: 1fr; padding: 20px; }
-  .pf-list__meta { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+  .pf-all h1 { font-size: 2.25rem; }
   .pf-contact__card { padding: 20px; }
 }
 
@@ -220,6 +229,7 @@ html:has(.portfolio-page) { scroll-padding-top: 80px; scroll-snap-type: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .portfolio-nav *, .pf-section *, .pf-footer * { transition: none !important; }
+  .pf-fade img + img { animation: none; opacity: 0; }
 }
 
 @media print {
