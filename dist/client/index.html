@@ -33,7 +33,7 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js" defer></script>
 
   <link rel="stylesheet" href="assets/site.css?v=4" />
-  <link rel="stylesheet" href="assets/portfolio.css?v=3" />
+  <link rel="stylesheet" href="assets/portfolio.css?v=4" />
 </head>
 
 <body class="page-onepage portfolio-page">
@@ -227,7 +227,7 @@
       <div class="pf-shell">
         <header class="pf-heading-row">
           <h2 id="projects-h">Utvalgte prosjekter</h2>
-          <a class="pf-view-more" href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">Se flere <svg class="pf-i" aria-hidden="true"><use href="#i-arrow-right" /></svg></a>
+          <a class="pf-view-more" href="prosjekter.html">Se alle <svg class="pf-i" aria-hidden="true"><use href="#i-arrow-right" /></svg></a>
         </header>
         <div class="pf-project-grid">
           <article class="pf-card pf-project" id="project-atlas" aria-labelledby="atlas-title">
@@ -273,58 +273,8 @@
             </div>
           </article>
         </div>
-      </div>
-    </section>
-
-    <section class="pf-section pf-more" aria-labelledby="more-h">
-      <div class="pf-shell">
-        <header class="pf-heading-row">
-          <h2 id="more-h">Flere prosjekter</h2>
-          <a class="pf-view-more" href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">GitHub <svg class="pf-i" aria-hidden="true"><use href="#i-arrow-right" /></svg></a>
-        </header>
-        <div class="pf-card pf-list">
-          <article class="pf-list__item" aria-labelledby="globus-title">
-            <div class="pf-list__main">
-              <h3 id="globus-title"><a href="https://github.com/YonesF/Et-Globus-kartprosjekt" target="_blank" rel="noopener noreferrer">Globuskart — geospatial visualisering</a></h3>
-              <p>Bygget en interaktiv geospatial løsning for sanntidsdata, havnivåstigning og geografiske analyser, med 3D-visualisering og responsivt grensesnitt. Satte opp publisering på Azure Static Web Apps og automatisert CI/CD via GitHub Actions.</p>
-              <ul class="pf-tags pf-tags--outline" aria-label="Stikkord for Globuskart"><li>Geodata</li><li>3D</li><li>Azure</li><li>GitHub Actions</li></ul>
-            </div>
-            <ul class="pf-list__meta">
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-calendar" /></svg> 2026</li>
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-github" /></svg> GitHub</li>
-            </ul>
-          </article>
-          <article class="pf-list__item" aria-labelledby="luksus-title">
-            <div class="pf-list__main">
-              <h3 id="luksus-title"><a href="https://luksuseiendomstudio.no/" target="_blank" rel="noopener noreferrer">LuksusEiendom</a></h3>
-              <p>Medutviklet produktet fra konsept til levering: UX/UI, KI-integrasjon, responsiv frontend, kvalitetssikring og web-sikkerhet.</p>
-              <ul class="pf-tags pf-tags--outline" aria-label="Stikkord for LuksusEiendom"><li>Produktutvikling</li><li>KI</li><li>UX/UI</li><li>Web-sikkerhet</li></ul>
-            </div>
-            <ul class="pf-list__meta">
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-globe" /></svg> Nettside</li>
-            </ul>
-          </article>
-          <article class="pf-list__item" aria-labelledby="ailab-title">
-            <div class="pf-list__main">
-              <h3 id="ailab-title"><a href="https://github.com/YonesF" target="_blank" rel="noopener noreferrer">AI Lab / Parhesia</a></h3>
-              <p>Eksperimenterer med nye KI-verktøy, agentiske arbeidsflyter og prototyper. Parhesia utforsker data-intelligence for analyse og visualisering av beslutningsdata.</p>
-              <ul class="pf-tags pf-tags--outline" aria-label="Stikkord for AI Lab"><li>KI-verktøy</li><li>Agentiske arbeidsflyter</li><li>Prototyper</li><li>Data-intelligence</li></ul>
-            </div>
-            <ul class="pf-list__meta">
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-calendar" /></svg> Pågående</li>
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-github" /></svg> GitHub</li>
-            </ul>
-          </article>
-          <article class="pf-list__item" aria-labelledby="portfolio-title">
-            <div class="pf-list__main">
-              <h3 id="portfolio-title"><a href="https://github.com/YonesF/Portfolio" target="_blank" rel="noopener noreferrer">Personlig portfolio</a></h3>
-              <p>Nettsiden du er på nå, med en animert WebGL-scene og myk rulling.</p>
-              <ul class="pf-tags pf-tags--outline" aria-label="Stikkord for portfolioen"><li>JavaScript</li><li>GSAP</li><li>WebGL</li></ul>
-            </div>
-            <ul class="pf-list__meta">
-              <li><svg class="pf-i" aria-hidden="true"><use href="#i-github" /></svg> GitHub</li>
-            </ul>
-          </article>
+        <div class="pf-projects__more">
+          <a class="pf-outline-button" href="prosjekter.html">Se alle prosjekter <svg class="pf-i" aria-hidden="true"><use href="#i-arrow-right" /></svg></a>
         </div>
       </div>
     </section>
@@ -337,7 +287,7 @@
         </header>
         <div class="pf-card pf-contact__card">
           <h3>Plass til en nysgjerrig utvikler?</h3>
-          <p>Jeg vil gjerne høre om muligheter innen utvikling, GIS, data og KI. Send meg en e-post, så tar vi en prat.</p>
+          <p>Jeg vil gjerne høre om muligheter innen utvikling med prosjekter, GIS, data og spesielt KI! Send meg en e-post, så tar vi en prat! </p>
           <ul class="pf-contact__list">
             <li><a href="mailto:yonesmf@uia.no"><svg class="pf-i" aria-hidden="true"><use href="#i-mail" /></svg> yonesmf@uia.no</a></li>
             <li><a href="tel:+4799492005"><svg class="pf-i" aria-hidden="true"><use href="#i-phone" /></svg> +47 994 92 005</a></li>
